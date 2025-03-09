@@ -16,9 +16,9 @@ struct Keyword {
     KeywordType type;
 };
 
-const Keyword kKeywords[(size_t)KeywordType::KEYWORD_NUM] = {
-    {"let", KeywordType::LET},
-    {"if", KeywordType::IF},
+const Keyword kKeywords[] = {
+    {"let",  KeywordType::LET},
+    {"if",   KeywordType::IF},
     {"else", KeywordType::ELSE},
-    {"out", KeywordType::OUT}
+    {"out",  KeywordType::OUT}
 };

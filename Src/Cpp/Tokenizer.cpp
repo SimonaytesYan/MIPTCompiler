@@ -36,13 +36,13 @@ std::vector<Token> tokenize(std::istream& in) {
     {
         skipSpaces(in);
 
-        if (getNum(in, tokens))
-            continue;
         if (getKeyword(in, tokens))
             continue;
         if (getOperator(in, tokens))
             continue;
         if (getSpecialSymbol(in, tokens))
+            continue;
+        if (getNum(in, tokens))
             continue;
         if (getName(in, tokens))
             continue;
@@ -58,7 +58,9 @@ static bool getNum(std::istream& in, std::vector<Token>& tokens) {
 
     int first_sym = in.get();
     in.unget();
-    if ('0' <= first_sym && first_sym <= '9' || first_sym == '-') {
+
+    // Do not wait '-', will work with it during syntax analysis
+    if ('0' <= first_sym && first_sym <= '9') {
         in >> num;
         std::cout << "num = " << num << "\n";
         tokens.emplace_back(NumToken(num));
@@ -73,7 +75,7 @@ static bool getKeyword(std::istream& in, std::vector<Token>& tokens) {
     std::string potential_keyword = "";
     in >> potential_keyword;
 
-    for (auto& keyword : kKeywords) {
+    for (const auto& keyword : kKeywords) {
         // check that keyword is a prefix of potential_keyword
         auto res = std::mismatch(keyword.name.begin(),
                                 keyword.name.end(),
@@ -93,6 +95,25 @@ static bool getKeyword(std::istream& in, std::vector<Token>& tokens) {
 }
 
 static bool getOperator(std::istream& in, std::vector<Token>& tokens) {
+    std::string potential_operator = "";
+    in >> potential_operator;
+
+    for (const Operator& oper : kOperators) {
+        // check that keyword is a prefix of potential_keyword
+        auto res = std::mismatch(oper.name.begin(),
+                                oper.name.end(),
+                                potential_operator.begin());
+        if (res.first == oper.name.end()) {
+            tokens.emplace_back(OperatorToken(oper.type));
+
+            std::cout << "operator = " << oper.name << "\n";
+
+            ungetSymbols(in, potential_operator.size() - oper.name.size());
+            return true;
+        }
+    }
+
+    ungetSymbols(in, potential_operator.size());
     return false;
 }
 

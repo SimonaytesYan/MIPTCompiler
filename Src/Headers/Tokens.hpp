@@ -51,9 +51,12 @@ class SymbolToken {
 };
 
 class OperatorToken {
+  public:
+    OperatorToken(OperatorType oper) :
+      operator_(oper) { }
 
   private:
-    Operator operator_;
+    OperatorType operator_;
     TokenInfo info_;
 };
 

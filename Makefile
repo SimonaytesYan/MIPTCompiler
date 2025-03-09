@@ -10,7 +10,7 @@ BIN = bin
 GREEN_COLOR = \033[0;32m
 NO_COLOR = \033[0m
 
-tests_tokenizer: $(BIN)/test_tokenizer_num $(BIN)/test_tokenizer_name $(BIN)/test_tokenizer_keywords
+tests_tokenizer: $(BIN)/test_tokenizer_num $(BIN)/test_tokenizer_name $(BIN)/test_tokenizer_keywords $(BIN)/test_tokenizer_operators
 	@echo "${GREEN_COLOR}START TESTS${NO_COLOR}\n"
 
 	@echo "\n${GREEN_COLOR}TOKENIZER NUM${NO_COLOR}"
@@ -21,6 +21,12 @@ tests_tokenizer: $(BIN)/test_tokenizer_num $(BIN)/test_tokenizer_name $(BIN)/tes
 
 	@echo "\n${GREEN_COLOR}TOKENIZER KEYWORD${NO_COLOR}"
 	@$(BIN)/test_tokenizer_keywords
+
+	@echo "\n${GREEN_COLOR}TOKENIZER OPERATOR${NO_COLOR}"
+	@$(BIN)/test_tokenizer_operators
+
+$(BIN)/test_tokenizer_operators: $(OBJ)/Tokenizer.o
+	$(CC) Tests/Tokenizer/Operators.cpp $(CFLAGS) $(OBJ)/Tokenizer.o -o $(BIN)/test_tokenizer_operators
 
 $(BIN)/test_tokenizer_keywords: $(OBJ)/Tokenizer.o
 	$(CC) Tests/Tokenizer/Keywords.cpp $(CFLAGS) $(OBJ)/Tokenizer.o -o $(BIN)/test_tokenizer_keywords
