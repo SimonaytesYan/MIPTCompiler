@@ -19,8 +19,11 @@ tests_tokenizer: $(BIN)/test_tokenizer_num $(BIN)/test_tokenizer_name $(BIN)/tes
 	@echo "\n${GREEN_COLOR}TOKENIZER NAME${NO_COLOR}"
 	@$(BIN)/test_tokenizer_name
 
+	@echo "\n${GREEN_COLOR}TOKENIZER KEYWORD${NO_COLOR}"
+	@$(BIN)/test_tokenizer_keywords
+
 $(BIN)/test_tokenizer_keywords: $(OBJ)/Tokenizer.o
-	$(CC) Tests/Tokenizer/Keywords.cpp $(CFLAGS) $(OBJ)/Tokenizer.o -o $(BIN)/test_tokenizer_num
+	$(CC) Tests/Tokenizer/Keywords.cpp $(CFLAGS) $(OBJ)/Tokenizer.o -o $(BIN)/test_tokenizer_keywords
 
 $(BIN)/test_tokenizer_num: $(OBJ)/Tokenizer.o
 	$(CC) Tests/Tokenizer/Num.cpp $(CFLAGS) $(OBJ)/Tokenizer.o -o $(BIN)/test_tokenizer_num

@@ -26,6 +26,9 @@ static bool getName(std::istream& in, std::vector<Token>& tokens);
 // skip all space symbols aka spaces, tabs, \n, \r, etc.
 static void skipSpaces(std::istream& in);
 
+// run in.unet() n times
+static void ungetSymbols(std::istream& in, size_t n);
+
 std::vector<Token> tokenize(std::istream& in) {
     std::vector<Token> tokens;
 
@@ -71,16 +74,21 @@ static bool getKeyword(std::istream& in, std::vector<Token>& tokens) {
     in >> potential_keyword;
 
     for (auto& keyword : kKeywords) {
-        if (potential_keyword == keyword.name) {
+        // check that keyword is a prefix of potential_keyword
+        auto res = std::mismatch(keyword.name.begin(),
+                                keyword.name.end(),
+                                potential_keyword.begin());
+        if (res.first == keyword.name.end()) {
             tokens.emplace_back(KeywordToken(keyword.type));
+
+            std::cout << "keyword = " << keyword.name << "\n";
+
+            ungetSymbols(in, potential_keyword.size() - keyword.name.size());
             return true;
         }
     }
 
-    const size_t get_symbol_num = potential_keyword.size();
-    for(size_t i = 0; i < get_symbol_num; i++)
-        in.unget();
-
+    ungetSymbols(in, potential_keyword.size());
     return false;
 }
 
@@ -110,4 +118,9 @@ static bool getName(std::istream& in, std::vector<Token>& tokens) {
 
 static void skipSpaces(std::istream& in) {
     in >> std::skipws;
+}
+
+static void ungetSymbols(std::istream& in, size_t n) {
+    for (size_t i = 0; i < n; i++)
+        in.unget();
 }
