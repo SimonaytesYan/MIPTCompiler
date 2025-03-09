@@ -99,7 +99,7 @@ static bool getOperator(std::istream& in, std::vector<Token>& tokens) {
     in >> potential_operator;
 
     for (const Operator& oper : kOperators) {
-        // check that keyword is a prefix of potential_keyword
+        // check that oper is a prefix of potential_operator
         auto res = std::mismatch(oper.name.begin(),
                                 oper.name.end(),
                                 potential_operator.begin());
@@ -118,22 +118,51 @@ static bool getOperator(std::istream& in, std::vector<Token>& tokens) {
 }
 
 static bool getSpecialSymbol(std::istream& in, std::vector<Token>& tokens) {
+    std::string potential_spec_sym = "";
+    in >> potential_spec_sym;
+
+    for (const SpecialSymbol& spec_sym : kSpecialSymbols) {
+        // check that spec_sym is a prefix of potential_spec_sym
+        auto res = std::mismatch(spec_sym.name.begin(),
+                                 spec_sym.name.end(),
+                                 potential_spec_sym.begin());
+        if (res.first == spec_sym.name.end()) {
+            tokens.emplace_back(SymbolToken(spec_sym.type));
+
+            std::cout << "spec_symbol = " << spec_sym.name << "\n";
+
+            ungetSymbols(in, potential_spec_sym.size() - spec_sym.name.size());
+            return true;
+        }
+    }
+
+    ungetSymbols(in, potential_spec_sym.size());
+    return false;
+
     return false;
 }
 
 static bool getName(std::istream& in, std::vector<Token>& tokens) {
     std::string name = "";
+    int next_sym = 0;
 
-    in >> name;
+    next_sym = in.get();
 
-    if (in.fail()) {
-        std::cout << "fail Name\n";
-        return false;
+    if (isalpha(next_sym) || next_sym == '_') {
+        do {
+            name += next_sym;
+            next_sym = in.get();
+        }
+        while (isalnum(next_sym));
+
+        std::cout << "name = " << name << "\n";
+        tokens.emplace_back(NameToken(std::move(name)));
+
+        in.unget();
+        return true;
     }
 
-    tokens.emplace_back(NameToken(std::move(name)));
-    std::cout << "name = " << name << "\n";
-
+    in.unget();
     return true;
 }
 

@@ -44,9 +44,12 @@ class KeywordToken {
 };
 
 class SymbolToken {
+  public:
+    SymbolToken(SpecialSymbolType sym_type) :
+      sym_type_(sym_type) { }
 
   private:
-    SpecialSymbol sym_;
+    SpecialSymbolType sym_type_;
     TokenInfo info_;
 };
 
