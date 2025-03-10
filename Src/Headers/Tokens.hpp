@@ -18,6 +18,10 @@ class NumToken {
     NumToken(int num) :
       num_(num) { }
 
+  int num() const {
+    return num_;
+  }
+
   private:
     int num_;
     TokenInfo info_;
@@ -25,11 +29,15 @@ class NumToken {
 
 class NameToken {
   public:
-    NameToken(std::string&& str) :
-      name(str) { }
+    NameToken(std::string&& name) :
+      name_(name) { }
+
+    const std::string& name() const {
+      return name_;
+    }
 
   private:
-    std::string name;
+    std::string name_;
     TokenInfo info_;
 };
 

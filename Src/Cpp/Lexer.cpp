@@ -162,12 +162,19 @@ static GrammarUnit* getBrackets(token_it& cur_token, token_it end) {
 }
 
 static GrammarUnit* getVar(token_it& cur_token, token_it end) {
+    if (!std::holds_alternative<NameToken>(*cur_token)) {
+        return nullptr;
+    }
 
-    return nullptr;
+    return new VarUnit(std::get<NameToken>(*cur_token).name());
 }
 
 static GrammarUnit* getNum(token_it& cur_token, token_it end) {
-    return nullptr;
+    if (!std::holds_alternative<NumToken>(*cur_token)) {
+        return nullptr;
+    }
+
+    return new NumUnit(std::get<NumToken>(*cur_token).num());
 }
 
 static void recursiveUnitDelete(GrammarUnit* unit) {

@@ -40,6 +40,10 @@ class NumUnit : public GrammarUnit {
 
 class VarUnit : public GrammarUnit {
   public:
+    VarUnit(const std::string& str) :
+      name_(str) {
+    }
+
     int executeUnit() {
         return ;
     }
@@ -49,7 +53,7 @@ class VarUnit : public GrammarUnit {
     }
 
   private:
-    std::string str;
+    std::string name_;
 };
 
 class ExprUnit : public GrammarUnit {
