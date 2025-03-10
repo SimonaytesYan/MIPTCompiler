@@ -49,3 +49,4 @@ $(OBJ)/Tokenizer.o: Src/Cpp/Tokenizer.cpp $(HEADERS)
 make_dir:
 	-mkdir $(OBJ)
 	-mkdir $(BIN)
+	-mkdir $(GraphicDumps)

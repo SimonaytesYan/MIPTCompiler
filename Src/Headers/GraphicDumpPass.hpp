@@ -1,3 +1,5 @@
 #pragma once
 
-void 
+#include "Grammar.hpp"
+
+void graphicDump(const GrammarUnit* node);

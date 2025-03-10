@@ -10,7 +10,9 @@ enum class GrammarUnitType {
     ADD,
     SUB,
     MUL,
-    DIV
+    DIV,
+    KEYWORD,
+    FICTITIOUS,
 };
 
 class GrammarUnit {
@@ -41,6 +43,10 @@ class NumUnit : public GrammarUnit {
         return value_;
     }
 
+    int num() const {
+        return value_;
+    }
+
   private:
     int value_;
 };
@@ -56,6 +62,10 @@ class VarUnit : public GrammarUnit {
         return ;
     }
 
+    const std::string& name() const {
+        return name_;
+    }
+
   private:
     std::string name_;
 };
@@ -66,6 +76,14 @@ class ExprUnit : public GrammarUnit {
       GrammarUnit(type),
       left_op_(left_op),
       right_op_(right_op) { }
+
+    const GrammarUnit* left() const {
+        return left_op_;
+    }
+
+    const GrammarUnit* right() const {
+        return right_op_;
+    }
 
   public:
     GrammarUnit* left_op_;
