@@ -22,7 +22,6 @@ class GrammarUnit {
       type_(type) { }
 
     virtual int executeUnit() = 0;
-    virtual ~GrammarUnit();
 
     virtual GrammarUnitType getType() const {
         return type_;

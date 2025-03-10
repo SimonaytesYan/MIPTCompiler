@@ -2,6 +2,8 @@
 
 #include "Grammar.hpp"
 
+#include <fstream>
+
 class GraphicDumpPass {
   public:
     GraphicDumpPass();

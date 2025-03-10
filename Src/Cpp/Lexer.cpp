@@ -37,10 +37,12 @@ GrammarUnit* parse(const std::vector<Token>& tokens) {
 }
 
 static GrammarUnit* getExpresion(token_it& cur_token, token_it end) {
+    std::cout << "getExpresion: start func\n";
     return getAddSub(cur_token, end);
 }
 
 static GrammarUnit* getAddSub(token_it& cur_token, token_it end) {
+    std::cout << "getAddSub: start func\n";
     GrammarUnit* result = getMulDiv(cur_token, end);
 
     if (result == nullptr) {
@@ -82,6 +84,7 @@ static GrammarUnit* getAddSub(token_it& cur_token, token_it end) {
 }
 
 static GrammarUnit* getMulDiv(token_it& cur_token, token_it end) {
+    std::cout << "getMulDiv: start func\n";
     GrammarUnit* result = getBrackets(cur_token, end);
 
     if (result == nullptr) {
@@ -126,6 +129,7 @@ static GrammarUnit* getMulDiv(token_it& cur_token, token_it end) {
 }
 
 static GrammarUnit* getBrackets(token_it& cur_token, token_it end) {
+    std::cout << "getBrackets: start func\n";
     if (std::holds_alternative<NumToken>(*cur_token)) {
         return getNum(cur_token, end);
     }
@@ -162,7 +166,9 @@ static GrammarUnit* getBrackets(token_it& cur_token, token_it end) {
 }
 
 static GrammarUnit* getVar(token_it& cur_token, token_it end) {
+    std::cout << "getVar: start func\n";
     if (!std::holds_alternative<NameToken>(*cur_token)) {
+        std::cerr << "getVar: is not NameToken\n";
         return nullptr;
     }
 
@@ -170,7 +176,9 @@ static GrammarUnit* getVar(token_it& cur_token, token_it end) {
 }
 
 static GrammarUnit* getNum(token_it& cur_token, token_it end) {
+    std::cout << "getNum: start func\n";
     if (!std::holds_alternative<NumToken>(*cur_token)) {
+        std::cerr << "getVar: is not NumToken\n";
         return nullptr;
     }
 
