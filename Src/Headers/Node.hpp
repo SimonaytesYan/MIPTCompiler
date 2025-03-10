@@ -25,6 +25,9 @@ struct Node {
 
     virtual NodeType getNodeType() const { return NodeType::FICT; }
 
+    const Node* left() const { return left_; }
+    const Node* right() const { return right_; }
+
   private:
     Node* left_;
     Node* right_;

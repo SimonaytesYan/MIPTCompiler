@@ -58,6 +58,10 @@ class OperatorToken {
     OperatorToken(OperatorType oper) :
       operator_(oper) { }
 
+   OperatorType oper() const {
+    return operator_;
+   }
+
   private:
     OperatorType operator_;
     TokenInfo info_;

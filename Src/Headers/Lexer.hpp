@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Tokens.hpp"
+#include "Grammar.hpp"
 
 #include <vector>
 
-ASTTree parse(const std::vector<Token>& tokens);
+GrammarUnit* parse(const std::vector<Token>& tokens);
