@@ -15,23 +15,30 @@ enum class GrammarUnitType {
 
 class GrammarUnit {
   public:
+
+    GrammarUnit(GrammarUnitType type) :
+      type_(type) { }
+
     virtual int executeUnit() = 0;
-    virtual GrammarUnitType getType() = 0;
-    virtual ~GrammarUnit() = 0;
+    virtual ~GrammarUnit();
+
+    virtual GrammarUnitType getType() const {
+        return type_;
+    }
+
+  private:
+    GrammarUnitType type_;
 };
 
 class NumUnit : public GrammarUnit {
   public:
 
     NumUnit(int value) :
+      GrammarUnit(GrammarUnitType::NUM),
       value_(value) { }
 
     int executeUnit() {
         return value_;
-    }
-
-    GrammarUnitType getType() {
-        return GrammarUnitType::NUM;
     }
 
   private:
@@ -41,15 +48,12 @@ class NumUnit : public GrammarUnit {
 class VarUnit : public GrammarUnit {
   public:
     VarUnit(const std::string& str) :
+      GrammarUnit(GrammarUnitType::VAR),
       name_(str) {
     }
 
     int executeUnit() {
         return ;
-    }
-
-    GrammarUnitType getType() {
-        return GrammarUnitType::VAR;
     }
 
   private:
@@ -58,7 +62,8 @@ class VarUnit : public GrammarUnit {
 
 class ExprUnit : public GrammarUnit {
   public:
-    ExprUnit(GrammarUnit* left_op, GrammarUnit* right_op) :
+    ExprUnit(GrammarUnit* left_op, GrammarUnit* right_op, GrammarUnitType type) :
+      GrammarUnit(type),
       left_op_(left_op),
       right_op_(right_op) { }
 
@@ -70,56 +75,40 @@ class ExprUnit : public GrammarUnit {
 class AddExprUnit : public ExprUnit {
   public:
     AddExprUnit(GrammarUnit* left_op, GrammarUnit* right_op) :
-      ExprUnit(left_op, right_op) { }
+      ExprUnit(left_op, right_op, GrammarUnitType::ADD) { }
 
     int executeUnit() {
         return left_op_->executeUnit() + right_op_->executeUnit();
-    }
-
-    GrammarUnitType getType() {
-        return GrammarUnitType::ADD;
     }
 };
 
 class MulExprUnit : public ExprUnit {
   public:
     MulExprUnit(GrammarUnit* left_op, GrammarUnit* right_op) :
-      ExprUnit(left_op, right_op) { }
+      ExprUnit(left_op, right_op, GrammarUnitType::MUL) { }
 
     int executeUnit() {
         return left_op_->executeUnit() * right_op_->executeUnit();
-    }
-
-    GrammarUnitType getType() {
-        return GrammarUnitType::MUL;
     }
 };
 
 class SubExprUnit : public ExprUnit {
   public:
     SubExprUnit(GrammarUnit* left_op, GrammarUnit* right_op) :
-      ExprUnit(left_op, right_op) { }
+      ExprUnit(left_op, right_op, GrammarUnitType::SUB) { }
 
     int executeUnit() {
         return left_op_->executeUnit() - right_op_->executeUnit();
-    }
-
-    GrammarUnitType getType() {
-        return GrammarUnitType::SUB;
     }
 };
 
 class DivExprUnit : public ExprUnit {
   public:
     DivExprUnit(GrammarUnit* left_op, GrammarUnit* right_op) :
-      ExprUnit(left_op, right_op) { }
+      ExprUnit(left_op, right_op, GrammarUnitType::DIV) { }
 
     int executeUnit() {
         // TODO add check right_op result to zero
         return left_op_->executeUnit() / right_op_->executeUnit();
-    }
-
-    GrammarUnitType getType() {
-        return GrammarUnitType::DIV;
     }
 };
