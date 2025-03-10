@@ -58,7 +58,7 @@ class ExprUnit : public GrammarUnit {
       left_op_(left_op),
       right_op_(right_op) { }
 
-  protected:
+  public:
     GrammarUnit* left_op_;
     GrammarUnit* right_op_;
 };

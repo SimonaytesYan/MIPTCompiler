@@ -38,6 +38,9 @@ class KeywordToken {
     KeywordToken(KeywordType keyword) :
       keyword_(keyword) { }
 
+    KeywordType keyword() const {
+      return keyword_;
+    }
   private:
     KeywordType keyword_;
     TokenInfo info_;
@@ -47,6 +50,10 @@ class SymbolToken {
   public:
     SymbolToken(SpecialSymbolType sym_type) :
       sym_type_(sym_type) { }
+
+    SpecialSymbolType specSym() const {
+      return sym_type_;
+    }
 
   private:
     SpecialSymbolType sym_type_;
