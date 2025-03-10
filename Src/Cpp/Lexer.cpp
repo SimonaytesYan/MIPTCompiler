@@ -4,12 +4,12 @@
 
 // ExprUnit    ::= AddSub
 // AddSub      ::= AddExprUnit | SubExprUnit
-// AddExprUnit ::= MulDiv'+'MulDiv | MulDiv
-// SubExprUnit ::= MulDiv'+'MulDiv | MulDiv
+// AddExprUnit ::= AddSub '+' AddSub | MulDiv
+// SubExprUnit ::= AddSub '-' AddSub | MulDiv
 // MulDiv      ::= MulExprUnit | DivExprUnit
-// MulExprUnit ::= Brackets'*'Brackets | Brackets
-// DivExprUnit ::= Brackets'/'Brackets | Brackets
-// Brackets    ::= '('ExprUnit')' | Var | Num
+// MulExprUnit ::= MulDiv '*' MulDiv | Brackets
+// DivExprUnit ::= MulDiv '/' MulDiv | Brackets
+// Brackets    ::= '('Brackets')' | ExprUnit | Var | Num
 // Var         ::= {'_', 'a-z', 'A-Z'}{'_', 'a-z', 'A-Z', '0-9'}*
 // Num         ::= '-'{'0-9'}+ | {'0-9'}
 
@@ -41,28 +41,34 @@ static ExprUnit* getExpresion(token_it& cur_token, token_it end) {
 static ExprUnit* getAddSub(token_it& cur_token, token_it end) {
     // ExprUnit* result = nullptr;
 
-    // ExprUnit* left_op = getMulDiv(cur_token, end);
+    // ExprUnit* left_op = getAddSub(cur_token, end);
     // if (left_op == nullptr) {
     //     std::cerr << "getAddSub: left operator is null\n";
     //     return nullptr;
     // }
 
     // if (!std::holds_alternative<OperatorToken>(*cur_token)) {
-    //     std::cerr << "getAddSub: middle token is not operator\n";
+    //     std::cout << "getAddSub: middle token is not add/sub operator\n";
     //     return left_op;
     // }
 
     // OperatorType oper_type = std::get<OperatorToken>(*cur_token).oper();
     // ++cur_token;
 
-    // ExprUnit* right_op = getMulDiv(cur_token, end);
+    // ExprUnit* right_op = getAddSub(cur_token, end);
     // if (right_op == nullptr) {
     //     std::cerr << "getAddSub: right token is null\n";
-    //     return right_op;
+    //     return nullptr;
     // }
 
     // if (oper_type == OperatorType::ADD) {
     //     result = new AddExprUnit(left_op, right_op);
+    // }
+    // else if (oper_type == OperatorType::SUB) {
+    //     result = new SubExprUnit(left_op, right_op);
+    // }
+    // else {
+    //     return nullptr;
     // }
 
     return nullptr;
