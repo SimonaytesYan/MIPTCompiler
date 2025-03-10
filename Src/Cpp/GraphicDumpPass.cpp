@@ -2,86 +2,103 @@
 
 #include <fstream>
 
-static void writeNodeAndEdge(const GrammarUnit* node, std::ofstream& out);
+static void writeNodeAndEdge(const GrammarUnit* node_, std::ofstream& out_);
 
-void graphicDump(const GrammarUnit* node) {
-    // log_out << "Graphic dump\n";
-
-    std::ofstream out("GraphicDumps/dump");
-
-    out << "digraph G{\n";
-    out << "node[shape = record, fontsize = 14];\n";
-    out << "splines = ortho\n";
-
-    out << "info[label = \"root = 0x" << node << "\"]\n";
-
-    writeNodeAndEdge(node, out);
-
-    out << "}";
-
-    system("dot GraphicDumps/dump -o GraphicDumps/Dump.png -T png");
+GraphicDumpPass::GraphicDumpPass() {
+    dumpCounter_ = 0;
+    node_ = nullptr;
 }
 
-void dumpOperator(const GrammarUnit* node, std::ofstream& out) {
-    switch(node->getType())
+void GraphicDumpPass::graphicDump(const GrammarUnit* node) {
+    out_ = std::ofstream("GraphicDumps/dump" + std::to_string(dumpCounter_));
+
+    out_ << "digraph G{\n";
+    out_ << "node_[shape = record, fontsize = 14];\n";
+    out_ << "splines = ortho\n";
+
+    out_ << "info[label = \"root = 0x" << node_ << "\"]\n";
+
+    node_ = node;
+    writeNodeAndEdge();
+
+    out_ << "}";
+    createPngFromDot();
+
+    dumpCounter_++;
+}
+
+void GraphicDumpPass::createPngFromDot() {
+    std::string num = std::to_string(dumpCounter_);
+    std::string command = "dot GraphicDumps/dump" + num + " -o GraphicDumps/Dump" + num + ".png -T png";
+    system(command.c_str());
+}
+
+void GraphicDumpPass::dumpOperator() {
+    if (node_ == nullptr)
+        return;
+
+    switch(node_->getType())
     {
         case GrammarUnitType::ADD:
-            out << "+";
+            out_ << "+";
             break;
         case GrammarUnitType::SUB:
-            out << "-";
+            out_ << "-";
             break;
         case GrammarUnitType::MUL:
-            out << "*";
+            out_ << "*";
             break;
         case GrammarUnitType::DIV:
-            out << "/";
+            out_ << "/";
             break;
         // case OperatorType::EQUATE:
-        //     out << ":=";
+        //     out_ << ":=";
         //     break;
         // case OperatorType::IS_EQ:
-        //     out << "=";
+        //     out_ << "=";
         //     break;
         // case OperatorType::IS_GE:
-        //     out << "\\>=";
+        //     out_ << "\\>=";
         //     break;
         // case OperatorType::IS_LE:
-        //     out << "\\<=";
+        //     out_ << "\\<=";
         //     break;
         // case OperatorType::IS_L:
-        //     out << "\\<";
+        //     out_ << "\\<";
         //     break;
         // case OperatorType::IS_G:
-        //     out << "\\>";
+        //     out_ << "\\>";
         //     break;
         // case OperatorType::IS_NOT_EQ:
-        //     out << "\\<\\>";
+        //     out_ << "\\<\\>";
         //     break;
         // case OperatorType::AND:
-        //     out << "and";
+        //     out_ << "and";
         //     break;
         // case OperatorType::OR:
-        //     out << "or";
+        //     out_ << "or";
         //     break;
         // case OperatorType::NOT:
-        //     out << "not";
+        //     out_ << "not";
         //     break;
         default:
-            out << "#";
+            out_ << "#";
             break;
     }
 }
 
-void printNodeInFormat(GrammarUnit* node, const char* color, std::ofstream& out) {
+void GraphicDumpPass::printNodeInFormat(const char* color) {
     "[style = \"filled,rounded\", fillcolor = \"%s\", label = \"{{ <v>";
 
-    out << "GrammarUnit" << node << "[style = \"filled,rounded\","
+    out_ << "GrammarUnit" << node_ << "[style = \"filled,rounded\","
         << "fillcolor = \"" << color << "\", label = \"{{ <v>";
 }
 
-static void writeNodeAndEdge(GrammarUnit* node, std::ofstream& out)
+void GraphicDumpPass::writeNodeAndEdge()
 {
+    if (node_ == nullptr)
+        return;
+
     const char light_green[]  = "#B1FF9F";
     const char light_red[]    = "#FF4646";
     const char light_blue[]   = "#87A7FF";
@@ -89,14 +106,14 @@ static void writeNodeAndEdge(GrammarUnit* node, std::ofstream& out)
     const char light_yellow[] = "#FFDC4B";
 
 
-    switch (node->getType())
+    switch (node_->getType())
     {
         case GrammarUnitType::NUM:
         {
-            printNodeInFormat(node, light_blue, out);
-            NumUnit* num_node = dynamic_cast<NumUnit*>(node);
+            printNodeInFormat(light_blue);
+            const NumUnit* num_node = dynamic_cast<const NumUnit*>(node_);
             if (num_node)
-                out << "NUM | " << num_node->num();
+                out_ << "NUM | " << num_node->num();
             break;
         }
         case GrammarUnitType::ADD:
@@ -104,56 +121,59 @@ static void writeNodeAndEdge(GrammarUnit* node, std::ofstream& out)
         case GrammarUnitType::MUL:
         case GrammarUnitType::DIV:
         {
-            printNodeInFormat(node, light_yellow, out);
-            out << "OPER | ";
-            dumpOperator(node, out);
+            printNodeInFormat(light_yellow);
+            out_ << "OPER | ";
+            dumpOperator();
             break;
         }
         case GrammarUnitType::VAR:
         {
-            printNodeInFormat(node, light_blue, out);
-            VarUnit* var_node = dynamic_cast<VarUnit*>(node);
+            printNodeInFormat(light_blue);
+            const VarUnit* var_node = dynamic_cast<const VarUnit*>(node_);
             if (var_node) {
-                out << "VAR | " << var_node->name() << " ";
+                out_ << "VAR | " << var_node->name() << " ";
             }
             break;
         }
         // case GrammarUnitType::KEYWORD:
         // {
-        //     printNodeInFormat(node, light_green, out);
-        //     out << "KEYWORD | %s ", kKeywords[(int)node->val_.keyword]);
+        //     printNodeInFormat(node_, light_green, out_);
+        //     out_ << "KEYWORD | %s ", kKeywords[(int)node_->val_.keyword]);
         //     break;
         // }
         // case GrammarUnitType::FICTITIOUS:
         // {
-        //     printNodeInFormat(node, light_grey, out);
-        //     out << "FICT ";
+        //     printNodeInFormat(node_, light_grey, out_);
+        //     out_ << "FICT ";
         //     break;
         // }
         // case GrammarUnitType::STR:
         // {
-        //     printNodeInFormat(node, light_red, out);
-        //     out << "STR | %s ", node->val_.var);
+        //     printNodeInFormat(node_, light_red, out_);
+        //     out_ << "STR | %s ", node_->val_.var);
         //     break;
         // }
         default:
-            out << "unknown";
+            out_ << "unknown";
             break;
     }
 
-    out << "} }\"]\n";
+    out_ << "} }\"]\n";
 
-    ExprUnit* expr_node = dynamic_cast<ExprUnit*>(node);
+    const ExprUnit* expr_node = dynamic_cast<const ExprUnit*>(node_);
     if (expr_node) {
         if (expr_node->left() != nullptr) {
-            out << "GrammarUnit" << node << " -> GrammarUnit" << expr_node->left()
+            out_ << "GrammarUnit" << node_ << " -> GrammarUnit" << expr_node->left()
                 << "[xlabel = \"L\"]\n";
-            writeNodeAndEdge(expr_node->left(),out);
+
+            node_ = expr_node->left();
+            writeNodeAndEdge();
         }
         if (expr_node->right() != nullptr) {
-            out << "GrammarUnit" << node << " -> GrammarUnit" << expr_node->right()
+            out_ << "GrammarUnit" << node_ << " -> GrammarUnit" << expr_node->right()
                 << "[xlabel = \"L\"]\n";
-            writeNodeAndEdge(expr_node->right(), out);
+            node_ = expr_node->right();
+            writeNodeAndEdge();
         }
     }
 }

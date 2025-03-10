@@ -59,7 +59,7 @@ class VarUnit : public GrammarUnit {
     }
 
     int executeUnit() {
-        return ;
+        return 0;
     }
 
     const std::string& name() const {
