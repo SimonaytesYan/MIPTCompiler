@@ -2,12 +2,13 @@
 
 #include <iostream>
 
+// ScopeUnit      ::= {StatementUnit}+
 // StatementUnit  ::= VarDeclUnit
 // VarDeclUnit    ::= 'let' Var '=' ExprUnit ';'
 // ExpressionUnit ::= AddSub
 // AddSub         ::= AddExprUnit | SubExprUnit
-// AddExprUnit    ::= MulDiv ('+' MulDiv)*
-// SubExprUnit    ::= MulDiv ('-' MulDiv)*
+// AddExprUnit    ::= MulDiv {'+' MulDiv}*
+// SubExprUnit    ::= MulDiv {'-' MulDiv}*
 // MulDiv         ::= MulExprUnit | DivExprUnit
 // MulExprUnit    ::= Brackets {'*' Brackets}* | Brackets
 // DivExprUnit    ::= Brackets {'/' Brackets}* | Brackets
@@ -17,23 +18,24 @@
 // Var            ::= {'_', 'a-z', 'A-Z'}{'_', 'a-z', 'A-Z', '0-9'}*
 // Num            ::= '-'{'0-9'}+ | {'0-9'}
 
-using token_it = std::vector<Token>::const_iterator;
+using TokenIt = std::vector<Token>::const_iterator;
 
-static StatementUnit* getStatement(token_it& cur_token, token_it end);
-static StatementUnit* getVarDecl(token_it& cur_token, token_it end);
-static ExpressionUnit* getExpresion(token_it& cur_token, token_it end);
-static ExpressionUnit* getAddSub(token_it& cur_token, token_it end);
-static ExpressionUnit* getMulDiv(token_it& cur_token, token_it end);
-static ExpressionUnit* getBrackets(token_it& cur_token, token_it end);
-static ExpressionUnit* getUnaryMinus(token_it& cur_token, token_it end);
-static ExpressionUnit* getObject(token_it& cur_token, token_it end);
-static VarUnit* getVar(token_it& cur_token, token_it end);
-static NumUnit* getNum(token_it& cur_token, token_it end);
+// static ScopeUnit*     getScope(TokenIt& cur_token, TokenIt end);
+static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end);
+static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end);
+static ExpressionUnit* getExpresion(TokenIt& cur_token, TokenIt end);
+static ExpressionUnit* getAddSub(TokenIt& cur_token, TokenIt end);
+static ExpressionUnit* getMulDiv(TokenIt& cur_token, TokenIt end);
+static ExpressionUnit* getBrackets(TokenIt& cur_token, TokenIt end);
+static ExpressionUnit* getUnaryMinus(TokenIt& cur_token, TokenIt end);
+static ExpressionUnit* getObject(TokenIt& cur_token, TokenIt end);
+static VarUnit* getVar(TokenIt& cur_token, TokenIt end);
+static NumUnit* getNum(TokenIt& cur_token, TokenIt end);
 
 void recursiveUnitDelete(GrammarUnit* unit);
 
 GrammarUnit* parse(const std::vector<Token>& tokens) {
-    token_it cur_token = tokens.begin();
+    TokenIt cur_token = tokens.begin();
     GrammarUnit* result = getStatement(cur_token, tokens.end());
 
     if (cur_token != tokens.end()) {
@@ -44,7 +46,7 @@ GrammarUnit* parse(const std::vector<Token>& tokens) {
     return result;
 }
 
-static StatementUnit* getStatement(token_it& cur_token, token_it end) {
+static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end) {
     std::cout << "getStatement: start func\n";
     if (cur_token == end) {
         std::cerr << "getStatement: cur_token == end\n";
@@ -60,7 +62,7 @@ static StatementUnit* getStatement(token_it& cur_token, token_it end) {
     return nullptr;
 }
 
-static StatementUnit* getVarDecl(token_it& cur_token, token_it end) {
+static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end) {
     std::cout << "getVarDecl: start func\n";
 
     if (cur_token == end) {
@@ -119,12 +121,12 @@ static StatementUnit* getVarDecl(token_it& cur_token, token_it end) {
     return new VarDeclUnit(var, expression);
 }
 
-static ExpressionUnit* getExpresion(token_it& cur_token, token_it end) {
+static ExpressionUnit* getExpresion(TokenIt& cur_token, TokenIt end) {
     std::cout << "getExpresion: start func\n";
     return getAddSub(cur_token, end);
 }
 
-static ExpressionUnit* getAddSub(token_it& cur_token, token_it end) {
+static ExpressionUnit* getAddSub(TokenIt& cur_token, TokenIt end) {
     std::cout << "getAddSub: start func\n";
     ExpressionUnit* result = getMulDiv(cur_token, end);
 
@@ -168,7 +170,7 @@ static ExpressionUnit* getAddSub(token_it& cur_token, token_it end) {
     return result;
 }
 
-static ExpressionUnit* getMulDiv(token_it& cur_token, token_it end) {
+static ExpressionUnit* getMulDiv(TokenIt& cur_token, TokenIt end) {
     std::cout << "getMulDiv: start func\n";
     ExpressionUnit* result = getBrackets(cur_token, end);
 
@@ -215,7 +217,7 @@ static ExpressionUnit* getMulDiv(token_it& cur_token, token_it end) {
     return result;
 }
 
-static ExpressionUnit* getBrackets(token_it& cur_token, token_it end) {
+static ExpressionUnit* getBrackets(TokenIt& cur_token, TokenIt end) {
     std::cout << "getBrackets: start func\n";
 
     if (!std::holds_alternative<SymbolToken>(*cur_token)) {
@@ -253,7 +255,7 @@ static ExpressionUnit* getBrackets(token_it& cur_token, token_it end) {
     return result;
 }
 
-static ExpressionUnit* getUnaryMinus(token_it& cur_token, token_it end) {
+static ExpressionUnit* getUnaryMinus(TokenIt& cur_token, TokenIt end) {
     std::cout << "getUnaryMinus:: start func\n";
     if (std::holds_alternative<OperatorToken>(*cur_token)) {
         if (std::get<OperatorToken>(*cur_token).oper() != OperatorType::SUB) {
@@ -273,7 +275,7 @@ static ExpressionUnit* getUnaryMinus(token_it& cur_token, token_it end) {
     return getObject(cur_token, end);
 }
 
-static ExpressionUnit* getObject(token_it& cur_token, token_it end) {
+static ExpressionUnit* getObject(TokenIt& cur_token, TokenIt end) {
     if (std::holds_alternative<NumToken>(*cur_token)) {
         return getNum(cur_token, end);
     }
@@ -286,7 +288,7 @@ static ExpressionUnit* getObject(token_it& cur_token, token_it end) {
 }
 
 
-static VarUnit* getVar(token_it& cur_token, token_it end) {
+static VarUnit* getVar(TokenIt& cur_token, TokenIt end) {
     std::cout << "getVar: start func\n";
     if (!std::holds_alternative<NameToken>(*cur_token)) {
         std::cerr << "getVar: is not NameToken\n";
@@ -299,7 +301,7 @@ static VarUnit* getVar(token_it& cur_token, token_it end) {
     return result;
 }
 
-static NumUnit* getNum(token_it& cur_token, token_it end) {
+static NumUnit* getNum(TokenIt& cur_token, TokenIt end) {
     std::cout << "getNum: start func\n";
 
     if (!std::holds_alternative<NumToken>(*cur_token)) {

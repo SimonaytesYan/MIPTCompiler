@@ -14,10 +14,12 @@ enum class GrammarUnitType {
     UNARY_MINUS,
     KEYWORD,
     FICTITIOUS,
-    VAR_DECL
+    VAR_DECL,
+    SCOPE
 };
 
 class GrammarUnit;
+class ScopeUnit;
 class StatementUnit;
 class ExpressionUnit;
 class ObjectUnit;
@@ -46,6 +48,12 @@ class GrammarUnit {
   private:
     GrammarUnitType type_;
 };
+
+// class ScopeUnit : public GrammarUnit {
+//   public:
+//     ScopeUnit() :
+//       GrammarUnit(GrammarUnitType::SCOPE) { }
+// };
 
 class StatementUnit : public GrammarUnit {
   public:

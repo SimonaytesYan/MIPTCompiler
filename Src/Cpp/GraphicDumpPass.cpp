@@ -10,6 +10,8 @@ GraphicDumpPass::GraphicDumpPass(const std::string file_name_prefix) :
 }
 
 void GraphicDumpPass::graphicDump(const GrammarUnit* node) {
+    node_ = node;
+
     std::cout << "GraphicDumpPass::graphicDump\n";
 
     out_ = std::ofstream(fullDumpFileName());
@@ -20,7 +22,6 @@ void GraphicDumpPass::graphicDump(const GrammarUnit* node) {
 
     out_ << "info[label = \"root = 0x" << node_ << "\"]\n";
 
-    node_ = node;
     writeNodeAndEdge();
 
     out_ << "}";
