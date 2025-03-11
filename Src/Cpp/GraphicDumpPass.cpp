@@ -178,14 +178,14 @@ void GraphicDumpPass::writeNodeAndEdge()
     const ExprUnit* expr_node = dynamic_cast<const ExprUnit*>(node_);
     if (expr_node) {
         if (expr_node->left() != nullptr) {
-            out_ << "GrammarUnit" << node_ << " -> GrammarUnit" << expr_node->left()
+            out_ << "GrammarUnit" << expr_node << " -> GrammarUnit" << expr_node->left()
                 << "[xlabel = \"L\"]\n";
 
             node_ = expr_node->left();
             writeNodeAndEdge();
         }
         if (expr_node->right() != nullptr) {
-            out_ << "GrammarUnit" << node_ << " -> GrammarUnit" << expr_node->right()
+            out_ << "GrammarUnit" << expr_node << " -> GrammarUnit" << expr_node->right()
                 << "[xlabel = \"L\"]\n";
             node_ = expr_node->right();
             writeNodeAndEdge();
@@ -194,7 +194,7 @@ void GraphicDumpPass::writeNodeAndEdge()
     else {
         const UnaryOperUnit* unary_op = dynamic_cast<const UnaryOperUnit*>(node_);
         if (unary_op != nullptr) {
-            out_ << "GrammarUnit" << node_ << " -> GrammarUnit" << unary_op->operand()
+            out_ << "GrammarUnit" << unary_op << " -> GrammarUnit" << unary_op->operand()
                 << "[xlabel = \"L\"]\n";
 
             node_ = unary_op->operand();

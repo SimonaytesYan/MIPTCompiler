@@ -6,18 +6,38 @@
 #include "../../Src/Headers/GraphicDumpPass.hpp"
 
 int main() {
-    std::istringstream in1("abcd");
-    std::istringstream in2("a_bcd");
-    std::istringstream in3("Abcd");
-    std::istringstream in4("_AbdF");
-    std::istringstream in5("_A4");
-    std::istringstream in6("4ad");
+    std::istringstream in1("123 + 444");
+    std::istringstream in2("123 - 3434");
+    std::istringstream in3("23 * 10");
+    std::istringstream in4("23 / 10");
+    std::istringstream in5("a + b");
+    std::istringstream in6("(a + b) * c");
+    std::istringstream in7("a + b + c");
+    std::istringstream in8("(a + b) * c / 10 - 11 + ((-10))");
 
-    GraphicDumpPass pass;
-    pass.graphicDump(parse(tokenize(in1)));
-    pass.graphicDump(parse(tokenize(in2)));
-    pass.graphicDump(parse(tokenize(in3)));
-    pass.graphicDump(parse(tokenize(in4)));
-    pass.graphicDump(parse(tokenize(in5)));
+    GraphicDumpPass pass("LexerExprDump");
+    // pass.graphicDump(parse(tokenize(in1)));
+    // std::cout << "\n";
+    // std::cerr << "\n";
+    // pass.graphicDump(parse(tokenize(in2)));
+    // std::cout << "\n";
+    // std::cerr << "\n";
+    // pass.graphicDump(parse(tokenize(in3)));
+    // std::cout << "\n";
+    // std::cerr << "\n";
+    // pass.graphicDump(parse(tokenize(in4)));
+    // std::cout << "\n";
+    // std::cerr << "\n";
+    // pass.graphicDump(parse(tokenize(in5)));
+    // std::cout << "\n";
+    // std::cerr << "\n";
     pass.graphicDump(parse(tokenize(in6)));
+    std::cout << "\n";
+    std::cerr << "\n";
+    pass.graphicDump(parse(tokenize(in7)));
+    std::cout << "\n";
+    std::cerr << "\n";
+    pass.graphicDump(parse(tokenize(in8)));
+    std::cout << "\n";
+    std::cerr << "\n";
 }

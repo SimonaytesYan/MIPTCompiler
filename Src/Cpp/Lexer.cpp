@@ -55,8 +55,10 @@ static GrammarUnit* getAddSub(token_it& cur_token, token_it end) {
     }
 
     while (cur_token != end) {
-        if (!std::holds_alternative<OperatorToken>(*cur_token)) {
-            std::cerr << "getAddSub: middle token is not operator\n";
+        if (!std::holds_alternative<OperatorToken>(*cur_token) ||
+            (std::get<OperatorToken>(*cur_token).oper() != OperatorType::SUB &&
+            std::get<OperatorToken>(*cur_token).oper() != OperatorType::ADD)) {
+            std::cout << "getAddSub: middle token is not operator\n";
             break;
         }
 
@@ -97,8 +99,10 @@ static GrammarUnit* getMulDiv(token_it& cur_token, token_it end) {
     }
 
     while (cur_token != end) {
-        if (!std::holds_alternative<OperatorToken>(*cur_token)) {
-            std::cerr << "getMulDiv: middle token is not operator\n";
+        if (!std::holds_alternative<OperatorToken>(*cur_token) ||
+            (std::get<OperatorToken>(*cur_token).oper() != OperatorType::MUL &&
+            std::get<OperatorToken>(*cur_token).oper() != OperatorType::DIV)) {
+            std::cout << "getMulDiv: middle token is not operator\n";
             break;
         }
 
@@ -145,6 +149,7 @@ static GrammarUnit* getBrackets(token_it& cur_token, token_it end) {
         std::cerr << "getBrackets: is not open bracket\n";
         return nullptr;
     }
+    ++cur_token;
 
     GrammarUnit* result = getExpresion(cur_token, end);
     if (result == nullptr) {
@@ -152,16 +157,25 @@ static GrammarUnit* getBrackets(token_it& cur_token, token_it end) {
         return nullptr;
     }
 
-    if (sym_type != SpecialSymbolType::RIGHT_BRACKET) {
-        recursiveUnitDelete(result);
+    if (!std::holds_alternative<SymbolToken>(*cur_token)) {
         std::cerr << "getBrackets: is not close bracket\n";
+        recursiveUnitDelete(result);
         return nullptr;
     }
+
+    sym_type = std::get<SymbolToken>(*cur_token).specSym();
+    if (sym_type != SpecialSymbolType::RIGHT_BRACKET) {
+        recursiveUnitDelete(result);
+        std::cerr << "getBrackets: is not close bracket(incorrect symbol)\n";
+        return nullptr;
+    }
+    ++cur_token;
 
     return result;
 }
 
 static GrammarUnit* getUnaryMinus(token_it& cur_token, token_it end) {
+    std::cout << "getUnaryMinus:: start func\n";
     if (std::holds_alternative<OperatorToken>(*cur_token)) {
         if (std::get<OperatorToken>(*cur_token).oper() != OperatorType::SUB) {
             std::cerr << "getUnaryMinus:: not minus operator\n";
@@ -202,6 +216,7 @@ static GrammarUnit* getVar(token_it& cur_token, token_it end) {
 
     GrammarUnit* result = new VarUnit(std::get<NameToken>(*cur_token).name());
     ++cur_token;
+    std::cout << "getVar: end\n";
     return result;
 }
 
@@ -216,6 +231,7 @@ static GrammarUnit* getNum(token_it& cur_token, token_it end) {
     int num = std::get<NumToken>(*cur_token).num();
     ++cur_token;
 
+    std::cout << "getNum: end\n";
     return new NumUnit(num);
 }
 
