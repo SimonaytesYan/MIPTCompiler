@@ -6,11 +6,12 @@
 int main() {
     std::istringstream in1("(");
     std::istringstream in2(")");
-    std::istringstream in3("()");
-    std::istringstream in4("{");
-    std::istringstream in5("}");
-    std::istringstream in6("{}");
-    std::istringstream in7("func(){}");
+    std::istringstream in3(";");
+    std::istringstream in4("()");
+    std::istringstream in5("{");
+    std::istringstream in6("}");
+    std::istringstream in7("{}");
+    std::istringstream in8("func(){};");
 
     auto res1 = tokenize(in1);
     std::cout << "\n";
@@ -25,4 +26,6 @@ int main() {
     auto res6 = tokenize(in6);
     std::cout << "\n";
     auto res7 = tokenize(in7);
+    std::cout << "\n";
+    auto res8 = tokenize(in8);
 }
