@@ -5,15 +5,14 @@
 
 static void writeNodeAndEdge(const GrammarUnit* node_, std::ofstream& out_);
 
-GraphicDumpPass::GraphicDumpPass() {
-    dumpCounter_ = 0;
-    node_ = nullptr;
+GraphicDumpPass::GraphicDumpPass(const std::string file_name_prefix) :
+    file_name_prefix_(file_name_prefix) {
 }
 
 void GraphicDumpPass::graphicDump(const GrammarUnit* node) {
     std::cout << "GraphicDumpPass::graphicDump\n";
 
-    out_ = std::ofstream("GraphicDumps/dump" + std::to_string(dumpCounter_));
+    out_ = std::ofstream(fullDumpFileName());
 
     out_ << "digraph G{\n";
     out_ << "node[shape = record, fontsize = 14];\n";
@@ -29,14 +28,18 @@ void GraphicDumpPass::graphicDump(const GrammarUnit* node) {
     out_.close();
     createPngFromDot();
 
-    dumpCounter_++;
+    dump_counter_++;
+}
+
+std::string GraphicDumpPass::fullDumpFileName() {
+    return std::string("GraphicDumps/" + file_name_prefix_ + std::to_string(dump_counter_));
 }
 
 void GraphicDumpPass::createPngFromDot() {
     std::cout << "GraphicDumpPass::createPngFromDot\n";
 
-    std::string num = std::to_string(dumpCounter_);
-    std::string command = "dot GraphicDumps/dump" + num + " -o GraphicDumps/Dump" + num + ".png -T png";
+    std::string num = std::to_string(dump_counter_);
+    std::string command = "dot " + fullDumpFileName() + " -o " + fullDumpFileName() + ".png -T png";
 
     std::cout << "command = <" << command << ">\n";
 

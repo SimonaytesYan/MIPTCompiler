@@ -6,18 +6,18 @@
 #include "../../Src/Headers/GraphicDumpPass.hpp"
 
 int main() {
-    std::istringstream in1("abcd");
-    std::istringstream in2("a_bcd");
+    std::istringstream in1("123");
+    std::istringstream in2("-123");
     std::istringstream in3("Abcd");
-    std::istringstream in4("_AbdF");
-    std::istringstream in5("_A4");
-    std::istringstream in6("4ad");
 
-    GraphicDumpPass pass;
+    GraphicDumpPass pass("LexerObjDump");
     pass.graphicDump(parse(tokenize(in1)));
+    std::cout << "\n";
+    std::cerr << "\n";
     pass.graphicDump(parse(tokenize(in2)));
+    std::cout << "\n";
+    std::cerr << "\n";
     pass.graphicDump(parse(tokenize(in3)));
-    pass.graphicDump(parse(tokenize(in4)));
-    pass.graphicDump(parse(tokenize(in5)));
-    pass.graphicDump(parse(tokenize(in6)));
+    std::cout << "\n";
+    std::cerr << "\n";
 }

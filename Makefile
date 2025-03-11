@@ -13,13 +13,11 @@ GRAPHIC_DUMPS = GraphicDumps
 GREEN_COLOR = \033[0;32m
 NO_COLOR = \033[0m
 
-test_lexer_dump: $(BIN)/test_lexer_dump_num $(BIN)/test_lexer_dump_var $(BIN)/test_lexer_dump_expr
+test_lexer_dump: $(BIN)/test_lexer_dump_objects $(BIN)/test_lexer_dump_expr
 	@echo "${GREEN_COLOR}START LEXER TESTS${NO_COLOR}\n"
 
-	@echo "\n${GREEN_COLOR}LEXER NUM${NO_COLOR}"
-	@$(BIN)/test_lexer_dump_num
-	@echo "\n${GREEN_COLOR}LEXER VAR${NO_COLOR}"
-	@$(BIN)/test_lexer_dump_var
+	@echo "\n${GREEN_COLOR}LEXER OBJECTS${NO_COLOR}"
+	@$(BIN)/test_lexer_dump_objects
 	@echo "\n${GREEN_COLOR}LEXER EXPRESSION${NO_COLOR}"
 	@$(BIN)/test_lexer_dump_expr
 
@@ -42,17 +40,11 @@ tests_tokenizer: $(BIN)/test_tokenizer_num $(BIN)/test_tokenizer_name $(BIN)/tes
 	@$(BIN)/test_tokenizer_spec_symbols
 
 
-$(BIN)/test_lexer_dump_num: Tests/Lexer/Num.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o
-	$(CC) $(CFLAGS) Tests/Lexer/Num.cpp \
+$(BIN)/test_lexer_dump_objects: Tests/Lexer/Objects.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o
+	$(CC) $(CFLAGS) Tests/Lexer/Objects.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
-					$(OBJ)/GraphicDumpPass.o -o $(BIN)/test_lexer_dump_num
-
-$(BIN)/test_lexer_dump_var: Tests/Lexer/Var.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o
-	$(CC) $(CFLAGS) Tests/Lexer/Var.cpp \
-					$(OBJ)/Tokenizer.o 	\
-					$(OBJ)/Lexer.o		\
-					$(OBJ)/GraphicDumpPass.o -o $(BIN)/test_lexer_dump_var
+					$(OBJ)/GraphicDumpPass.o -o $(BIN)/test_lexer_dump_objects
 
 $(BIN)/test_lexer_dump_expr: Tests/Lexer/Expr.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o
 	$(CC) $(CFLAGS) Tests/Lexer/Expr.cpp \
