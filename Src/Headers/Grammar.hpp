@@ -11,6 +11,7 @@ enum class GrammarUnitType {
     SUB,
     MUL,
     DIV,
+    UNARY_MINUS,
     KEYWORD,
     FICTITIOUS,
 };
@@ -31,11 +32,17 @@ class GrammarUnit {
     GrammarUnitType type_;
 };
 
-class NumUnit : public GrammarUnit {
+class ObjectUnit : public GrammarUnit {
+  public:
+    ObjectUnit(GrammarUnitType type) :
+      GrammarUnit(type) { }
+};
+
+class NumUnit : public ObjectUnit {
   public:
 
     NumUnit(int value) :
-      GrammarUnit(GrammarUnitType::NUM),
+      ObjectUnit(GrammarUnitType::NUM),
       value_(value) { }
 
     int executeUnit() {
@@ -50,10 +57,10 @@ class NumUnit : public GrammarUnit {
     int value_;
 };
 
-class VarUnit : public GrammarUnit {
+class VarUnit : public ObjectUnit {
   public:
     VarUnit(const std::string& str) :
-      GrammarUnit(GrammarUnitType::VAR),
+      ObjectUnit(GrammarUnitType::VAR),
       name_(str) {
     }
 
@@ -67,6 +74,34 @@ class VarUnit : public GrammarUnit {
 
   private:
     std::string name_;
+};
+
+class UnaryOperUnit : public GrammarUnit {
+  public:
+    UnaryOperUnit(GrammarUnit* operand, GrammarUnitType type) :
+      GrammarUnit(type),
+      operand_(operand) { }
+
+  GrammarUnit* operand() const {
+    return operand_;
+  }
+
+  protected:
+    GrammarUnit* operand_;
+};
+
+class UnaryOperMinus : public UnaryOperUnit {
+  public:
+    UnaryOperMinus(GrammarUnit* operand) :
+      UnaryOperUnit(operand, GrammarUnitType::UNARY_MINUS),
+      operand_(operand) { }
+
+    int executeUnit() {
+        return -operand_->executeUnit();
+    }
+
+  private:
+    GrammarUnit* operand_;
 };
 
 class ExprUnit : public GrammarUnit {

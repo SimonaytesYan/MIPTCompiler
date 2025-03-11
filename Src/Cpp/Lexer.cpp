@@ -9,7 +9,9 @@
 // MulDiv      ::= MulExprUnit | DivExprUnit
 // MulExprUnit ::= Brackets {'*' Brackets}* | Brackets
 // DivExprUnit ::= Brackets {'/' Brackets}* | Brackets
-// Brackets    ::= '('ExprUnit')' | Var | Num
+// Brackets    ::= '('ExprUnit')' | UnaryMinus
+// UnaryMinus  ::= '-' Object | Object
+// Object      ::= Var | Num
 // Var         ::= {'_', 'a-z', 'A-Z'}{'_', 'a-z', 'A-Z', '0-9'}*
 // Num         ::= '-'{'0-9'}+ | {'0-9'}
 
@@ -19,6 +21,8 @@ static GrammarUnit* getExpresion(token_it& cur_token, token_it end);
 static GrammarUnit* getAddSub(token_it& cur_token, token_it end);
 static GrammarUnit* getMulDiv(token_it& cur_token, token_it end);
 static GrammarUnit* getBrackets(token_it& cur_token, token_it end);
+static GrammarUnit* getUnaryMinus(token_it& cur_token, token_it end);
+static GrammarUnit* getObject(token_it& cur_token, token_it end);
 static GrammarUnit* getVar(token_it& cur_token, token_it end);
 static GrammarUnit* getNum(token_it& cur_token, token_it end);
 
@@ -53,7 +57,7 @@ static GrammarUnit* getAddSub(token_it& cur_token, token_it end) {
     while (cur_token != end) {
         if (!std::holds_alternative<OperatorToken>(*cur_token)) {
             std::cerr << "getAddSub: middle token is not operator\n";
-            return nullptr;
+            break;
         }
 
         GrammarUnit* left_op = result;
@@ -95,7 +99,7 @@ static GrammarUnit* getMulDiv(token_it& cur_token, token_it end) {
     while (cur_token != end) {
         if (!std::holds_alternative<OperatorToken>(*cur_token)) {
             std::cerr << "getMulDiv: middle token is not operator\n";
-            return nullptr;
+            break;
         }
 
         GrammarUnit* left_op = result;
@@ -130,24 +134,11 @@ static GrammarUnit* getMulDiv(token_it& cur_token, token_it end) {
 
 static GrammarUnit* getBrackets(token_it& cur_token, token_it end) {
     std::cout << "getBrackets: start func\n";
-    if (std::holds_alternative<NumToken>(*cur_token)) {
-        return getNum(cur_token, end);
-    }
-
-    if (std::holds_alternative<NameToken>(*cur_token)) {
-        return getVar(cur_token, end);
-    }
-
-    if (std::holds_alternative<SymbolToken>(*cur_token)) {
-        std::cerr << "getBrackets: is not symbol token\n";
-        return nullptr;
-    }
 
     SpecialSymbolType sym_type = std::get<SymbolToken>(*cur_token).specSym();
 
     if (sym_type != SpecialSymbolType::LEFT_BRACKET) {
-        std::cerr << "getBrackets: is not open bracket\n";
-        return nullptr;
+        return getUnaryMinus(cur_token, end);
     }
 
     GrammarUnit* result = getExpresion(cur_token, end);
@@ -165,6 +156,38 @@ static GrammarUnit* getBrackets(token_it& cur_token, token_it end) {
     return result;
 }
 
+static GrammarUnit* getUnaryMinus(token_it& cur_token, token_it end) {
+    if (std::holds_alternative<OperatorToken>(*cur_token)) {
+        if (std::get<OperatorToken>(*cur_token).oper() != OperatorType::SUB) {
+            std::cerr << "getUnaryMinus:: not minus operator\n";
+            return nullptr;
+        }
+        cur_token++;
+
+        GrammarUnit* operand = getObject(cur_token, end);
+        if (operand == nullptr) {
+            std::cerr << "getUnaryMinus: operand is null\n";
+            return nullptr;
+        }
+        return new UnaryOperMinus(operand);
+    }
+
+    return getObject(cur_token, end);
+}
+
+static GrammarUnit* getObject(token_it& cur_token, token_it end) {
+    if (std::holds_alternative<NumToken>(*cur_token)) {
+        return getNum(cur_token, end);
+    }
+
+    if (std::holds_alternative<NameToken>(*cur_token)) {
+        return getVar(cur_token, end);
+    }
+
+    return nullptr;
+}
+
+
 static GrammarUnit* getVar(token_it& cur_token, token_it end) {
     std::cout << "getVar: start func\n";
     if (!std::holds_alternative<NameToken>(*cur_token)) {
@@ -172,17 +195,23 @@ static GrammarUnit* getVar(token_it& cur_token, token_it end) {
         return nullptr;
     }
 
-    return new VarUnit(std::get<NameToken>(*cur_token).name());
+    GrammarUnit* result = new VarUnit(std::get<NameToken>(*cur_token).name());
+    ++cur_token;
+    return result;
 }
 
 static GrammarUnit* getNum(token_it& cur_token, token_it end) {
     std::cout << "getNum: start func\n";
+
     if (!std::holds_alternative<NumToken>(*cur_token)) {
         std::cerr << "getVar: is not NumToken\n";
         return nullptr;
     }
 
-    return new NumUnit(std::get<NumToken>(*cur_token).num());
+    int num = std::get<NumToken>(*cur_token).num();
+    ++cur_token;
+
+    return new NumUnit(num);
 }
 
 static void recursiveUnitDelete(GrammarUnit* unit) {

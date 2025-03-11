@@ -1,5 +1,6 @@
 #include "../Headers/GraphicDumpPass.hpp"
 
+#include <iostream>
 #include <fstream>
 
 static void writeNodeAndEdge(const GrammarUnit* node_, std::ofstream& out_);
@@ -10,10 +11,12 @@ GraphicDumpPass::GraphicDumpPass() {
 }
 
 void GraphicDumpPass::graphicDump(const GrammarUnit* node) {
+    std::cout << "GraphicDumpPass::graphicDump\n";
+
     out_ = std::ofstream("GraphicDumps/dump" + std::to_string(dumpCounter_));
 
     out_ << "digraph G{\n";
-    out_ << "node_[shape = record, fontsize = 14];\n";
+    out_ << "node[shape = record, fontsize = 14];\n";
     out_ << "splines = ortho\n";
 
     out_ << "info[label = \"root = 0x" << node_ << "\"]\n";
@@ -22,14 +25,21 @@ void GraphicDumpPass::graphicDump(const GrammarUnit* node) {
     writeNodeAndEdge();
 
     out_ << "}";
+
+    out_.close();
     createPngFromDot();
 
     dumpCounter_++;
 }
 
 void GraphicDumpPass::createPngFromDot() {
+    std::cout << "GraphicDumpPass::createPngFromDot\n";
+
     std::string num = std::to_string(dumpCounter_);
     std::string command = "dot GraphicDumps/dump" + num + " -o GraphicDumps/Dump" + num + ".png -T png";
+
+    std::cout << "command = <" << command << ">\n";
+
     system(command.c_str());
 }
 
@@ -42,6 +52,7 @@ void GraphicDumpPass::dumpOperator() {
         case GrammarUnitType::ADD:
             out_ << "+";
             break;
+        case GrammarUnitType::UNARY_MINUS:
         case GrammarUnitType::SUB:
             out_ << "-";
             break;
@@ -120,6 +131,7 @@ void GraphicDumpPass::writeNodeAndEdge()
         case GrammarUnitType::SUB:
         case GrammarUnitType::MUL:
         case GrammarUnitType::DIV:
+        case GrammarUnitType::UNARY_MINUS:
         {
             printNodeInFormat(light_yellow);
             out_ << "OPER | ";
@@ -173,6 +185,16 @@ void GraphicDumpPass::writeNodeAndEdge()
             out_ << "GrammarUnit" << node_ << " -> GrammarUnit" << expr_node->right()
                 << "[xlabel = \"L\"]\n";
             node_ = expr_node->right();
+            writeNodeAndEdge();
+        }
+    }
+    else {
+        const UnaryOperUnit* unary_op = dynamic_cast<const UnaryOperUnit*>(node_);
+        if (unary_op->operand() != nullptr) {
+            out_ << "GrammarUnit" << node_ << " -> GrammarUnit" << expr_node->left()
+                << "[xlabel = \"L\"]\n";
+
+            node_ = unary_op->operand();
             writeNodeAndEdge();
         }
     }
