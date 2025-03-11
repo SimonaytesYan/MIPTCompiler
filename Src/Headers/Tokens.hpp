@@ -84,3 +84,33 @@ class OperatorToken {
 
 using Token = std::variant<NumToken, NameToken, KeywordToken,
                            SpecialSymbolToken, OperatorToken>;
+
+
+template<class TokenType, class TokenValueType>
+static TokenValueType GetTokenVal(const TokenIt token);
+
+template<>
+const std::string& GetTokenVal<NameToken, const std::string&>(const TokenIt token) {
+    return std::get<NameToken>(*token).name();
+}
+
+template<>
+int GetTokenVal<NumToken, int>(const TokenIt token) {
+    return std::get<NumToken>(*token).num();
+}
+
+template<>
+KeywordType GetTokenVal<KeywordToken, KeywordType>(const TokenIt token) {
+    return std::get<KeywordToken>(*token).keyword();
+}
+
+template<>
+SpecialSymbolType GetTokenVal<SpecialSymbolToken, SpecialSymbolType>(const TokenIt token) {
+    return std::get<SpecialSymbolToken>(*token).specSym();
+}
+
+template<>
+OperatorType GetTokenVal<OperatorToken, OperatorType>(const TokenIt token) {
+    return std::get<OperatorToken>(*token).oper();
+}
+
