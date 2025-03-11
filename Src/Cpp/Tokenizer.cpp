@@ -127,7 +127,7 @@ static bool getSpecialSymbol(std::istream& in, std::vector<Token>& tokens) {
                                  spec_sym.name.end(),
                                  potential_spec_sym.begin());
         if (res.first == spec_sym.name.end()) {
-            tokens.emplace_back(SymbolToken(spec_sym.type));
+            tokens.emplace_back(SpecialSymbolToken(spec_sym.type));
 
             std::cout << "spec_symbol = " << spec_sym.name << "\n";
 

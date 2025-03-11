@@ -49,11 +49,37 @@ class GrammarUnit {
     GrammarUnitType type_;
 };
 
-// class ScopeUnit : public GrammarUnit {
-//   public:
-//     ScopeUnit() :
-//       GrammarUnit(GrammarUnitType::SCOPE) { }
-// };
+class ScopeUnit : public GrammarUnit {
+  public:
+    ScopeUnit() :
+      GrammarUnit(GrammarUnitType::SCOPE) { }
+
+    int executeUnit() {
+      for (const auto& statement : statements) {
+        statement->executeUnit();
+      }
+
+      return 0;
+    }
+
+
+    std::vector<StatementUnit*>::iterator begin() {
+      return statements.begin();
+    }
+
+    std::vector<StatementUnit*>::iterator end() {
+      return statements.end();
+    }
+
+    void addStatements(StatementUnit* statement) {
+      statements.push_back(statement);
+    }
+
+    ~ScopeUnit() = default;
+
+  private:
+    std::vector<StatementUnit*> statements;
+};
 
 class StatementUnit : public GrammarUnit {
   public:

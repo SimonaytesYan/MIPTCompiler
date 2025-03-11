@@ -20,7 +20,7 @@
 
 using TokenIt = std::vector<Token>::const_iterator;
 
-// static ScopeUnit*     getScope(TokenIt& cur_token, TokenIt end);
+static ScopeUnit*     getScope(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end);
 static ExpressionUnit* getExpresion(TokenIt& cur_token, TokenIt end);
@@ -45,6 +45,29 @@ GrammarUnit* parse(const std::vector<Token>& tokens) {
 
     return result;
 }
+
+// static ScopeUnit* getScope(TokenIt& cur_token, TokenIt end) {
+//     if (cur_token == end) {
+//         std::cerr << "getStatement: cur_token == end\n";
+//         return nullptr;
+//     }
+
+//     if (!std::holds_alternative<SpecialSymbolToken>(*cur_token)) {
+//         std::cerr << "getStatement: Scope not start from {\n";
+//         return nullptr;
+//     }
+//     std::get<>
+
+//     ScopeUnit* scope = new ScopeUnit();
+//     do {
+//         if (std::holds_alternative<SpecialSymbolToken>(*cur_token)) {
+//             scope->addStatements();
+//         }
+
+//     } while (cur_token != end);
+
+//     return scope;
+// }
 
 static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end) {
     std::cout << "getStatement: start func\n";
@@ -106,12 +129,12 @@ static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end) {
         return nullptr;
     }
 
-    if (!std::holds_alternative<SymbolToken>(*cur_token)) {
+    if (!std::holds_alternative<SpecialSymbolToken>(*cur_token)) {
         std::cerr << "getVarDecl: not operator in the middle\n";
         return nullptr;
     }
 
-    if (std::get<SymbolToken>(*cur_token).specSym() != SpecialSymbolType::END_STATEMENT) {
+    if (std::get<SpecialSymbolToken>(*cur_token).specSym() != SpecialSymbolType::END_STATEMENT) {
         std::cerr << "getVarDecl: not operator = in the middle\n";
         return nullptr;
     }
@@ -220,11 +243,11 @@ static ExpressionUnit* getMulDiv(TokenIt& cur_token, TokenIt end) {
 static ExpressionUnit* getBrackets(TokenIt& cur_token, TokenIt end) {
     std::cout << "getBrackets: start func\n";
 
-    if (!std::holds_alternative<SymbolToken>(*cur_token)) {
+    if (!std::holds_alternative<SpecialSymbolToken>(*cur_token)) {
         return getUnaryMinus(cur_token, end);
     }
 
-    SpecialSymbolType sym_type = std::get<SymbolToken>(*cur_token).specSym();
+    SpecialSymbolType sym_type = std::get<SpecialSymbolToken>(*cur_token).specSym();
 
     if (sym_type != SpecialSymbolType::LEFT_BRACKET) {
         std::cerr << "getBrackets: is not open bracket\n";
@@ -238,13 +261,13 @@ static ExpressionUnit* getBrackets(TokenIt& cur_token, TokenIt end) {
         return nullptr;
     }
 
-    if (!std::holds_alternative<SymbolToken>(*cur_token)) {
+    if (!std::holds_alternative<SpecialSymbolToken>(*cur_token)) {
         std::cerr << "getBrackets: is not close bracket\n";
         recursiveUnitDelete(result);
         return nullptr;
     }
 
-    sym_type = std::get<SymbolToken>(*cur_token).specSym();
+    sym_type = std::get<SpecialSymbolToken>(*cur_token).specSym();
     if (sym_type != SpecialSymbolType::RIGHT_BRACKET) {
         recursiveUnitDelete(result);
         std::cerr << "getBrackets: is not close bracket(incorrect symbol)\n";

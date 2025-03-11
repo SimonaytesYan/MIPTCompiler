@@ -54,9 +54,9 @@ class KeywordToken {
     TokenInfo info_;
 };
 
-class SymbolToken {
+class SpecialSymbolToken {
   public:
-    SymbolToken(SpecialSymbolType sym_type) :
+    SpecialSymbolToken(SpecialSymbolType sym_type) :
       sym_type_(sym_type) { }
 
     SpecialSymbolType specSym() const {
@@ -83,4 +83,4 @@ class OperatorToken {
 };
 
 using Token = std::variant<NumToken, NameToken, KeywordToken,
-                           SymbolToken, OperatorToken>;
+                           SpecialSymbolToken, OperatorToken>;
