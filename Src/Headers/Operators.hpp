@@ -5,6 +5,7 @@ enum class OperatorType {
     SUB,
     MUL,
     DIV,
+    EQUAL,
     OPERATOR_NUM
 };
 
@@ -17,5 +18,6 @@ const Operator kOperators[] = {
     {"+", OperatorType::ADD},
     {"-", OperatorType::SUB},
     {"*", OperatorType::MUL},
-    {"/", OperatorType::DIV}
+    {"/", OperatorType::DIV},
+    {"=", OperatorType::EQUAL}
 };

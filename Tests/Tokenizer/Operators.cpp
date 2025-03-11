@@ -9,8 +9,10 @@ int main() {
     std::istringstream in3("*");
     std::istringstream in4("/");
     std::istringstream in5("+-");
-    std::istringstream in6("/4");
-    std::istringstream in7("4/");
+    std::istringstream in6("=");
+    std::istringstream in7("/4");
+    std::istringstream in8("4/");
+    std::istringstream in9("10=11");
 
     auto res1 = tokenize(in1);
     std::cout << "\n";
@@ -25,4 +27,8 @@ int main() {
     auto res6 = tokenize(in6);
     std::cout << "\n";
     auto res7 = tokenize(in7);
+    std::cout << "\n";
+    auto res8 = tokenize(in8);
+    std::cout << "\n";
+    auto res9 = tokenize(in9);
 }
