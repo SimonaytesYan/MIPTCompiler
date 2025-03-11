@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 
-static void writeNodeAndEdge(const GrammarUnit* node_, std::ofstream& out_);
+static void dumpNodeAndEdge(const GrammarUnit* node_, std::ofstream& out_);
 
 GraphicDumpPass::GraphicDumpPass(const std::string file_name_prefix) :
     file_name_prefix_(file_name_prefix) {
@@ -22,7 +22,7 @@ void GraphicDumpPass::graphicDump(const GrammarUnit* node) {
 
     out_ << "info[label = \"root = 0x" << node_ << "\"]\n";
 
-    writeNodeAndEdge();
+    dumpNodeAndEdge();
 
     out_ << "}";
 
@@ -102,14 +102,20 @@ void GraphicDumpPass::dumpOperator() {
     }
 }
 
-void GraphicDumpPass::printNodeInFormat(const char* color) {
+void GraphicDumpPass::dumpEdge(const GrammarUnit* from, const GrammarUnit* to, const char* name) {
+    out_ << "GrammarUnit" << from << " -> GrammarUnit" << to
+    << "[xlabel = \"" << name << "\"]\n";
+}
+
+
+void GraphicDumpPass::dumpNodeInFormat(const char* color) {
     "[style = \"filled,rounded\", fillcolor = \"%s\", label = \"{{ <v>";
 
     out_ << "GrammarUnit" << node_ << "[style = \"filled,rounded\","
         << "fillcolor = \"" << color << "\", label = \"{{ <v>";
 }
 
-void GraphicDumpPass::writeNodeAndEdge()
+void GraphicDumpPass::dumpNodeAndEdge()
 {
     if (node_ == nullptr)
         return;
@@ -125,7 +131,7 @@ void GraphicDumpPass::writeNodeAndEdge()
     {
         case GrammarUnitType::NUM:
         {
-            printNodeInFormat(light_blue);
+            dumpNodeInFormat(light_blue);
             const NumUnit* num_node = dynamic_cast<const NumUnit*>(node_);
             if (num_node)
                 out_ << "NUM | " << num_node->num();
@@ -137,14 +143,14 @@ void GraphicDumpPass::writeNodeAndEdge()
         case GrammarUnitType::DIV:
         case GrammarUnitType::UNARY_MINUS:
         {
-            printNodeInFormat(light_yellow);
+            dumpNodeInFormat(light_yellow);
             out_ << "OPER | ";
             dumpOperator();
             break;
         }
         case GrammarUnitType::VAR:
         {
-            printNodeInFormat(light_blue);
+            dumpNodeInFormat(light_blue);
             const VarUnit* var_node = dynamic_cast<const VarUnit*>(node_);
             if (var_node) {
                 out_ << "VAR | " << var_node->name() << " ";
@@ -152,25 +158,25 @@ void GraphicDumpPass::writeNodeAndEdge()
             break;
         }
         case GrammarUnitType::VAR_DECL: {
-            printNodeInFormat(light_red);
+            dumpNodeInFormat(light_red);
             out_ << "VAR DECL ";
             break;
         }
         // case GrammarUnitType::KEYWORD:
         // {
-        //     printNodeInFormat(node_, light_green, out_);
+        //     dumpNodeInFormat(node_, light_green, out_);
         //     out_ << "KEYWORD | %s ", kKeywords[(int)node_->val_.keyword]);
         //     break;
         // }
         // case GrammarUnitType::FICTITIOUS:
         // {
-        //     printNodeInFormat(node_, light_grey, out_);
+        //     dumpNodeInFormat(node_, light_grey, out_);
         //     out_ << "FICT ";
         //     break;
         // }
         // case GrammarUnitType::STR:
         // {
-        //     printNodeInFormat(node_, light_red, out_);
+        //     dumpNodeInFormat(node_, light_red, out_);
         //     out_ << "STR | %s ", node_->val_.var);
         //     break;
         // }
@@ -181,48 +187,62 @@ void GraphicDumpPass::writeNodeAndEdge()
 
     out_ << "} }\"]\n";
 
-    const BinaryOperUnit* expr_node = dynamic_cast<const BinaryOperUnit*>(node_);
-    if (expr_node) {
-        if (expr_node->left() != nullptr) {
-            out_ << "GrammarUnit" << expr_node << " -> GrammarUnit" << expr_node->left()
-                << "[xlabel = \"L\"]\n";
-
-            node_ = expr_node->left();
-            writeNodeAndEdge();
+    switch (node_->getType())
+    {
+    case GrammarUnitType::ADD:
+    case GrammarUnitType::SUB:
+    case GrammarUnitType::MUL:
+    case GrammarUnitType::DIV: {
+        const BinaryOperUnit* bin_oper_node = dynamic_cast<const BinaryOperUnit*>(node_);
+        if (bin_oper_node->left() != nullptr) {
+            dumpEdge(bin_oper_node, bin_oper_node->left(), "L");
+            node_ = bin_oper_node->left();
+            dumpNodeAndEdge();
         }
-        if (expr_node->right() != nullptr) {
-            out_ << "GrammarUnit" << expr_node << " -> GrammarUnit" << expr_node->right()
-                << "[xlabel = \"L\"]\n";
-            node_ = expr_node->right();
-            writeNodeAndEdge();
+        if (bin_oper_node->right() != nullptr) {
+            dumpEdge(bin_oper_node, bin_oper_node->right(), "R");
+            node_ = bin_oper_node->right();
+            dumpNodeAndEdge();
         }
+        break;
     }
-    else  {
-        const UnaryOperUnit* unary_op = dynamic_cast<const UnaryOperUnit*>(node_);
-        if (unary_op != nullptr) {
-            out_ << "GrammarUnit" << unary_op << " -> GrammarUnit" << unary_op->operand()
-                << "[xlabel = \"L\"]\n";
 
+    case GrammarUnitType::UNARY_MINUS: {
+        const UnaryOperUnit* unary_op = reinterpret_cast<const UnaryOperUnit*>(node_);
+        if (unary_op->operand() != nullptr) {
+            dumpEdge(unary_op, unary_op->operand(), "");
             node_ = unary_op->operand();
-            writeNodeAndEdge();
+            dumpNodeAndEdge();
         }
-        else {
-            const VarDeclUnit* var_decl = dynamic_cast<const VarDeclUnit*>(node_);
-            if (var_decl != nullptr) {
-                if (var_decl->var() != nullptr) {
-                    out_ << "GrammarUnit" << var_decl << " -> GrammarUnit" << var_decl->var()
-                        << "[xlabel = \"L\"]\n";
-                    node_ = var_decl->var();
-                    writeNodeAndEdge();
-                }
-                if (var_decl->expr() != nullptr) {
-                    out_ << "GrammarUnit" << var_decl << " -> GrammarUnit" << var_decl->expr()
-                        << "[xlabel = \"R\"]\n";
+        break;
+    }
 
-                    node_ = var_decl->expr();
-                    writeNodeAndEdge();
-                }
+    case GrammarUnitType::VAR_DECL: {
+        const VarDeclUnit* var_decl = reinterpret_cast<const VarDeclUnit*>(node_);
+        if (var_decl != nullptr) {
+            if (var_decl->var() != nullptr) {
+                dumpEdge(var_decl, var_decl->var(), "Var");
+                node_ = var_decl->var();
+                dumpNodeAndEdge();
+            }
+            if (var_decl->expr() != nullptr) {
+                dumpEdge(var_decl, var_decl->expr(), "Expr");
+                node_ = var_decl->expr();
+                dumpNodeAndEdge();
             }
         }
+    }
+    case GrammarUnitType::SCOPE: {
+        const ScopeUnit* scope = reinterpret_cast<const ScopeUnit*>(node_);
+        size_t statement_num = 0;
+        for (auto statement : *scope) {
+            statement_num++;
+            dumpEdge(scope, statement, std::to_string(statement_num).c_str());
+            node_ = statement;
+            dumpNodeAndEdge();
+        }
+    }
+    default:
+        break;
     }
 }

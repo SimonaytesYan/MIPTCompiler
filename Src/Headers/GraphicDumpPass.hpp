@@ -16,9 +16,11 @@ class GraphicDumpPass {
   private:
 
     void dumpOperator();
-    void printNodeInFormat(const char* color);
-    void writeNodeAndEdge();
+    void dumpNodeInFormat(const char* color);
+    void dumpNodeAndEdge();
+    void dumpEdge(const GrammarUnit* from, const GrammarUnit* to, const char* name);
     std::string fullDumpFileName();
+
 
   private:
     const GrammarUnit* node_{nullptr};
