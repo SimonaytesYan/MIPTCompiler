@@ -6,14 +6,14 @@
 #include "../../Src/Headers/GraphicDumpPass.hpp"
 
 int main() {
-    std::istringstream in1("let a = 123 + 444;");
-    std::istringstream in2("let a = 123 - 3434;");
-    std::istringstream in3("let a = 23 * 10;");
-    std::istringstream in4("let a = 23 / 10;");
-    std::istringstream in5("let a = a + b;");
-    std::istringstream in6("let a = (a + b) * c;");
-    std::istringstream in7("let a = a + b + c;");
-    std::istringstream in8("let a = (a + b) * c / 10 - 11 + ((-10));");
+    std::istringstream in1("{ let a = 123 + 444; }");
+    std::istringstream in2("{ let a = 123 - 3434; }");
+    std::istringstream in3("{ let a = 23 * 10; }");
+    std::istringstream in4("{ let a = 23 / 10; }");
+    std::istringstream in5("{ let a = a + b; }");
+    std::istringstream in6("{ let a = (a + b) * c; }");
+    std::istringstream in7("{ let a = a + b + c; }");
+    std::istringstream in8("{ let a = (a + b) * c / 10 - 11 + ((-10)); }");
 
     GraphicDumpPass pass("LexerExprDump");
 

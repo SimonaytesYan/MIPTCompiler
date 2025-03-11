@@ -135,114 +135,92 @@ void GraphicDumpPass::dumpNodeAndEdge()
             const NumUnit* num_node = dynamic_cast<const NumUnit*>(node_);
             if (num_node)
                 out_ << "NUM | " << num_node->num();
-            break;
+            out_ << "} }\"]\n";
+            return;
         }
         case GrammarUnitType::ADD:
         case GrammarUnitType::SUB:
         case GrammarUnitType::MUL:
         case GrammarUnitType::DIV:
-        case GrammarUnitType::UNARY_MINUS:
         {
             dumpNodeInFormat(light_yellow);
             out_ << "OPER | ";
             dumpOperator();
-            break;
+            out_ << "} }\"]\n";
+
+            const BinaryOperUnit* bin_oper_node = dynamic_cast<const BinaryOperUnit*>(node_);
+            if (bin_oper_node->left() != nullptr) {
+                dumpEdge(bin_oper_node, bin_oper_node->left(), "L");
+                node_ = bin_oper_node->left();
+                dumpNodeAndEdge();
+            }
+            if (bin_oper_node->right() != nullptr) {
+                dumpEdge(bin_oper_node, bin_oper_node->right(), "R");
+                node_ = bin_oper_node->right();
+                dumpNodeAndEdge();
+            }
+            return;
+        }
+        case GrammarUnitType::UNARY_MINUS:
+        {
+            dumpNodeInFormat(light_yellow);
+            out_ << "UNARY_OPER | ";
+            dumpOperator();
+            out_ << "} }\"]\n";
+
+            const UnaryOperUnit* unary_op = reinterpret_cast<const UnaryOperUnit*>(node_);
+            if (unary_op->operand() != nullptr) {
+                dumpEdge(unary_op, unary_op->operand(), "");
+                node_ = unary_op->operand();
+                dumpNodeAndEdge();
+            }
+            return;
         }
         case GrammarUnitType::VAR:
         {
             dumpNodeInFormat(light_blue);
-            const VarUnit* var_node = dynamic_cast<const VarUnit*>(node_);
-            if (var_node) {
-                out_ << "VAR | " << var_node->name() << " ";
-            }
-            break;
+            const VarUnit* var_node = reinterpret_cast<const VarUnit*>(node_);
+            out_ << "VAR | " << var_node->name() << " ";
+            out_ << "} }\"]\n";
+            return;
         }
         case GrammarUnitType::VAR_DECL: {
             dumpNodeInFormat(light_red);
             out_ << "VAR DECL ";
-            break;
+            out_ << "} }\"]\n";
+
+            const VarDeclUnit* var_decl = reinterpret_cast<const VarDeclUnit*>(node_);
+            if (var_decl != nullptr) {
+                if (var_decl->var() != nullptr) {
+                    dumpEdge(var_decl, var_decl->var(), "Var");
+                    node_ = var_decl->var();
+                    dumpNodeAndEdge();
+                }
+                if (var_decl->expr() != nullptr) {
+                    dumpEdge(var_decl, var_decl->expr(), "Expr");
+                    node_ = var_decl->expr();
+                    dumpNodeAndEdge();
+                }
+            }
+            return;
         }
-        // case GrammarUnitType::KEYWORD:
-        // {
-        //     dumpNodeInFormat(node_, light_green, out_);
-        //     out_ << "KEYWORD | %s ", kKeywords[(int)node_->val_.keyword]);
-        //     break;
-        // }
-        // case GrammarUnitType::FICTITIOUS:
-        // {
-        //     dumpNodeInFormat(node_, light_grey, out_);
-        //     out_ << "FICT ";
-        //     break;
-        // }
-        // case GrammarUnitType::STR:
-        // {
-        //     dumpNodeInFormat(node_, light_red, out_);
-        //     out_ << "STR | %s ", node_->val_.var);
-        //     break;
-        // }
+        case GrammarUnitType::SCOPE: {
+            dumpNodeInFormat(light_green);
+            out_ << "SCOPE ";
+            out_ << "} }\"]\n";
+
+            const ScopeUnit* scope = reinterpret_cast<const ScopeUnit*>(node_);
+            size_t statement_num = 0;
+            for (auto statement : *scope) {
+                statement_num++;
+                dumpEdge(scope, statement, std::to_string(statement_num).c_str());
+                node_ = statement;
+                dumpNodeAndEdge();
+            }
+            return;
+        }
         default:
             out_ << "unknown";
             break;
-    }
-
-    out_ << "} }\"]\n";
-
-    switch (node_->getType())
-    {
-    case GrammarUnitType::ADD:
-    case GrammarUnitType::SUB:
-    case GrammarUnitType::MUL:
-    case GrammarUnitType::DIV: {
-        const BinaryOperUnit* bin_oper_node = dynamic_cast<const BinaryOperUnit*>(node_);
-        if (bin_oper_node->left() != nullptr) {
-            dumpEdge(bin_oper_node, bin_oper_node->left(), "L");
-            node_ = bin_oper_node->left();
-            dumpNodeAndEdge();
-        }
-        if (bin_oper_node->right() != nullptr) {
-            dumpEdge(bin_oper_node, bin_oper_node->right(), "R");
-            node_ = bin_oper_node->right();
-            dumpNodeAndEdge();
-        }
-        break;
-    }
-
-    case GrammarUnitType::UNARY_MINUS: {
-        const UnaryOperUnit* unary_op = reinterpret_cast<const UnaryOperUnit*>(node_);
-        if (unary_op->operand() != nullptr) {
-            dumpEdge(unary_op, unary_op->operand(), "");
-            node_ = unary_op->operand();
-            dumpNodeAndEdge();
-        }
-        break;
-    }
-
-    case GrammarUnitType::VAR_DECL: {
-        const VarDeclUnit* var_decl = reinterpret_cast<const VarDeclUnit*>(node_);
-        if (var_decl != nullptr) {
-            if (var_decl->var() != nullptr) {
-                dumpEdge(var_decl, var_decl->var(), "Var");
-                node_ = var_decl->var();
-                dumpNodeAndEdge();
-            }
-            if (var_decl->expr() != nullptr) {
-                dumpEdge(var_decl, var_decl->expr(), "Expr");
-                node_ = var_decl->expr();
-                dumpNodeAndEdge();
-            }
-        }
-    }
-    case GrammarUnitType::SCOPE: {
-        const ScopeUnit* scope = reinterpret_cast<const ScopeUnit*>(node_);
-        size_t statement_num = 0;
-        for (auto statement : *scope) {
-            statement_num++;
-            dumpEdge(scope, statement, std::to_string(statement_num).c_str());
-            node_ = statement;
-            dumpNodeAndEdge();
-        }
-    }
-    default:
-        break;
     }
 }

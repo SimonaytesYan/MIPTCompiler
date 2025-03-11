@@ -55,9 +55,9 @@ class ScopeUnit : public GrammarUnit {
       GrammarUnit(GrammarUnitType::SCOPE) { }
 
     int executeUnit() {
-      for (const auto& statement : statements) {
-        statement->executeUnit();
-      }
+      // for (const auto& statement : statements) {
+      //   statement->executeUnit();
+      // }
 
       return 0;
     }
@@ -93,6 +93,8 @@ class StatementUnit : public GrammarUnit {
   public:
     StatementUnit(GrammarUnitType type) :
       GrammarUnit(type) { }
+
+    virtual int executeUnit() = 0;
 
     virtual ~StatementUnit() = default;
 };

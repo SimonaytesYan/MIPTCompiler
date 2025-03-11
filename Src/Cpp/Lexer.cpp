@@ -18,7 +18,7 @@
 // Var            ::= {'_', 'a-z', 'A-Z'}{'_', 'a-z', 'A-Z', '0-9'}*
 // Num            ::= '-'{'0-9'}+ | {'0-9'}
 
-using TokenIt = std::vector<Token>::const_iterator;
+// using TokenIt = std::vector<Token>::const_iterator;
 
 static ScopeUnit*     getScope(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end);
@@ -32,11 +32,20 @@ static ExpressionUnit* getObject(TokenIt& cur_token, TokenIt end);
 static VarUnit* getVar(TokenIt& cur_token, TokenIt end);
 static NumUnit* getNum(TokenIt& cur_token, TokenIt end);
 
+template<class TokenType, class TokenValueType>
+static bool CheckTokenValue(const TokenIt token, TokenValueType necessary_value) {
+    if (!std::holds_alternative<TokenType>(*token))
+        return false;
+    if (GetTokenVal<TokenType, TokenValueType>(token) != necessary_value)
+        return false;
+    return true;
+}
+
 void recursiveUnitDelete(GrammarUnit* unit);
 
 GrammarUnit* parse(const std::vector<Token>& tokens) {
     TokenIt cur_token = tokens.begin();
-    GrammarUnit* result = getStatement(cur_token, tokens.end());
+    GrammarUnit* result = getScope(cur_token, tokens.end());
 
     if (cur_token != tokens.end()) {
         std::cerr << "Error during parsing\n";
@@ -46,28 +55,42 @@ GrammarUnit* parse(const std::vector<Token>& tokens) {
     return result;
 }
 
-// static ScopeUnit* getScope(TokenIt& cur_token, TokenIt end) {
-//     if (cur_token == end) {
-//         std::cerr << "getStatement: cur_token == end\n";
-//         return nullptr;
-//     }
+static ScopeUnit* getScope(TokenIt& cur_token, TokenIt end) {
+    if (cur_token == end) {
+        std::cerr << "getScope: cur_token == end\n";
+        return nullptr;
+    }
 
-//     if (!std::holds_alternative<SpecialSymbolToken>(*cur_token)) {
-//         std::cerr << "getStatement: Scope not start from {\n";
-//         return nullptr;
-//     }
-//     std::get<>
+    if (!CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::START_SCOPE)) {
+        std::cerr << "getScope: Scope not start from {\n";
+        return nullptr;
+    }
 
-//     ScopeUnit* scope = new ScopeUnit();
-//     do {
-//         if (std::holds_alternative<SpecialSymbolToken>(*cur_token)) {
-//             scope->addStatements();
-//         }
+    std::cout << "token = " << cur_token->index() << "\n";
 
-//     } while (cur_token != end);
+    ++cur_token;
+    std::cout << "token = " << cur_token->index() << "\n";
 
-//     return scope;
-// }
+    ScopeUnit* scope = new ScopeUnit();
+    do {
+        StatementUnit* next_statement = getStatement(cur_token, end);
+        if (next_statement == nullptr) {
+            std::cerr << "getScope: next statement = null\n";
+            return nullptr;
+        }
+
+        scope->addStatements(next_statement);
+    } while (cur_token != end &&
+             !CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::END_SCOPE));
+
+    if (cur_token == end) {
+        std::cerr << "getScope: Scope not end with }\n";
+        return nullptr;
+    }
+
+    ++cur_token;
+    return scope;
+}
 
 static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end) {
     std::cout << "getStatement: start func\n";
@@ -75,13 +98,14 @@ static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end) {
         std::cerr << "getStatement: cur_token == end\n";
         return nullptr;
     }
+
     if (std::holds_alternative<KeywordToken>(*cur_token)) {
         if (std::get<KeywordToken>(*cur_token).keyword() == KeywordType::LET) {
             return getVarDecl(cur_token, end);
         }
     }
 
-    std::cerr << "getStatement: Unexpected token type\n";
+    std::cerr << "getStatement: Unexpected token type = " << cur_token->index() << "\n";
     return nullptr;
 }
 
@@ -359,6 +383,13 @@ void recursiveUnitDelete(GrammarUnit* unit) {
     if (var_decl_unit) {
         recursiveUnitDelete(var_decl_unit->var());
         recursiveUnitDelete(var_decl_unit->expr());
+    }
+
+    if (unit->getType() == GrammarUnitType::SCOPE) {
+        ScopeUnit scope_unit = *reinterpret_cast<ScopeUnit*>(unit);
+        for (auto statement_unit : scope_unit) {
+            recursiveUnitDelete(statement_unit);
+        }
     }
 
     delete unit;
