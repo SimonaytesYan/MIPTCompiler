@@ -135,10 +135,15 @@ static GrammarUnit* getMulDiv(token_it& cur_token, token_it end) {
 static GrammarUnit* getBrackets(token_it& cur_token, token_it end) {
     std::cout << "getBrackets: start func\n";
 
+    if (!std::holds_alternative<SymbolToken>(*cur_token)) {
+        return getUnaryMinus(cur_token, end);
+    }
+
     SpecialSymbolType sym_type = std::get<SymbolToken>(*cur_token).specSym();
 
     if (sym_type != SpecialSymbolType::LEFT_BRACKET) {
-        return getUnaryMinus(cur_token, end);
+        std::cerr << "getBrackets: is not open bracket\n";
+        return nullptr;
     }
 
     GrammarUnit* result = getExpresion(cur_token, end);
