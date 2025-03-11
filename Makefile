@@ -5,7 +5,7 @@ SANITIZER_FLAGS = -g -fcheck-new -fsized-deallocation -fstack-protector \
 				  -pie -fPIE -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr,leak
 CFLAGS = $(SANITIZER_FLAGS)
 
-HEADERS_NAMES = Tokens Keywords SpecialSymbols Operators
+HEADERS_NAMES = Tokens Keywords SpecialSymbols Operators Grammar Lexer Tokenizer
 HEADERS = $(addsuffix .hpp, $(addprefix Src/Headers/, $(HEADERS_NAMES)))
 
 OBJ = obj
@@ -18,10 +18,15 @@ NO_COLOR = \033[0m
 test_lexer_dump: $(BIN)/test_lexer_dump_objects $(BIN)/test_lexer_dump_expr
 	@echo "${GREEN_COLOR}START LEXER TESTS${NO_COLOR}\n"
 
+	@echo "\n${GREEN_COLOR}LEXER SCOPE${NO_COLOR}"
+	-@$(BIN)/test_lexer_dump_scope
+
 	@echo "\n${GREEN_COLOR}LEXER EXPRESSION${NO_COLOR}"
 	-@$(BIN)/test_lexer_dump_expr
+
 	@echo "\n${GREEN_COLOR}LEXER OBJECTS${NO_COLOR}"
 	-@$(BIN)/test_lexer_dump_objects
+
 
 tests_tokenizer: $(BIN)/test_tokenizer_num $(BIN)/test_tokenizer_name $(BIN)/test_tokenizer_keywords $(BIN)/test_tokenizer_operators $(BIN)/test_tokenizer_spec_symbols
 	@echo "${GREEN_COLOR}START TOKENIZER TESTS${NO_COLOR}\n"
@@ -54,6 +59,11 @@ $(BIN)/test_lexer_dump_expr: Tests/Lexer/Expr.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexe
 					$(OBJ)/Lexer.o		\
 					$(OBJ)/GraphicDumpPass.o -o $(BIN)/test_lexer_dump_expr
 
+$(BIN)/test_lexer_dump_scope: Tests/Lexer/Scope.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o
+	$(CC) $(CFLAGS) Tests/Lexer/Scope.cpp \
+					$(OBJ)/Tokenizer.o 	\
+					$(OBJ)/Lexer.o		\
+					$(OBJ)/GraphicDumpPass.o -o $(BIN)/test_lexer_dump_scope
 
 $(BIN)/test_tokenizer_spec_symbols: $(OBJ)/Tokenizer.o
 	$(CC) $(CFLAGS) Tests/Tokenizer/SpecialSymbols.cpp \
