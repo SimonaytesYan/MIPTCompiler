@@ -71,6 +71,14 @@ class ScopeUnit : public GrammarUnit {
       return statements.end();
     }
 
+    std::vector<StatementUnit*>::const_iterator begin() const {
+      return statements.cbegin();
+    }
+
+    std::vector<StatementUnit*>::const_iterator end() const {
+      return statements.cend();
+    }
+
     void addStatements(StatementUnit* statement) {
       statements.push_back(statement);
     }
