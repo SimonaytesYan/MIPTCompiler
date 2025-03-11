@@ -3,7 +3,7 @@
 #include <iostream>
 
 // StatementUnit  ::= VarDeclUnit
-// VarDeclUnit    ::= 'let' Var '=' ExprUnit
+// VarDeclUnit    ::= 'let' Var '=' ExprUnit ';'
 // ExpressionUnit ::= AddSub
 // AddSub         ::= AddExprUnit | SubExprUnit
 // AddExprUnit    ::= MulDiv ('+' MulDiv)*
@@ -19,20 +19,22 @@
 
 using token_it = std::vector<Token>::const_iterator;
 
+static StatementUnit* getStatement(token_it& cur_token, token_it end);
+static StatementUnit* getVarDecl(token_it& cur_token, token_it end);
 static ExpressionUnit* getExpresion(token_it& cur_token, token_it end);
 static ExpressionUnit* getAddSub(token_it& cur_token, token_it end);
 static ExpressionUnit* getMulDiv(token_it& cur_token, token_it end);
 static ExpressionUnit* getBrackets(token_it& cur_token, token_it end);
 static ExpressionUnit* getUnaryMinus(token_it& cur_token, token_it end);
 static ExpressionUnit* getObject(token_it& cur_token, token_it end);
-static ExpressionUnit* getVar(token_it& cur_token, token_it end);
-static ExpressionUnit* getNum(token_it& cur_token, token_it end);
+static VarUnit* getVar(token_it& cur_token, token_it end);
+static NumUnit* getNum(token_it& cur_token, token_it end);
 
-static void recursiveUnitDelete(GrammarUnit* unit);
+void recursiveUnitDelete(GrammarUnit* unit);
 
 GrammarUnit* parse(const std::vector<Token>& tokens) {
     token_it cur_token = tokens.begin();
-    ExpressionUnit* result = getExpresion(cur_token, tokens.end());
+    GrammarUnit* result = getStatement(cur_token, tokens.end());
 
     if (cur_token != tokens.end()) {
         std::cerr << "Error during parsing\n";
@@ -40,6 +42,81 @@ GrammarUnit* parse(const std::vector<Token>& tokens) {
     }
 
     return result;
+}
+
+static StatementUnit* getStatement(token_it& cur_token, token_it end) {
+    std::cout << "getStatement: start func\n";
+    if (cur_token == end) {
+        std::cerr << "getStatement: cur_token == end\n";
+        return nullptr;
+    }
+    if (std::holds_alternative<KeywordToken>(*cur_token)) {
+        if (std::get<KeywordToken>(*cur_token).keyword() == KeywordType::LET) {
+            return getVarDecl(cur_token, end);
+        }
+    }
+
+    std::cerr << "getStatement: Unexpected token type\n";
+    return nullptr;
+}
+
+static StatementUnit* getVarDecl(token_it& cur_token, token_it end) {
+    std::cout << "getVarDecl: start func\n";
+
+    if (cur_token == end) {
+        std::cerr << "getVarDecl: cur_token == end\n";
+        return nullptr;
+    }
+
+    if (!std::holds_alternative<KeywordToken>(*cur_token)) {
+        std::cerr << "getVarDecl: not keyword\n";
+        return nullptr;
+    }
+    if (std::get<KeywordToken>(*cur_token).keyword() != KeywordType::LET) {
+        std::cerr << "getVarDecl: not let\n";
+        return nullptr;
+    }
+
+    ++cur_token;
+
+    VarUnit* var = getVar(cur_token, end);
+
+    if (var == nullptr) {
+        std::cerr << "getVarDecl: var in null";
+        return nullptr;
+    }
+
+    if (!std::holds_alternative<OperatorToken>(*cur_token)) {
+        std::cerr << "getVarDecl: not operator in the middle\n";
+        return nullptr;
+    }
+
+    if (std::get<OperatorToken>(*cur_token).oper() != OperatorType::EQUAL) {
+        std::cerr << "getVarDecl: not operator = in the middle\n";
+        return nullptr;
+    }
+
+    ++cur_token;
+
+    ExpressionUnit* expression = getExpresion(cur_token, end);
+    if (expression == nullptr) {
+        std::cerr << "getVarDecl: expression in null";
+        return nullptr;
+    }
+
+    if (!std::holds_alternative<SymbolToken>(*cur_token)) {
+        std::cerr << "getVarDecl: not operator in the middle\n";
+        return nullptr;
+    }
+
+    if (std::get<SymbolToken>(*cur_token).specSym() != SpecialSymbolType::END_STATEMENT) {
+        std::cerr << "getVarDecl: not operator = in the middle\n";
+        return nullptr;
+    }
+
+    ++cur_token;
+
+    return new VarDeclUnit(var, expression);
 }
 
 static ExpressionUnit* getExpresion(token_it& cur_token, token_it end) {
@@ -209,20 +286,20 @@ static ExpressionUnit* getObject(token_it& cur_token, token_it end) {
 }
 
 
-static ExpressionUnit* getVar(token_it& cur_token, token_it end) {
+static VarUnit* getVar(token_it& cur_token, token_it end) {
     std::cout << "getVar: start func\n";
     if (!std::holds_alternative<NameToken>(*cur_token)) {
         std::cerr << "getVar: is not NameToken\n";
         return nullptr;
     }
 
-    ExpressionUnit* result = new VarUnit(std::get<NameToken>(*cur_token).name());
+    VarUnit* result = new VarUnit(std::get<NameToken>(*cur_token).name());
     ++cur_token;
     std::cout << "getVar: end\n";
     return result;
 }
 
-static ExpressionUnit* getNum(token_it& cur_token, token_it end) {
+static NumUnit* getNum(token_it& cur_token, token_it end) {
     std::cout << "getNum: start func\n";
 
     if (!std::holds_alternative<NumToken>(*cur_token)) {
@@ -237,16 +314,27 @@ static ExpressionUnit* getNum(token_it& cur_token, token_it end) {
     return new NumUnit(num);
 }
 
-static void recursiveUnitDelete(GrammarUnit* unit) {
+void recursiveUnitDelete(GrammarUnit* unit) {
     if (!unit)
         return;
 
-    BinaryOperUnit* expr_unit = dynamic_cast<BinaryOperUnit*>(unit);
+    BinaryOperUnit* binary_op = dynamic_cast<BinaryOperUnit*>(unit);
 
-    if (expr_unit) {
-        recursiveUnitDelete(expr_unit->left_op_);
-        recursiveUnitDelete(expr_unit->right_op_);
+    if (binary_op) {
+        recursiveUnitDelete(binary_op->left_op_);
+        recursiveUnitDelete(binary_op->right_op_);
     }
 
-    delete expr_unit;
+    UnaryOperUnit* unary_unit = dynamic_cast<UnaryOperUnit*>(unit);
+    if (unary_unit) {
+        recursiveUnitDelete(unary_unit->operand());
+    }
+
+    VarDeclUnit* var_decl_unit = dynamic_cast<VarDeclUnit*>(unit);
+    if (var_decl_unit) {
+        recursiveUnitDelete(var_decl_unit->var());
+        recursiveUnitDelete(var_decl_unit->expr());
+    }
+
+    delete unit;
 }

@@ -150,6 +150,11 @@ void GraphicDumpPass::writeNodeAndEdge()
             }
             break;
         }
+        case GrammarUnitType::VAR_DECL: {
+            printNodeInFormat(light_red);
+            out_ << "VAR DECL ";
+            break;
+        }
         // case GrammarUnitType::KEYWORD:
         // {
         //     printNodeInFormat(node_, light_green, out_);
@@ -191,7 +196,7 @@ void GraphicDumpPass::writeNodeAndEdge()
             writeNodeAndEdge();
         }
     }
-    else {
+    else  {
         const UnaryOperUnit* unary_op = dynamic_cast<const UnaryOperUnit*>(node_);
         if (unary_op != nullptr) {
             out_ << "GrammarUnit" << unary_op << " -> GrammarUnit" << unary_op->operand()
@@ -199,6 +204,24 @@ void GraphicDumpPass::writeNodeAndEdge()
 
             node_ = unary_op->operand();
             writeNodeAndEdge();
+        }
+        else {
+            const VarDeclUnit* var_decl = dynamic_cast<const VarDeclUnit*>(node_);
+            if (var_decl != nullptr) {
+                if (var_decl->var() != nullptr) {
+                    out_ << "GrammarUnit" << var_decl << " -> GrammarUnit" << var_decl->var()
+                        << "[xlabel = \"L\"]\n";
+                    node_ = var_decl->var();
+                    writeNodeAndEdge();
+                }
+                if (var_decl->expr() != nullptr) {
+                    out_ << "GrammarUnit" << var_decl << " -> GrammarUnit" << var_decl->expr()
+                        << "[xlabel = \"R\"]\n";
+
+                    node_ = var_decl->expr();
+                    writeNodeAndEdge();
+                }
+            }
         }
     }
 }

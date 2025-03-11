@@ -14,7 +14,20 @@ enum class GrammarUnitType {
     UNARY_MINUS,
     KEYWORD,
     FICTITIOUS,
+    VAR_DECL
 };
+
+class GrammarUnit;
+class StatementUnit;
+class ExpressionUnit;
+class ObjectUnit;
+class NumUnit;
+class VarUnit;
+class UnaryOperUnit;
+class AddExprUnit;
+class MulExprUnit;
+class DivExprUnit;
+class SubExprUnit;
 
 class GrammarUnit {
   public:
@@ -28,27 +41,67 @@ class GrammarUnit {
         return type_;
     }
 
+    virtual ~GrammarUnit() = default;
+
   private:
     GrammarUnitType type_;
 };
 
-// class Statement : public GrammarUnit {
-//   public:
+class StatementUnit : public GrammarUnit {
+  public:
+    StatementUnit(GrammarUnitType type) :
+      GrammarUnit(type) { }
 
-//   private:
-//     VarUnit* variable_;
-// };
+    virtual ~StatementUnit() = default;
+};
+
+class VarDeclUnit : public StatementUnit {
+  public:
+    VarDeclUnit(VarUnit* variable, ExpressionUnit* expression) :
+      StatementUnit( GrammarUnitType::VAR_DECL ),
+      variable_(variable),
+      expression_(expression) { }
+
+    int executeUnit() {
+      // variable = executeUnit(expression);
+      return 0;
+    }
+
+    VarUnit* var() {
+      return variable_;
+    }
+
+    ExpressionUnit* expr() {
+      return expression_;
+    }
+
+    const VarUnit* var() const {
+      return variable_;
+    }
+
+    const ExpressionUnit* expr() const {
+      return expression_;
+    }
+
+  private:
+    VarUnit* variable_;
+    ExpressionUnit* expression_;
+};
 
 class ExpressionUnit : public GrammarUnit {
   public:
     ExpressionUnit(GrammarUnitType type) :
       GrammarUnit(type) { }
+
+    virtual ~ExpressionUnit() { }
 };
 
 class ObjectUnit : public ExpressionUnit {
   public:
     ObjectUnit(GrammarUnitType type) :
       ExpressionUnit(type) { }
+
+    virtual ~ObjectUnit() = default;
 };
 
 class NumUnit : public ObjectUnit {
@@ -99,6 +152,8 @@ class UnaryOperUnit : public ExpressionUnit {
     return operand_;
   }
 
+  virtual ~UnaryOperUnit() = default;
+
   protected:
     ExpressionUnit* operand_;
 };
@@ -119,6 +174,8 @@ class UnaryOperMinus : public UnaryOperUnit {
 
 class BinaryOperUnit : public ExpressionUnit {
   public:
+    virtual ~BinaryOperUnit() = default;
+
     BinaryOperUnit(ExpressionUnit* left_op, ExpressionUnit* right_op, GrammarUnitType type) :
       ExpressionUnit(type),
       left_op_(left_op),
