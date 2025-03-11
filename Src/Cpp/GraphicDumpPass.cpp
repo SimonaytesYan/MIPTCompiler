@@ -175,7 +175,7 @@ void GraphicDumpPass::writeNodeAndEdge()
 
     out_ << "} }\"]\n";
 
-    const ExprUnit* expr_node = dynamic_cast<const ExprUnit*>(node_);
+    const BinaryOperUnit* expr_node = dynamic_cast<const BinaryOperUnit*>(node_);
     if (expr_node) {
         if (expr_node->left() != nullptr) {
             out_ << "GrammarUnit" << expr_node << " -> GrammarUnit" << expr_node->left()

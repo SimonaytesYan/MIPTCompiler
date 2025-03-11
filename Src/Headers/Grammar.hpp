@@ -32,10 +32,23 @@ class GrammarUnit {
     GrammarUnitType type_;
 };
 
-class ObjectUnit : public GrammarUnit {
+// class Statement : public GrammarUnit {
+//   public:
+
+//   private:
+//     VarUnit* variable_;
+// };
+
+class ExpressionUnit : public GrammarUnit {
+  public:
+    ExpressionUnit(GrammarUnitType type) :
+      GrammarUnit(type) { }
+};
+
+class ObjectUnit : public ExpressionUnit {
   public:
     ObjectUnit(GrammarUnitType type) :
-      GrammarUnit(type) { }
+      ExpressionUnit(type) { }
 };
 
 class NumUnit : public ObjectUnit {
@@ -76,23 +89,23 @@ class VarUnit : public ObjectUnit {
     std::string name_;
 };
 
-class UnaryOperUnit : public GrammarUnit {
+class UnaryOperUnit : public ExpressionUnit {
   public:
-    UnaryOperUnit(GrammarUnit* operand, GrammarUnitType type) :
-      GrammarUnit(type),
+    UnaryOperUnit(ExpressionUnit* operand, GrammarUnitType type) :
+      ExpressionUnit(type),
       operand_(operand) { }
 
-  GrammarUnit* operand() const {
+  ExpressionUnit* operand() const {
     return operand_;
   }
 
   protected:
-    GrammarUnit* operand_;
+    ExpressionUnit* operand_;
 };
 
 class UnaryOperMinus : public UnaryOperUnit {
   public:
-    UnaryOperMinus(GrammarUnit* operand) :
+    UnaryOperMinus(ExpressionUnit* operand) :
       UnaryOperUnit(operand, GrammarUnitType::UNARY_MINUS),
       operand_(operand) { }
 
@@ -104,60 +117,60 @@ class UnaryOperMinus : public UnaryOperUnit {
     GrammarUnit* operand_;
 };
 
-class ExprUnit : public GrammarUnit {
+class BinaryOperUnit : public ExpressionUnit {
   public:
-    ExprUnit(GrammarUnit* left_op, GrammarUnit* right_op, GrammarUnitType type) :
-      GrammarUnit(type),
+    BinaryOperUnit(ExpressionUnit* left_op, ExpressionUnit* right_op, GrammarUnitType type) :
+      ExpressionUnit(type),
       left_op_(left_op),
       right_op_(right_op) { }
 
-    const GrammarUnit* left() const {
+    const ExpressionUnit* left() const {
         return left_op_;
     }
 
-    const GrammarUnit* right() const {
+    const ExpressionUnit* right() const {
         return right_op_;
     }
 
   public:
-    GrammarUnit* left_op_;
-    GrammarUnit* right_op_;
+    ExpressionUnit* left_op_;
+    ExpressionUnit* right_op_;
 };
 
-class AddExprUnit : public ExprUnit {
+class AddExprUnit : public BinaryOperUnit {
   public:
-    AddExprUnit(GrammarUnit* left_op, GrammarUnit* right_op) :
-      ExprUnit(left_op, right_op, GrammarUnitType::ADD) { }
+    AddExprUnit(ExpressionUnit* left_op, ExpressionUnit* right_op) :
+      BinaryOperUnit(left_op, right_op, GrammarUnitType::ADD) { }
 
     int executeUnit() {
         return left_op_->executeUnit() + right_op_->executeUnit();
     }
 };
 
-class MulExprUnit : public ExprUnit {
+class MulExprUnit : public BinaryOperUnit {
   public:
-    MulExprUnit(GrammarUnit* left_op, GrammarUnit* right_op) :
-      ExprUnit(left_op, right_op, GrammarUnitType::MUL) { }
+    MulExprUnit(ExpressionUnit* left_op, ExpressionUnit* right_op) :
+      BinaryOperUnit(left_op, right_op, GrammarUnitType::MUL) { }
 
     int executeUnit() {
         return left_op_->executeUnit() * right_op_->executeUnit();
     }
 };
 
-class SubExprUnit : public ExprUnit {
+class SubExprUnit : public BinaryOperUnit {
   public:
-    SubExprUnit(GrammarUnit* left_op, GrammarUnit* right_op) :
-      ExprUnit(left_op, right_op, GrammarUnitType::SUB) { }
+    SubExprUnit(ExpressionUnit* left_op, ExpressionUnit* right_op) :
+      BinaryOperUnit(left_op, right_op, GrammarUnitType::SUB) { }
 
     int executeUnit() {
         return left_op_->executeUnit() - right_op_->executeUnit();
     }
 };
 
-class DivExprUnit : public ExprUnit {
+class DivExprUnit : public BinaryOperUnit {
   public:
-    DivExprUnit(GrammarUnit* left_op, GrammarUnit* right_op) :
-      ExprUnit(left_op, right_op, GrammarUnitType::DIV) { }
+    DivExprUnit(ExpressionUnit* left_op, ExpressionUnit* right_op) :
+      BinaryOperUnit(left_op, right_op, GrammarUnitType::DIV) { }
 
     int executeUnit() {
         // TODO add check right_op result to zero
