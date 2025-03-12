@@ -12,8 +12,7 @@ enum class GrammarUnitType {
     MUL,
     DIV,
     UNARY_MINUS,
-    KEYWORD,
-    FICTITIOUS,
+    IF,
     VAR_DECL,
     SCOPE
 };
@@ -25,11 +24,13 @@ class ExpressionUnit;
 class ObjectUnit;
 class NumUnit;
 class VarUnit;
+class IfUnit;
 class UnaryOperUnit;
 class AddExprUnit;
 class MulExprUnit;
 class DivExprUnit;
 class SubExprUnit;
+class VarDeclUnit;
 
 class GrammarUnit {
   public:
@@ -61,7 +62,6 @@ class ScopeUnit : public GrammarUnit {
 
       return 0;
     }
-
 
     std::vector<StatementUnit*>::iterator begin() {
       return statements.begin();
@@ -99,10 +99,50 @@ class StatementUnit : public GrammarUnit {
     virtual ~StatementUnit() = default;
 };
 
+class IfUnit : public StatementUnit {
+  public:
+    IfUnit(ExpressionUnit* condition,
+           ScopeUnit* true_branch,
+           ScopeUnit* false_branch) :
+      StatementUnit(GrammarUnitType::IF),
+      condition_(condition),
+      true_branch_(true_branch),
+      false_branch_(false_branch) { }
+
+    ExpressionUnit* condition() {
+      return condition_;
+    }
+    ScopeUnit* true_branch() {
+      return true_branch_;
+    }
+    ScopeUnit* false_branch() {
+      return false_branch_;
+    }
+
+    const ExpressionUnit* condition() const {
+      return condition_;
+    }
+    const ScopeUnit* true_branch() const {
+      return true_branch_;
+    }
+    const ScopeUnit* false_branch() const {
+      return false_branch_;
+    }
+
+    virtual int executeUnit() {
+      return 0;
+    }
+
+  private:
+    ExpressionUnit* condition_;
+    ScopeUnit* true_branch_;
+    ScopeUnit* false_branch_;
+};
+
 class VarDeclUnit : public StatementUnit {
   public:
     VarDeclUnit(VarUnit* variable, ExpressionUnit* expression) :
-      StatementUnit( GrammarUnitType::VAR_DECL ),
+      StatementUnit(GrammarUnitType::VAR_DECL),
       variable_(variable),
       expression_(expression) { }
 

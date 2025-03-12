@@ -107,7 +107,6 @@ void GraphicDumpPass::dumpEdge(const GrammarUnit* from, const GrammarUnit* to, c
     << "[xlabel = \"" << name << "\"]\n";
 }
 
-
 void GraphicDumpPass::dumpNodeInFormat(const char* color) {
     "[style = \"filled,rounded\", fillcolor = \"%s\", label = \"{{ <v>";
 
@@ -216,6 +215,32 @@ void GraphicDumpPass::dumpNodeAndEdge()
                 dumpEdge(scope, statement, std::to_string(statement_num).c_str());
                 node_ = statement;
                 dumpNodeAndEdge();
+            }
+            return;
+        }
+        case GrammarUnitType::IF: {
+            dumpNodeInFormat(light_green);
+
+            out_ << "IF ";
+            out_ << "} }\"]\n";
+
+            const IfUnit* if_decl = reinterpret_cast<const IfUnit*>(node_);
+            if (if_decl != nullptr) {
+                if (if_decl->condition() != nullptr) {
+                    dumpEdge(if_decl, if_decl->condition(), "Cond");
+                    node_ = if_decl->condition();
+                    dumpNodeAndEdge();
+                }
+                if (if_decl->true_branch() != nullptr) {
+                    dumpEdge(if_decl, if_decl->true_branch(), "True");
+                    node_ = if_decl->true_branch();
+                    dumpNodeAndEdge();
+                }
+                if (if_decl->false_branch() != nullptr) {
+                    dumpEdge(if_decl, if_decl->false_branch(), "False");
+                    node_ = if_decl->false_branch();
+                    dumpNodeAndEdge();
+                }
             }
             return;
         }

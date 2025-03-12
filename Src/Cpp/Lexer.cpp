@@ -2,8 +2,9 @@
 
 #include <iostream>
 
-// ScopeUnit      ::= {StatementUnit}+
-// StatementUnit  ::= VarDeclUnit
+// ScopeUnit      ::= '{' {StatementUnit}+ '}'
+// StatementUnit  ::= VarDeclUnit | IFUnit | 0
+// IFUnit         ::= 'if' '(' ExprUnit ')' ScopeUnit 'else' ScopeUnit
 // VarDeclUnit    ::= 'let' Var '=' ExprUnit ';'
 // ExpressionUnit ::= AddSub
 // AddSub         ::= AddExprUnit | SubExprUnit
@@ -22,6 +23,7 @@
 
 static ScopeUnit*     getScope(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end);
+static StatementUnit* getIf(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end);
 static ExpressionUnit* getExpresion(TokenIt& cur_token, TokenIt end);
 static ExpressionUnit* getAddSub(TokenIt& cur_token, TokenIt end);
@@ -56,6 +58,7 @@ GrammarUnit* parse(const std::vector<Token>& tokens) {
 }
 
 static ScopeUnit* getScope(TokenIt& cur_token, TokenIt end) {
+    std::cout << "getScope: Start func\n";
     if (cur_token == end) {
         std::cerr << "getScope: cur_token == end\n";
         return nullptr;
@@ -71,8 +74,13 @@ static ScopeUnit* getScope(TokenIt& cur_token, TokenIt end) {
     ++cur_token;
     std::cout << "token = " << cur_token->index() << "\n";
 
+    std::cout << "getScope: before while step\n";
     ScopeUnit* scope = new ScopeUnit();
-    do {
+    while (cur_token != end &&
+           !CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::END_SCOPE))
+    {
+        std::cout << "getScope: while step\n";
+
         StatementUnit* next_statement = getStatement(cur_token, end);
         if (next_statement == nullptr) {
             std::cerr << "getScope: next statement = null\n";
@@ -80,8 +88,8 @@ static ScopeUnit* getScope(TokenIt& cur_token, TokenIt end) {
         }
 
         scope->addStatements(next_statement);
-    } while (cur_token != end &&
-             !CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::END_SCOPE));
+    }
+    std::cout << "getScope: after whiles step\n";
 
     if (cur_token == end) {
         std::cerr << "getScope: Scope not end with }\n";
@@ -89,6 +97,7 @@ static ScopeUnit* getScope(TokenIt& cur_token, TokenIt end) {
     }
 
     ++cur_token;
+    std::cout << "getScope: end function\n";
     return scope;
 }
 
@@ -103,10 +112,55 @@ static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end) {
         if (std::get<KeywordToken>(*cur_token).keyword() == KeywordType::LET) {
             return getVarDecl(cur_token, end);
         }
+        if (std::get<KeywordToken>(*cur_token).keyword() == KeywordType::IF) {
+            return getIf(cur_token, end);
+        }
     }
 
     std::cerr << "getStatement: Unexpected token type = " << cur_token->index() << "\n";
     return nullptr;
+}
+
+static StatementUnit* getIf(TokenIt& cur_token, TokenIt end) {
+    std::cout << "getIf: start func\n";
+
+    if (cur_token == end) {
+        std::cerr << "getIf: cur_token == end\n";
+        return nullptr;
+    }
+
+    if (!CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::IF)) {
+        std::cerr << "getIf: not start from if";
+        return nullptr;
+    }
+    ++cur_token;
+
+    if (!CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::LEFT_BRACKET)) {
+        std::cerr << "getIf: there not open bracket before condition";
+        return nullptr;
+    }
+    ++cur_token;
+
+    ExpressionUnit* condition = getExpresion(cur_token, end);
+
+    if (!CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::RIGHT_BRACKET)) {
+        std::cout << "index = " << cur_token->index() << "\n";
+        std::cerr << "getIf: there not close bracket after condition";
+        return nullptr;
+    }
+    ++cur_token;
+
+    ScopeUnit* true_branch = getScope(cur_token, end);
+
+    if (!CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::ELSE)) {
+        std::cerr << "getIf: there not else";
+        return nullptr;
+    }
+    ++cur_token;
+
+    ScopeUnit* false_branch = getScope(cur_token, end);
+
+    return new IfUnit(condition, true_branch, false_branch);
 }
 
 static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end) {
