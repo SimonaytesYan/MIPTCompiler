@@ -184,7 +184,7 @@ void GraphicDumpPass::dumpNodeAndEdge()
             return;
         }
         case GrammarUnitType::VAR_DECL: {
-            dumpNodeInFormat(light_red);
+            dumpNodeInFormat(light_green);
             out_ << "VAR DECL ";
             out_ << "} }\"]\n";
 
@@ -268,6 +268,25 @@ void GraphicDumpPass::dumpNodeAndEdge()
             if (print_decl->expression() != nullptr) {
                 dumpEdge(print_decl, print_decl->expression(), "Expr");
                 node_ = print_decl->expression();
+                dumpNodeAndEdge();
+            }
+            return;
+        }
+        case GrammarUnitType::VAR_ASSIGN: {
+            dumpNodeInFormat(light_green);
+
+            out_ << "VAR ASSIGN ";
+            out_ << "} }\"]\n";
+
+            const VarAssignUnit* var_decl = reinterpret_cast<const VarAssignUnit*>(node_);
+            if (var_decl->var() != nullptr) {
+                dumpEdge(var_decl, var_decl->var(), "Var");
+                node_ = var_decl->var();
+                dumpNodeAndEdge();
+            }
+            if (var_decl->expr() != nullptr) {
+                dumpEdge(var_decl, var_decl->expr(), "Expr");
+                node_ = var_decl->expr();
                 dumpNodeAndEdge();
             }
             return;

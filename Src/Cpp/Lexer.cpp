@@ -7,7 +7,8 @@
 // PrintUnit      ::= 'print(' ExprUnit ');'
 // LoopUnit       ::= loop '(' ExprUnit ')' ScopeUnit
 // IFUnit         ::= 'if' '(' ExprUnit ')' ScopeUnit 'else' ScopeUnit
-// VarDeclUnit    ::= 'let' Var '=' ExprUnit ';'
+// VarDeclUnit    ::= 'let' VarUnit '=' ExprUnit ';'
+// VarAssignUnit  ::= VarUnit '=' ExprUnit ';'
 // ExpressionUnit ::= AddSub
 // AddSub         ::= AddExprUnit | SubExprUnit
 // AddExprUnit    ::= MulDiv {'+' MulDiv}*
@@ -17,9 +18,9 @@
 // DivExprUnit    ::= Brackets {'/' Brackets}* | Brackets
 // Brackets       ::= '('ExprUnit')' | UnaryMinus
 // UnaryMinus     ::= '-' Object | Object
-// Object         ::= Var | Num
-// Var            ::= {'_', 'a-z', 'A-Z'}{'_', 'a-z', 'A-Z', '0-9'}*
-// Num            ::= '-'{'0-9'}+ | {'0-9'}
+// Object         ::= VarUnit | NumUnit
+// VarUnit        ::= {'_', 'a-z', 'A-Z'}{'_', 'a-z', 'A-Z', '0-9'}*
+// NumUnit        ::= '-'{'0-9'}+ | {'0-9'}
 
 // using TokenIt = std::vector<Token>::const_iterator;
 
@@ -29,6 +30,7 @@ static StatementUnit* getIf(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getPrint(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getLoop(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end);
+static StatementUnit* getVarAssign(TokenIt& cur_token, TokenIt end);
 static ExpressionUnit* getExpresion(TokenIt& cur_token, TokenIt end);
 static ExpressionUnit* getAddSub(TokenIt& cur_token, TokenIt end);
 static ExpressionUnit* getMulDiv(TokenIt& cur_token, TokenIt end);
@@ -45,6 +47,11 @@ static bool CheckTokenValue(const TokenIt token, TokenValueType necessary_value)
     if (GetTokenVal<TokenType, TokenValueType>(token) != necessary_value)
         return false;
     return true;
+}
+
+template<class TokenType>
+static bool CheckTokenType(const TokenIt token) {
+    return std::holds_alternative<TokenType>(*token);
 }
 
 void recursiveUnitDelete(GrammarUnit* unit);
@@ -121,6 +128,10 @@ static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end) {
 
     if (CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::PRINT)) {
         return getPrint(cur_token, end);
+    }
+
+    if (CheckTokenType<NameToken>(cur_token)) {
+        return getVarAssign(cur_token, end);
     }
 
     std::cerr << "getStatement: Unexpected token type = " << cur_token->index() << "\n";
@@ -249,12 +260,8 @@ static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end) {
         return nullptr;
     }
 
-    if (!std::holds_alternative<KeywordToken>(*cur_token)) {
-        std::cerr << "getVarDecl: not keyword\n";
-        return nullptr;
-    }
-    if (std::get<KeywordToken>(*cur_token).keyword() != KeywordType::LET) {
-        std::cerr << "getVarDecl: not let\n";
+    if (!CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::LET)) {
+        std::cerr << "getVarDecl: do not start with 'let'\n";
         return nullptr;
     }
 
@@ -268,7 +275,6 @@ static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end) {
     }
 
     if (!CheckTokenValue<OperatorToken, OperatorType>(cur_token, OperatorType::EQUAL)) {
-        std::cerr << "index = " << cur_token->index();
         std::cerr << "getVarDecl: there is not operator = in var declaration\n";
         return nullptr;
     }
@@ -291,6 +297,47 @@ static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end) {
     ++cur_token;
 
     return new VarDeclUnit(var, expression);
+}
+
+static StatementUnit* getVarAssign(TokenIt& cur_token, TokenIt end) {
+    std::cout << "getVarAssign: start func\n";
+
+    if (cur_token == end) {
+        std::cerr << "getVarAssign: cur_token == end\n";
+        return nullptr;
+    }
+
+    VarUnit* variable = getVar(cur_token, end);
+
+    if (variable == nullptr) {
+        std::cerr << "getVarAssign: var in null";
+        return nullptr;
+    }
+
+    if (!CheckTokenValue<OperatorToken, OperatorType>(cur_token, OperatorType::EQUAL)) {
+        std::cerr << "index = " << cur_token->index();
+        std::cerr << "getVarAssign: there is not operator = in var declaration\n";
+        return nullptr;
+    }
+
+    ++cur_token;
+
+    ExpressionUnit* expression = getExpresion(cur_token, end);
+    if (expression == nullptr) {
+        std::cerr << "getVarAssign: expression in null";
+        return nullptr;
+    }
+
+    if (!CheckTokenValue<SpecialSymbolToken,
+                         SpecialSymbolType>(cur_token,
+                                           SpecialSymbolType::END_STATEMENT)) {
+        std::cerr << "getVarAssign: there is no a ';' at the end of var assignment\n";
+        return nullptr;
+    }
+
+    ++cur_token;
+
+    return new VarAssignUnit(variable, expression);
 }
 
 static ExpressionUnit* getExpresion(TokenIt& cur_token, TokenIt end) {
@@ -514,6 +561,12 @@ void recursiveUnitDelete(GrammarUnit* unit) {
         recursiveUnitDelete(var_decl_unit->expr());
         break;
     }
+    case GrammarUnitType::VAR_ASSIGN: {
+        VarAssignUnit* var_assign_unit = reinterpret_cast<VarAssignUnit*>(unit);
+        recursiveUnitDelete(var_assign_unit->var());
+        recursiveUnitDelete(var_assign_unit->expr());
+        break;
+    }
     case GrammarUnitType::SCOPE: {
         ScopeUnit* scope_unit = reinterpret_cast<ScopeUnit*>(unit);
         for (auto statement_unit : *scope_unit) {
@@ -545,7 +598,6 @@ void recursiveUnitDelete(GrammarUnit* unit) {
     default:
         break;
     }
-
 
     delete unit;
 }

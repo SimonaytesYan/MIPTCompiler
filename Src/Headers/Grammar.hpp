@@ -14,6 +14,7 @@ enum class GrammarUnitType {
     UNARY_MINUS,
     SCOPE,
     VAR_DECL,
+    VAR_ASSIGN,
     IF,
     LOOP,
     PRINT,
@@ -182,6 +183,39 @@ class VarDeclUnit : public StatementUnit {
   public:
     VarDeclUnit(VarUnit* variable, ExpressionUnit* expression) :
       StatementUnit(GrammarUnitType::VAR_DECL),
+      variable_(variable),
+      expression_(expression) { }
+
+    int executeUnit() {
+      // variable = executeUnit(expression);
+      return 0;
+    }
+
+    VarUnit* var() {
+      return variable_;
+    }
+
+    ExpressionUnit* expr() {
+      return expression_;
+    }
+
+    const VarUnit* var() const {
+      return variable_;
+    }
+
+    const ExpressionUnit* expr() const {
+      return expression_;
+    }
+
+  private:
+    VarUnit* variable_;
+    ExpressionUnit* expression_;
+};
+
+class VarAssignUnit : public StatementUnit {
+  public:
+    VarAssignUnit(VarUnit* variable, ExpressionUnit* expression) :
+      StatementUnit(GrammarUnitType::VAR_ASSIGN),
       variable_(variable),
       expression_(expression) { }
 

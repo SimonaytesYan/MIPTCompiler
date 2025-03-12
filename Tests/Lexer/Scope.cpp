@@ -19,4 +19,8 @@ int main() {
     runOneTest("{ print(1); }", pass);
     runOneTest("{ let b = 10;"
                  "print(123 - b * 10); }", pass);
+
+    runOneTest("{ a = 1; }", pass);
+    runOneTest("{ let b = 10;"
+                 "a = b + 1; }", pass);
 }
