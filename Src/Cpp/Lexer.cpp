@@ -3,7 +3,8 @@
 #include <iostream>
 
 // ScopeUnit      ::= '{' {StatementUnit}+ '}'
-// StatementUnit  ::= VarDeclUnit | IFUnit | 0
+// StatementUnit  ::= VarDeclUnit | IFUnit | LoopUnit | 0
+// LoopUnit       ::= loop '(' ExprUnit ')' ScopeUnit
 // IFUnit         ::= 'if' '(' ExprUnit ')' ScopeUnit 'else' ScopeUnit
 // VarDeclUnit    ::= 'let' Var '=' ExprUnit ';'
 // ExpressionUnit ::= AddSub
@@ -24,6 +25,7 @@
 static ScopeUnit*     getScope(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getIf(TokenIt& cur_token, TokenIt end);
+static StatementUnit* getLoop(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end);
 static ExpressionUnit* getExpresion(TokenIt& cur_token, TokenIt end);
 static ExpressionUnit* getAddSub(TokenIt& cur_token, TokenIt end);
@@ -125,13 +127,13 @@ static StatementUnit* getIf(TokenIt& cur_token, TokenIt end) {
     }
 
     if (!CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::IF)) {
-        std::cerr << "getIf: not start from if";
+        std::cerr << "getIf: not start from if\n";
         return nullptr;
     }
     ++cur_token;
 
     if (!CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::LEFT_BRACKET)) {
-        std::cerr << "getIf: there not open bracket before condition";
+        std::cerr << "getIf: there not open bracket before condition\n";
         return nullptr;
     }
     ++cur_token;
@@ -139,8 +141,7 @@ static StatementUnit* getIf(TokenIt& cur_token, TokenIt end) {
     ExpressionUnit* condition = getExpresion(cur_token, end);
 
     if (!CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::RIGHT_BRACKET)) {
-        std::cout << "index = " << cur_token->index() << "\n";
-        std::cerr << "getIf: there not close bracket after condition";
+        std::cerr << "getIf: there not close bracket after condition\n";
         return nullptr;
     }
     ++cur_token;
@@ -156,6 +157,42 @@ static StatementUnit* getIf(TokenIt& cur_token, TokenIt end) {
     ScopeUnit* false_branch = getScope(cur_token, end);
 
     return new IfUnit(condition, true_branch, false_branch);
+}
+
+static StatementUnit* getLoop(TokenIt& cur_token, TokenIt end) {
+    std::cout << "getLoop: start func\n";
+
+    if (cur_token == end) {
+        std::cerr << "getLoop: cur_token == end\n";
+        return nullptr;
+    }
+
+    if (!CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::IF)) {
+        std::cerr << "getLoop: not start from loop\n";
+        return nullptr;
+    }
+    ++cur_token;
+
+    if (!CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::LEFT_BRACKET)) {
+        std::cerr << "getLoop: there not open bracket before condition\n";
+        return nullptr;
+    }
+    ++cur_token;
+
+    ExpressionUnit* condition = getExpresion(cur_token, end);
+
+    if (!CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::RIGHT_BRACKET)) {
+        std::cerr << "getLoop: there not close bracket after condition\n";
+        return nullptr;
+    }
+    ++cur_token;
+
+    ScopeUnit* body = getScope(cur_token, end);
+    if (body == nullptr) {
+        std::cerr << "getLoop: scope is nullptr\n";
+    }
+
+    return new LoopUnit(condition, body);
 }
 
 static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end) {

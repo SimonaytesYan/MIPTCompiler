@@ -244,6 +244,27 @@ void GraphicDumpPass::dumpNodeAndEdge()
             }
             return;
         }
+        case GrammarUnitType::LOOP: {
+            dumpNodeInFormat(light_green);
+
+            out_ << "LOOP ";
+            out_ << "} }\"]\n";
+
+            const LoopUnit* loop_decl = reinterpret_cast<const LoopUnit*>(node_);
+            if (loop_decl != nullptr) {
+                if (loop_decl->condition() != nullptr) {
+                    dumpEdge(loop_decl, loop_decl->condition(), "Cond");
+                    node_ = loop_decl->condition();
+                    dumpNodeAndEdge();
+                }
+                if (loop_decl->body() != nullptr) {
+                    dumpEdge(loop_decl, loop_decl->body(), "Body");
+                    node_ = loop_decl->body();
+                    dumpNodeAndEdge();
+                }
+            }
+            return;
+        }
         default: {
             out_ << "unknown";
             return;

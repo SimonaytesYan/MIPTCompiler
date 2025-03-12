@@ -206,6 +206,14 @@ class LoopUnit : public StatementUnit {
       return body_;
     }
 
+    const ExpressionUnit* condition() const {
+      return condition_;
+    }
+
+    const ScopeUnit* body() const {
+      return body_;
+    }
+
   public:
     ExpressionUnit* condition_;
     ScopeUnit* body_;
