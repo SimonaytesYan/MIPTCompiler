@@ -31,13 +31,6 @@ int main() {
     std::cout << "\n";
     std::cerr << "\n";
 
-    unit = parse(tokenize(in2));
-    pass.graphicDump(unit);
-    recursiveUnitDelete(unit);
-    std::cout << "\n";
-    std::cerr << "\n";
-
-
     unit = parse(tokenize(in3));
     pass.graphicDump(unit);
     recursiveUnitDelete(unit);

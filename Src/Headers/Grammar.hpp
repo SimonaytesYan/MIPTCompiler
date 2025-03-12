@@ -18,12 +18,12 @@ enum class GrammarUnitType {
     LOOP,
 };
 
-bool isGrammarUnitOperator(GrammarUnitType type) {
-  return type == GrammarUnitType::ADD ||
-         type == GrammarUnitType::SUB ||
-         type == GrammarUnitType::MUL ||
-         type == GrammarUnitType::DIV;
-}
+// bool isGrammarUnitOperator(GrammarUnitType type) {
+//   return type == GrammarUnitType::ADD ||
+//          type == GrammarUnitType::SUB ||
+//          type == GrammarUnitType::MUL ||
+//          type == GrammarUnitType::DIV;
+// }
 
 class GrammarUnit;
 
@@ -196,6 +196,14 @@ class LoopUnit : public StatementUnit {
 
     virtual int executeUnit() {
       return 0;
+    }
+
+    ExpressionUnit* condition() {
+      return condition_;
+    }
+
+    ScopeUnit* body() {
+      return body_;
     }
 
   public:

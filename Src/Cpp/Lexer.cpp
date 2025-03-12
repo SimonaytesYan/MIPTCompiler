@@ -445,6 +445,21 @@ void recursiveUnitDelete(GrammarUnit* unit) {
         }
         break;
     }
+    case GrammarUnitType::IF: {
+        IfUnit* scope_unit = reinterpret_cast<IfUnit*>(unit);
+
+        recursiveUnitDelete(scope_unit->condition());
+        recursiveUnitDelete(scope_unit->true_branch());
+        recursiveUnitDelete(scope_unit->false_branch());
+        break;
+    }
+    case GrammarUnitType::LOOP: {
+        LoopUnit* loop_unit = reinterpret_cast<LoopUnit*>(unit);
+
+        recursiveUnitDelete(loop_unit->condition());
+        recursiveUnitDelete(loop_unit->body());
+        break;
+    }
     default:
         break;
     }
