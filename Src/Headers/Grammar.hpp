@@ -18,6 +18,13 @@ enum class GrammarUnitType {
     LOOP,
 };
 
+bool isGrammarUnitOperator(GrammarUnitType type) {
+  return type == GrammarUnitType::ADD ||
+         type == GrammarUnitType::SUB ||
+         type == GrammarUnitType::MUL ||
+         type == GrammarUnitType::DIV;
+}
+
 class GrammarUnit;
 
 class ScopeUnit;

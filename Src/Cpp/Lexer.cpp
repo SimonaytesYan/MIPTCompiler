@@ -416,29 +416,37 @@ void recursiveUnitDelete(GrammarUnit* unit) {
     if (!unit)
         return;
 
-    BinaryOperUnit* binary_op = dynamic_cast<BinaryOperUnit*>(unit);
-
-    if (binary_op) {
+    switch (unit->getType())
+    {
+    case GrammarUnitType::ADD:
+    case GrammarUnitType::MUL:
+    case GrammarUnitType::DIV:
+    case GrammarUnitType::SUB: {
+        BinaryOperUnit* binary_op = reinterpret_cast<BinaryOperUnit*>(unit);
         recursiveUnitDelete(binary_op->left_op_);
         recursiveUnitDelete(binary_op->right_op_);
+        break;
     }
-
-    UnaryOperUnit* unary_unit = dynamic_cast<UnaryOperUnit*>(unit);
-    if (unary_unit) {
+    case GrammarUnitType::UNARY_MINUS: {
+        UnaryOperUnit* unary_unit = reinterpret_cast<UnaryOperUnit*>(unit);
         recursiveUnitDelete(unary_unit->operand());
+        break;
     }
-
-    VarDeclUnit* var_decl_unit = dynamic_cast<VarDeclUnit*>(unit);
-    if (var_decl_unit) {
+    case GrammarUnitType::VAR_DECL: {
+        VarDeclUnit* var_decl_unit = reinterpret_cast<VarDeclUnit*>(unit);
         recursiveUnitDelete(var_decl_unit->var());
         recursiveUnitDelete(var_decl_unit->expr());
+        break;
     }
-
-    if (unit->getType() == GrammarUnitType::SCOPE) {
-        ScopeUnit scope_unit = *reinterpret_cast<ScopeUnit*>(unit);
-        for (auto statement_unit : scope_unit) {
+    case GrammarUnitType::SCOPE: {
+        ScopeUnit* scope_unit = reinterpret_cast<ScopeUnit*>(unit);
+        for (auto statement_unit : *scope_unit) {
             recursiveUnitDelete(statement_unit);
         }
+        break;
+    }
+    default:
+        break;
     }
 
     delete unit;
