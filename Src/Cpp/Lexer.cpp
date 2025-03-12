@@ -77,6 +77,7 @@ static ScopeUnit* getScope(TokenIt& cur_token, TokenIt end) {
     while (cur_token != end &&
            !CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::END_SCOPE))
     {
+        // cur_token->index()
         std::cout << "getScope: new_step\n";
 
         StatementUnit* next_statement = getStatement(cur_token, end);
@@ -221,13 +222,9 @@ static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end) {
         return nullptr;
     }
 
-    if (!std::holds_alternative<OperatorToken>(*cur_token)) {
-        std::cerr << "getVarDecl: not operator in the middle\n";
-        return nullptr;
-    }
-
-    if (std::get<OperatorToken>(*cur_token).oper() != OperatorType::EQUAL) {
-        std::cerr << "getVarDecl: not operator = in the middle\n";
+    if (!CheckTokenValue<OperatorToken, OperatorType>(cur_token, OperatorType::EQUAL)) {
+        std::cerr << "index = " << cur_token->index();
+        std::cerr << "getVarDecl: there is not operator = in var declaration\n";
         return nullptr;
     }
 
@@ -239,13 +236,10 @@ static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end) {
         return nullptr;
     }
 
-    if (!std::holds_alternative<SpecialSymbolToken>(*cur_token)) {
-        std::cerr << "getVarDecl: not operator in the middle\n";
-        return nullptr;
-    }
-
-    if (std::get<SpecialSymbolToken>(*cur_token).specSym() != SpecialSymbolType::END_STATEMENT) {
-        std::cerr << "getVarDecl: not operator = in the middle\n";
+    if (!CheckTokenValue<SpecialSymbolToken,
+                         SpecialSymbolType>(cur_token,
+                                           SpecialSymbolType::END_STATEMENT)) {
+        std::cerr << "getVarDecl: there isn`t a ';' at the end of var declaration\n";
         return nullptr;
     }
 

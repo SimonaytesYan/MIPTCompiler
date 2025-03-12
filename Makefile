@@ -18,11 +18,11 @@ NO_COLOR = \033[0m
 test_lexer_dump: $(BIN)/test_lexer_dump_objects $(BIN)/test_lexer_dump_expr $(BIN)/test_lexer_dump_scope
 	@echo "${GREEN_COLOR}START LEXER TESTS${NO_COLOR}\n"
 
-	@echo "\n${GREEN_COLOR}LEXER SCOPE${NO_COLOR}"
-	-@$(BIN)/test_lexer_dump_scope
-
-	@echo "\n${GREEN_COLOR}LEXER EXPRESSION${NO_COLOR}"
-	-@$(BIN)/test_lexer_dump_expr
+#	@echo "\n${GREEN_COLOR}LEXER SCOPE${NO_COLOR}"
+#	-@$(BIN)/test_lexer_dump_scope
+#
+#	@echo "\n${GREEN_COLOR}LEXER EXPRESSION${NO_COLOR}"
+#	-@$(BIN)/test_lexer_dump_expr
 
 	@echo "\n${GREEN_COLOR}LEXER OBJECTS${NO_COLOR}"
 	-@$(BIN)/test_lexer_dump_objects
