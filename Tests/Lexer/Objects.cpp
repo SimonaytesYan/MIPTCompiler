@@ -6,9 +6,9 @@
 #include "../../Src/Headers/GraphicDumpPass.hpp"
 
 int main() {
-    std::istringstream in1("123");
-    std::istringstream in2("-123");
-    std::istringstream in3("Abcd");
+    std::istringstream in1("{let a = 123}");
+    std::istringstream in2("{let b = -123}");
+    std::istringstream in3("{let c = Abcd; }");
 
     GraphicDumpPass pass("LexerObjDump");
     pass.graphicDump(parse(tokenize(in1)));

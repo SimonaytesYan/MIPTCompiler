@@ -244,8 +244,9 @@ void GraphicDumpPass::dumpNodeAndEdge()
             }
             return;
         }
-        default:
+        default: {
             out_ << "unknown";
-            break;
+            return;
+        }
     }
 }

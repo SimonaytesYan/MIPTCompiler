@@ -69,17 +69,13 @@ static ScopeUnit* getScope(TokenIt& cur_token, TokenIt end) {
         return nullptr;
     }
 
-    std::cout << "token = " << cur_token->index() << "\n";
-
     ++cur_token;
-    std::cout << "token = " << cur_token->index() << "\n";
 
-    std::cout << "getScope: before while step\n";
     ScopeUnit* scope = new ScopeUnit();
     while (cur_token != end &&
            !CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::END_SCOPE))
     {
-        std::cout << "getScope: while step\n";
+        std::cout << "getScope: new_step\n";
 
         StatementUnit* next_statement = getStatement(cur_token, end);
         if (next_statement == nullptr) {
@@ -89,7 +85,6 @@ static ScopeUnit* getScope(TokenIt& cur_token, TokenIt end) {
 
         scope->addStatements(next_statement);
     }
-    std::cout << "getScope: after whiles step\n";
 
     if (cur_token == end) {
         std::cerr << "getScope: Scope not end with }\n";
