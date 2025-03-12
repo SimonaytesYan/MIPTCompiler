@@ -12,20 +12,28 @@ enum class GrammarUnitType {
     MUL,
     DIV,
     UNARY_MINUS,
-    IF,
+    SCOPE,
     VAR_DECL,
-    SCOPE
+    IF,
+    LOOP,
 };
 
 class GrammarUnit;
+
 class ScopeUnit;
 class StatementUnit;
 class ExpressionUnit;
+class IfUnit;
+class LoopUnit;
+
 class ObjectUnit;
 class NumUnit;
 class VarUnit;
-class IfUnit;
+
 class UnaryOperUnit;
+class UnaryOperMinus;
+
+class BinaryOperUnit;
 class AddExprUnit;
 class MulExprUnit;
 class DivExprUnit;
@@ -170,6 +178,22 @@ class VarDeclUnit : public StatementUnit {
   private:
     VarUnit* variable_;
     ExpressionUnit* expression_;
+};
+
+class LoopUnit : public StatementUnit {
+  public:
+    LoopUnit(ExpressionUnit* condition, ScopeUnit* body) :
+      StatementUnit(GrammarUnitType::LOOP),
+      condition_(condition),
+      body_(body) {}
+
+    virtual int executeUnit() {
+      return 0;
+    }
+
+  public:
+    ExpressionUnit* condition_;
+    ScopeUnit* body_;
 };
 
 class ExpressionUnit : public GrammarUnit {
