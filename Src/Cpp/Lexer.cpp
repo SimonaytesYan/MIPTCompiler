@@ -77,7 +77,6 @@ static ScopeUnit* getScope(TokenIt& cur_token, TokenIt end) {
     while (cur_token != end &&
            !CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::END_SCOPE))
     {
-        // cur_token->index()
         std::cout << "getScope: new_step\n";
 
         StatementUnit* next_statement = getStatement(cur_token, end);
@@ -106,13 +105,16 @@ static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end) {
         return nullptr;
     }
 
-    if (std::holds_alternative<KeywordToken>(*cur_token)) {
-        if (std::get<KeywordToken>(*cur_token).keyword() == KeywordType::LET) {
-            return getVarDecl(cur_token, end);
-        }
-        if (std::get<KeywordToken>(*cur_token).keyword() == KeywordType::IF) {
-            return getIf(cur_token, end);
-        }
+    if (CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::LET)) {
+        return getVarDecl(cur_token, end);
+    }
+
+    if (CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::IF)) {
+        return getIf(cur_token, end);
+    }
+
+    if (CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::LOOP)) {
+        return getLoop(cur_token, end);
     }
 
     std::cerr << "getStatement: Unexpected token type = " << cur_token->index() << "\n";
@@ -168,7 +170,7 @@ static StatementUnit* getLoop(TokenIt& cur_token, TokenIt end) {
         return nullptr;
     }
 
-    if (!CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::IF)) {
+    if (!CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::LOOP)) {
         std::cerr << "getLoop: not start from loop\n";
         return nullptr;
     }
@@ -456,17 +458,20 @@ void recursiveUnitDelete(GrammarUnit* unit) {
         BinaryOperUnit* binary_op = reinterpret_cast<BinaryOperUnit*>(unit);
         recursiveUnitDelete(binary_op->left_op_);
         recursiveUnitDelete(binary_op->right_op_);
+        std::cout << "end operator recursiveUnitDelete\n";
         break;
     }
     case GrammarUnitType::UNARY_MINUS: {
         UnaryOperUnit* unary_unit = reinterpret_cast<UnaryOperUnit*>(unit);
         recursiveUnitDelete(unary_unit->operand());
+        std::cout << "end unary min recursiveUnitDelete\n";
         break;
     }
     case GrammarUnitType::VAR_DECL: {
         VarDeclUnit* var_decl_unit = reinterpret_cast<VarDeclUnit*>(unit);
         recursiveUnitDelete(var_decl_unit->var());
         recursiveUnitDelete(var_decl_unit->expr());
+        std::cout << "end var decl recursiveUnitDelete\n";
         break;
     }
     case GrammarUnitType::SCOPE: {
@@ -474,6 +479,7 @@ void recursiveUnitDelete(GrammarUnit* unit) {
         for (auto statement_unit : *scope_unit) {
             recursiveUnitDelete(statement_unit);
         }
+        std::cout << "end scope recursiveUnitDelete\n";
         break;
     }
     case GrammarUnitType::IF: {
@@ -482,6 +488,7 @@ void recursiveUnitDelete(GrammarUnit* unit) {
         recursiveUnitDelete(scope_unit->condition());
         recursiveUnitDelete(scope_unit->true_branch());
         recursiveUnitDelete(scope_unit->false_branch());
+        std::cout << "end if recursiveUnitDelete\n";
         break;
     }
     case GrammarUnitType::LOOP: {
@@ -489,11 +496,14 @@ void recursiveUnitDelete(GrammarUnit* unit) {
 
         recursiveUnitDelete(loop_unit->condition());
         recursiveUnitDelete(loop_unit->body());
+        std::cout << "end loop recursiveUnitDelete\n";
         break;
     }
     default:
+        std::cout << "end something another recursiveUnitDelete\n";
         break;
     }
+
 
     delete unit;
 }

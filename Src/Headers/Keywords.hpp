@@ -8,6 +8,7 @@ enum class KeywordType {
     IF,
     ELSE,
     OUT,
+    LOOP,
     KEYWORD_NUM
 };
 
@@ -20,5 +21,6 @@ const Keyword kKeywords[] = {
     {"let",  KeywordType::LET},
     {"if",   KeywordType::IF},
     {"else", KeywordType::ELSE},
-    {"out",  KeywordType::OUT}
+    {"out",  KeywordType::OUT},
+    {"loop",  KeywordType::LOOP}
 };
