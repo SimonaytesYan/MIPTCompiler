@@ -501,20 +501,17 @@ void recursiveUnitDelete(GrammarUnit* unit) {
         BinaryOperUnit* binary_op = reinterpret_cast<BinaryOperUnit*>(unit);
         recursiveUnitDelete(binary_op->left_op_);
         recursiveUnitDelete(binary_op->right_op_);
-        std::cout << "end operator recursiveUnitDelete\n";
         break;
     }
     case GrammarUnitType::UNARY_MINUS: {
         UnaryOperUnit* unary_unit = reinterpret_cast<UnaryOperUnit*>(unit);
         recursiveUnitDelete(unary_unit->operand());
-        std::cout << "end unary min recursiveUnitDelete\n";
         break;
     }
     case GrammarUnitType::VAR_DECL: {
         VarDeclUnit* var_decl_unit = reinterpret_cast<VarDeclUnit*>(unit);
         recursiveUnitDelete(var_decl_unit->var());
         recursiveUnitDelete(var_decl_unit->expr());
-        std::cout << "end var decl recursiveUnitDelete\n";
         break;
     }
     case GrammarUnitType::SCOPE: {
@@ -522,7 +519,6 @@ void recursiveUnitDelete(GrammarUnit* unit) {
         for (auto statement_unit : *scope_unit) {
             recursiveUnitDelete(statement_unit);
         }
-        std::cout << "end scope recursiveUnitDelete\n";
         break;
     }
     case GrammarUnitType::IF: {
@@ -531,7 +527,6 @@ void recursiveUnitDelete(GrammarUnit* unit) {
         recursiveUnitDelete(scope_unit->condition());
         recursiveUnitDelete(scope_unit->true_branch());
         recursiveUnitDelete(scope_unit->false_branch());
-        std::cout << "end if recursiveUnitDelete\n";
         break;
     }
     case GrammarUnitType::LOOP: {
@@ -539,11 +534,15 @@ void recursiveUnitDelete(GrammarUnit* unit) {
 
         recursiveUnitDelete(loop_unit->condition());
         recursiveUnitDelete(loop_unit->body());
-        std::cout << "end loop recursiveUnitDelete\n";
+        break;
+    }
+    case GrammarUnitType::PRINT : {
+        PrintUnit* print_unit = reinterpret_cast<PrintUnit*>(unit);
+
+        recursiveUnitDelete(print_unit->expression());
         break;
     }
     default:
-        std::cout << "end something another recursiveUnitDelete\n";
         break;
     }
 

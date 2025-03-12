@@ -189,17 +189,15 @@ void GraphicDumpPass::dumpNodeAndEdge()
             out_ << "} }\"]\n";
 
             const VarDeclUnit* var_decl = reinterpret_cast<const VarDeclUnit*>(node_);
-            if (var_decl != nullptr) {
-                if (var_decl->var() != nullptr) {
-                    dumpEdge(var_decl, var_decl->var(), "Var");
-                    node_ = var_decl->var();
-                    dumpNodeAndEdge();
-                }
-                if (var_decl->expr() != nullptr) {
-                    dumpEdge(var_decl, var_decl->expr(), "Expr");
-                    node_ = var_decl->expr();
-                    dumpNodeAndEdge();
-                }
+            if (var_decl->var() != nullptr) {
+                dumpEdge(var_decl, var_decl->var(), "Var");
+                node_ = var_decl->var();
+                dumpNodeAndEdge();
+            }
+            if (var_decl->expr() != nullptr) {
+                dumpEdge(var_decl, var_decl->expr(), "Expr");
+                node_ = var_decl->expr();
+                dumpNodeAndEdge();
             }
             return;
         }
@@ -225,22 +223,20 @@ void GraphicDumpPass::dumpNodeAndEdge()
             out_ << "} }\"]\n";
 
             const IfUnit* if_decl = reinterpret_cast<const IfUnit*>(node_);
-            if (if_decl != nullptr) {
-                if (if_decl->condition() != nullptr) {
-                    dumpEdge(if_decl, if_decl->condition(), "Cond");
-                    node_ = if_decl->condition();
-                    dumpNodeAndEdge();
-                }
-                if (if_decl->true_branch() != nullptr) {
-                    dumpEdge(if_decl, if_decl->true_branch(), "True");
-                    node_ = if_decl->true_branch();
-                    dumpNodeAndEdge();
-                }
-                if (if_decl->false_branch() != nullptr) {
-                    dumpEdge(if_decl, if_decl->false_branch(), "False");
-                    node_ = if_decl->false_branch();
-                    dumpNodeAndEdge();
-                }
+            if (if_decl->condition() != nullptr) {
+                dumpEdge(if_decl, if_decl->condition(), "Cond");
+                node_ = if_decl->condition();
+                dumpNodeAndEdge();
+            }
+            if (if_decl->true_branch() != nullptr) {
+                dumpEdge(if_decl, if_decl->true_branch(), "True");
+                node_ = if_decl->true_branch();
+                dumpNodeAndEdge();
+            }
+            if (if_decl->false_branch() != nullptr) {
+                dumpEdge(if_decl, if_decl->false_branch(), "False");
+                node_ = if_decl->false_branch();
+                dumpNodeAndEdge();
             }
             return;
         }
@@ -251,17 +247,28 @@ void GraphicDumpPass::dumpNodeAndEdge()
             out_ << "} }\"]\n";
 
             const LoopUnit* loop_decl = reinterpret_cast<const LoopUnit*>(node_);
-            if (loop_decl != nullptr) {
-                if (loop_decl->condition() != nullptr) {
-                    dumpEdge(loop_decl, loop_decl->condition(), "Cond");
-                    node_ = loop_decl->condition();
-                    dumpNodeAndEdge();
-                }
-                if (loop_decl->body() != nullptr) {
-                    dumpEdge(loop_decl, loop_decl->body(), "Body");
-                    node_ = loop_decl->body();
-                    dumpNodeAndEdge();
-                }
+            if (loop_decl->condition() != nullptr) {
+                dumpEdge(loop_decl, loop_decl->condition(), "Cond");
+                node_ = loop_decl->condition();
+                dumpNodeAndEdge();
+            }
+            if (loop_decl->body() != nullptr) {
+                dumpEdge(loop_decl, loop_decl->body(), "Body");
+                node_ = loop_decl->body();
+                dumpNodeAndEdge();
+            }
+            return;
+        }
+        case GrammarUnitType::PRINT: {
+            dumpNodeInFormat(light_green);
+            out_ << "PRINT ";
+            out_ << "} }\"]\n";
+
+            const PrintUnit* print_decl = reinterpret_cast<const PrintUnit*>(node_);
+            if (print_decl->expression() != nullptr) {
+                dumpEdge(print_decl, print_decl->expression(), "Expr");
+                node_ = print_decl->expression();
+                dumpNodeAndEdge();
             }
             return;
         }
