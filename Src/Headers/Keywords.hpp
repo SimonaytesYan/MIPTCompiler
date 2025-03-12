@@ -7,7 +7,7 @@ enum class KeywordType {
     LET,
     IF,
     ELSE,
-    OUT,
+    PRINT,
     LOOP,
     KEYWORD_NUM
 };
@@ -18,9 +18,9 @@ struct Keyword {
 };
 
 const Keyword kKeywords[] = {
-    {"let",  KeywordType::LET},
-    {"if",   KeywordType::IF},
-    {"else", KeywordType::ELSE},
-    {"out",  KeywordType::OUT},
+    {"let",   KeywordType::LET},
+    {"if",    KeywordType::IF},
+    {"else",  KeywordType::ELSE},
+    {"print", KeywordType::PRINT},
     {"loop",  KeywordType::LOOP}
 };

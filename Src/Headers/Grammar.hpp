@@ -16,6 +16,7 @@ enum class GrammarUnitType {
     VAR_DECL,
     IF,
     LOOP,
+    PRINT,
 };
 
 // bool isGrammarUnitOperator(GrammarUnitType type) {
@@ -32,6 +33,7 @@ class StatementUnit;
 class ExpressionUnit;
 class IfUnit;
 class LoopUnit;
+class PrintUnit;
 
 class ObjectUnit;
 class NumUnit;
@@ -112,6 +114,28 @@ class StatementUnit : public GrammarUnit {
     virtual int executeUnit() = 0;
 
     virtual ~StatementUnit() = default;
+};
+
+class PrintUnit : public StatementUnit {
+  public:
+    PrintUnit(ExpressionUnit* expression) :
+      StatementUnit(GrammarUnitType::PRINT),
+      expression_(expression) { }
+
+    virtual int executeUnit() {
+      return 0;
+    }
+
+    ExpressionUnit* expression() {
+      return expression_;
+    }
+
+    const ExpressionUnit* expression() const {
+      return expression_;
+    }
+
+  private:
+    ExpressionUnit* expression_;
 };
 
 class IfUnit : public StatementUnit {

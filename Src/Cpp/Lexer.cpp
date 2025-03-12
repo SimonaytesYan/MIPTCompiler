@@ -3,7 +3,8 @@
 #include <iostream>
 
 // ScopeUnit      ::= '{' {StatementUnit}+ '}'
-// StatementUnit  ::= VarDeclUnit | IFUnit | LoopUnit | 0
+// StatementUnit  ::= VarDeclUnit | IFUnit | LoopUnit | PrintUnit | 0
+// PrintUnit      ::= 'print(' ExprUnit ');'
 // LoopUnit       ::= loop '(' ExprUnit ')' ScopeUnit
 // IFUnit         ::= 'if' '(' ExprUnit ')' ScopeUnit 'else' ScopeUnit
 // VarDeclUnit    ::= 'let' Var '=' ExprUnit ';'
@@ -25,6 +26,7 @@
 static ScopeUnit*     getScope(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getIf(TokenIt& cur_token, TokenIt end);
+static StatementUnit* getPrint(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getLoop(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end);
 static ExpressionUnit* getExpresion(TokenIt& cur_token, TokenIt end);
@@ -117,8 +119,49 @@ static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end) {
         return getLoop(cur_token, end);
     }
 
+    if (CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::PRINT)) {
+        return getPrint(cur_token, end);
+    }
+
     std::cerr << "getStatement: Unexpected token type = " << cur_token->index() << "\n";
     return nullptr;
+}
+
+static StatementUnit* getPrint(TokenIt& cur_token, TokenIt end) {
+    std::cout << "getPrint: start print\n";
+
+    if (cur_token == end) {
+        std::cerr << "getPrint: cur_token == end\n";
+        return nullptr;
+    }
+
+    if (!CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::PRINT)) {
+        std::cerr << "getPrint: not start from print\n";
+        return nullptr;
+    }
+    ++cur_token;
+
+    if (!CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::LEFT_BRACKET)) {
+        std::cerr << "getPrint: there not open bracket before expression\n";
+        return nullptr;
+    }
+    ++cur_token;
+
+    ExpressionUnit* expression = getExpresion(cur_token, end);
+
+    if (!CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::RIGHT_BRACKET)) {
+        std::cerr << "getPrint: there not close bracket after expression\n";
+        return nullptr;
+    }
+    ++cur_token;
+
+    if (!CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::END_STATEMENT)) {
+        std::cerr << "getPrint: there is no a ';' at the end of print statement\n";
+        return nullptr;
+    }
+    ++cur_token;
+
+    return new PrintUnit(expression);
 }
 
 static StatementUnit* getIf(TokenIt& cur_token, TokenIt end) {
@@ -241,7 +284,7 @@ static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end) {
     if (!CheckTokenValue<SpecialSymbolToken,
                          SpecialSymbolType>(cur_token,
                                            SpecialSymbolType::END_STATEMENT)) {
-        std::cerr << "getVarDecl: there isn`t a ';' at the end of var declaration\n";
+        std::cerr << "getVarDecl: there is no a ';' at the end of var declaration\n";
         return nullptr;
     }
 
