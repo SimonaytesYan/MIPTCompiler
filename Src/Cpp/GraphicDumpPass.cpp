@@ -131,7 +131,7 @@ void GraphicDumpPass::dumpNodeAndEdge()
         case GrammarUnitType::NUM:
         {
             dumpNodeInFormat(light_blue);
-            const NumUnit* num_node = dynamic_cast<const NumUnit*>(node_);
+            const NumUnit* num_node = reinterpret_cast<const NumUnit*>(node_);
             if (num_node)
                 out_ << "NUM | " << num_node->num();
             out_ << "} }\"]\n";
@@ -147,7 +147,7 @@ void GraphicDumpPass::dumpNodeAndEdge()
             dumpOperator();
             out_ << "} }\"]\n";
 
-            const BinaryOperUnit* bin_oper_node = dynamic_cast<const BinaryOperUnit*>(node_);
+            const BinaryOperUnit* bin_oper_node = reinterpret_cast<const BinaryOperUnit*>(node_);
             if (bin_oper_node->left() != nullptr) {
                 dumpEdge(bin_oper_node, bin_oper_node->left(), "L");
                 node_ = bin_oper_node->left();
