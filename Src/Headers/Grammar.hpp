@@ -4,6 +4,30 @@
 
 #include <vector>
 
+class GrammarUnit;
+
+  class ScopeUnit;
+  class StatementUnit;
+    class ExpressionUnit;
+    class IfUnit;
+    class LoopUnit;
+    class PrintUnit;
+    class VarDeclUnit;
+
+  class ObjectUnit;
+    class NumUnit;
+    class VarUnit;
+
+  class OperatorUnit;
+    class UnaryOperUnit;
+      class UnaryOperMinus;
+
+    class BinaryOperUnit;
+      class AddExprUnit;
+      class MulExprUnit;
+      class DivExprUnit;
+      class SubExprUnit;
+
 enum class GrammarUnitType {
     VAR,
     NUM,
@@ -20,43 +44,11 @@ enum class GrammarUnitType {
     PRINT,
 };
 
-// bool isGrammarUnitOperator(GrammarUnitType type) {
-//   return type == GrammarUnitType::ADD ||
-//          type == GrammarUnitType::SUB ||
-//          type == GrammarUnitType::MUL ||
-//          type == GrammarUnitType::DIV;
-// }
-
-class GrammarUnit;
-
-class ScopeUnit;
-class StatementUnit;
-class ExpressionUnit;
-class IfUnit;
-class LoopUnit;
-class PrintUnit;
-
-class ObjectUnit;
-class NumUnit;
-class VarUnit;
-
-class UnaryOperUnit;
-class UnaryOperMinus;
-
-class BinaryOperUnit;
-class AddExprUnit;
-class MulExprUnit;
-class DivExprUnit;
-class SubExprUnit;
-class VarDeclUnit;
-
 class GrammarUnit {
   public:
 
     GrammarUnit(GrammarUnitType type) :
       type_(type) { }
-
-    virtual int executeUnit() = 0;
 
     virtual GrammarUnitType getType() const {
         return type_;
@@ -72,14 +64,6 @@ class ScopeUnit : public GrammarUnit {
   public:
     ScopeUnit() :
       GrammarUnit(GrammarUnitType::SCOPE) { }
-
-    int executeUnit() {
-      // for (const auto& statement : statements) {
-      //   statement->executeUnit();
-      // }
-
-      return 0;
-    }
 
     std::vector<StatementUnit*>::iterator begin() {
       return statements.begin();
@@ -112,8 +96,6 @@ class StatementUnit : public GrammarUnit {
     StatementUnit(GrammarUnitType type) :
       GrammarUnit(type) { }
 
-    virtual int executeUnit() = 0;
-
     virtual ~StatementUnit() = default;
 };
 
@@ -122,10 +104,6 @@ class PrintUnit : public StatementUnit {
     PrintUnit(ExpressionUnit* expression) :
       StatementUnit(GrammarUnitType::PRINT),
       expression_(expression) { }
-
-    virtual int executeUnit() {
-      return 0;
-    }
 
     ExpressionUnit* expression() {
       return expression_;
@@ -169,10 +147,6 @@ class IfUnit : public StatementUnit {
       return false_branch_;
     }
 
-    virtual int executeUnit() {
-      return 0;
-    }
-
   private:
     ExpressionUnit* condition_;
     ScopeUnit* true_branch_;
@@ -185,11 +159,6 @@ class VarDeclUnit : public StatementUnit {
       StatementUnit(GrammarUnitType::VAR_DECL),
       variable_(variable),
       expression_(expression) { }
-
-    int executeUnit() {
-      // variable = executeUnit(expression);
-      return 0;
-    }
 
     VarUnit* var() {
       return variable_;
@@ -219,11 +188,6 @@ class VarAssignUnit : public StatementUnit {
       variable_(variable),
       expression_(expression) { }
 
-    int executeUnit() {
-      // variable = executeUnit(expression);
-      return 0;
-    }
-
     VarUnit* var() {
       return variable_;
     }
@@ -251,10 +215,6 @@ class LoopUnit : public StatementUnit {
       StatementUnit(GrammarUnitType::LOOP),
       condition_(condition),
       body_(body) {}
-
-    virtual int executeUnit() {
-      return 0;
-    }
 
     ExpressionUnit* condition() {
       return condition_;
@@ -300,10 +260,6 @@ class NumUnit : public ObjectUnit {
       ObjectUnit(GrammarUnitType::NUM),
       value_(value) { }
 
-    int executeUnit() {
-        return value_;
-    }
-
     int num() const {
         return value_;
     }
@@ -319,10 +275,6 @@ class VarUnit : public ObjectUnit {
       name_(str) {
     }
 
-    int executeUnit() {
-        return 0;
-    }
-
     const std::string& name() const {
         return name_;
     }
@@ -331,10 +283,16 @@ class VarUnit : public ObjectUnit {
     std::string name_;
 };
 
-class UnaryOperUnit : public ExpressionUnit {
+class OperatorUnit : public ExpressionUnit {
+  public:
+    OperatorUnit(GrammarUnitType type) :
+    ExpressionUnit(type) { }
+};
+
+class UnaryOperUnit : public OperatorUnit {
   public:
     UnaryOperUnit(ExpressionUnit* operand, GrammarUnitType type) :
-      ExpressionUnit(type),
+      OperatorUnit(type),
       operand_(operand) { }
 
   ExpressionUnit* operand() const {
@@ -353,20 +311,16 @@ class UnaryOperMinus : public UnaryOperUnit {
       UnaryOperUnit(operand, GrammarUnitType::UNARY_MINUS),
       operand_(operand) { }
 
-    int executeUnit() {
-        return -operand_->executeUnit();
-    }
-
   private:
     GrammarUnit* operand_;
 };
 
-class BinaryOperUnit : public ExpressionUnit {
+class BinaryOperUnit : public OperatorUnit {
   public:
     virtual ~BinaryOperUnit() = default;
 
     BinaryOperUnit(ExpressionUnit* left_op, ExpressionUnit* right_op, GrammarUnitType type) :
-      ExpressionUnit(type),
+      OperatorUnit(type),
       left_op_(left_op),
       right_op_(right_op) { }
 
@@ -387,39 +341,22 @@ class AddExprUnit : public BinaryOperUnit {
   public:
     AddExprUnit(ExpressionUnit* left_op, ExpressionUnit* right_op) :
       BinaryOperUnit(left_op, right_op, GrammarUnitType::ADD) { }
-
-    int executeUnit() {
-        return left_op_->executeUnit() + right_op_->executeUnit();
-    }
 };
 
 class MulExprUnit : public BinaryOperUnit {
   public:
     MulExprUnit(ExpressionUnit* left_op, ExpressionUnit* right_op) :
       BinaryOperUnit(left_op, right_op, GrammarUnitType::MUL) { }
-
-    int executeUnit() {
-        return left_op_->executeUnit() * right_op_->executeUnit();
-    }
 };
 
 class SubExprUnit : public BinaryOperUnit {
   public:
     SubExprUnit(ExpressionUnit* left_op, ExpressionUnit* right_op) :
       BinaryOperUnit(left_op, right_op, GrammarUnitType::SUB) { }
-
-    int executeUnit() {
-        return left_op_->executeUnit() - right_op_->executeUnit();
-    }
 };
 
 class DivExprUnit : public BinaryOperUnit {
   public:
     DivExprUnit(ExpressionUnit* left_op, ExpressionUnit* right_op) :
       BinaryOperUnit(left_op, right_op, GrammarUnitType::DIV) { }
-
-    int executeUnit() {
-        // TODO add check right_op result to zero
-        return left_op_->executeUnit() / right_op_->executeUnit();
-    }
 };
