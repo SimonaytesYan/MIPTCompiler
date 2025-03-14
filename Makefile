@@ -51,18 +51,21 @@ $(BIN)/test_lexer_dump_objects: Tests/Lexer/Objects.cpp $(OBJ)/Tokenizer.o $(OBJ
 	$(CC) $(CFLAGS) Tests/Lexer/Objects.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
+					$(OBJ)/Grammar.o	\
 					$(OBJ)/GraphicDumpPass.o -o $(BIN)/test_lexer_dump_objects
 
 $(BIN)/test_lexer_dump_expr: Tests/Lexer/Expr.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o
 	$(CC) $(CFLAGS) Tests/Lexer/Expr.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
+					$(OBJ)/Grammar.o	\
 					$(OBJ)/GraphicDumpPass.o -o $(BIN)/test_lexer_dump_expr
 
 $(BIN)/test_lexer_dump_scope: Tests/Lexer/Scope.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o
 	$(CC) $(CFLAGS) Tests/Lexer/Scope.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
+					$(OBJ)/Grammar.o	\
 					$(OBJ)/GraphicDumpPass.o -o $(BIN)/test_lexer_dump_scope
 
 $(BIN)/test_tokenizer_spec_symbols: $(OBJ)/Tokenizer.o
@@ -89,12 +92,16 @@ $(BIN)/test_tokenizer_name: $(OBJ)/Tokenizer.o
 $(OBJ)/Tokenizer.o: Src/Cpp/Tokenizer.cpp $(HEADERS)
 	$(CC) -c $(CFLAGS) Src/Cpp/Tokenizer.cpp -o $(OBJ)/Tokenizer.o
 
-$(OBJ)/Lexer.o: Src/Cpp/Lexer.cpp $(HEADER)
-	$(CC) -c $(CFLAGS) Src/Cpp/Lexer.cpp -o $(OBJ)/Lexer.o
+$(OBJ)/Lexer.o: Src/Cpp/Lexer.cpp $(HEADER) $(OBJ)/Grammar.o
+	$(CC) -c $(CFLAGS) Src/Cpp/Lexer.cpp \
+					   $(OBJ)/Grammar.o -o $(OBJ)/Lexer.o
 
-$(OBJ)/GraphicDumpPass.o: Src/Cpp/GraphicDumpPass.cpp $(HEADER)
-	$(CC) -c $(CFLAGS) Src/Cpp/GraphicDumpPass.cpp -o $(OBJ)/GraphicDumpPass.o
+$(OBJ)/GraphicDumpPass.o: Src/Cpp/GraphicDumpPass.cpp $(HEADER) $(OBJ)/Grammar.o
+	$(CC) -c $(CFLAGS) Src/Cpp/GraphicDumpPass.cpp \
+					   $(OBJ)/Grammar.o -o $(OBJ)/GraphicDumpPass.o
 
+$(OBJ)/Grammar.o:  Src/Cpp/Grammar.cpp $(HEADER)
+	$(CC) -c $(CFLAGS) Src/Cpp/Grammar.cpp -o $(OBJ)/Grammar.o
 
 make_dir:
 	-mkdir $(OBJ)

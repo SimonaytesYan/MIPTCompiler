@@ -28,6 +28,13 @@ class GrammarUnit;
       class DivExprUnit;
       class SubExprUnit;
 
+bool isGrammarUnitOperator(GrammarUnit* unit);
+bool isGrammarUnitBinaryOperator(GrammarUnit* unit);
+bool isGrammarUnitUnaryOperator(GrammarUnit* unit);
+bool isGrammarUnitObject(GrammarUnit* unit);
+bool isGrammarUnitExpression(GrammarUnit* unit);
+bool isGrammarUnitStatement(GrammarUnit* unit);
+
 enum class GrammarUnitType {
     VAR,
     NUM,
