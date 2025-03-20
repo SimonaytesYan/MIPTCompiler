@@ -1,6 +1,7 @@
 #include "../Headers/ExecutionPass.hpp"
 
 #include <iostream>
+#include <assert.h>
 
 void ExecutionPass::Execute(GrammarUnit* unit) {
     if (unit == nullptr)
@@ -10,6 +11,12 @@ void ExecutionPass::Execute(GrammarUnit* unit) {
         ExecuteStatement(reinterpret_cast<StatementUnit*>(unit));
     else if (isGrammarUnitStatement(unit))
         ExecuteScope(reinterpret_cast<ScopeUnit*>(unit));
+}
+
+void ExecutionPass::ExecuteScope(ScopeUnit* scope) {
+    for (StatementUnit* unit : *scope) {
+        ExecuteStatement(unit);
+    }
 }
 
 void ExecutionPass::ExecuteStatement(StatementUnit* unit) {
@@ -38,11 +45,30 @@ void ExecutionPass::ExecuteStatement(StatementUnit* unit) {
 }
 
 int ExecutionPass::ExecuteExpression(ExpressionUnit* unit) {
+    if (isGrammarUnitObject(unit))
+        return ExecuteObject(reinterpret_cast<ObjectUnit*>(unit));
+    if (isGrammarUnitOperator(unit))
+        return ExecuteOperator(reinterpret_cast<OperatorUnit*>(unit));
+
+    std::cerr << "Error in ExecutionPass: unknown Expression type\n";
     return 0;
 }
 
-void ExecutionPass::ExecuteScope(ScopeUnit* scope) {
-    for (StatementUnit* unit : *scope) {
-        ExecuteStatement(unit);
+int ExecutionPass::ExecuteObject(ObjectUnit* unit) {
+    switch (unit->getType())
+    {
+    case GrammarUnitType::VAR:
+        assert(0 && "not implemented\n");
+        return 0;
+
+    case GrammarUnitType::NUM:
+        return reinterpret_cast<NumUnit*>(unit)->num();
+    default:
+        break;
     }
+    return 0;
+}
+
+int ExecutionPass::ExecuteOperator(OperatorUnit* unit) {
+    return 0;
 }
