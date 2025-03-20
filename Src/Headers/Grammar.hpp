@@ -8,25 +8,25 @@ class GrammarUnit;
 
   class ScopeUnit;
   class StatementUnit;
-    class ExpressionUnit;
     class IfUnit;
     class LoopUnit;
     class PrintUnit;
     class VarDeclUnit;
 
-  class ObjectUnit;
-    class NumUnit;
-    class VarUnit;
+  class ExpressionUnit;
+    class ObjectUnit;
+      class NumUnit;
+      class VarUnit;
 
-  class OperatorUnit;
-    class UnaryOperUnit;
-      class UnaryOperMinus;
+    class OperatorUnit;
+      class UnaryOperUnit;
+        class UnaryOperMinus;
 
-    class BinaryOperUnit;
-      class AddExprUnit;
-      class MulExprUnit;
-      class DivExprUnit;
-      class SubExprUnit;
+      class BinaryOperUnit;
+        class AddExprUnit;
+        class MulExprUnit;
+        class DivExprUnit;
+        class SubExprUnit;
 
 bool isGrammarUnitOperator(GrammarUnit* unit);
 bool isGrammarUnitBinaryOperator(GrammarUnit* unit);
