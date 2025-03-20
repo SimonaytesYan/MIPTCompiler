@@ -58,7 +58,7 @@ int ExecutionPass::ExecuteObject(ObjectUnit* unit) {
     switch (unit->getType())
     {
     case GrammarUnitType::VAR:
-        assert(0 && "not implemented\n");
+        return vars_.GetVarValue(reinterpret_cast<VarUnit*>(unit)->name());
         return 0;
 
     case GrammarUnitType::NUM:
