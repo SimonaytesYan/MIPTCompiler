@@ -12,6 +12,7 @@ class GrammarUnit;
     class LoopUnit;
     class PrintUnit;
     class VarDeclUnit;
+    class VarAssignUnit;
 
   class ExpressionUnit;
     class ObjectUnit;

@@ -6,11 +6,22 @@
 
 class ExecutionPass {
 
-  void Execute(GrammarUnit* unit);
-  void ExecuteStatement(StatementUnit* unit);
-  int ExecuteExpression(ExpressionUnit* unit);
-  void ExecuteScope(ScopeUnit* unit);
+  public:
+    void Execute(GrammarUnit* unit);
 
+  private:
+    void ExecuteScope(ScopeUnit* unit);
+
+    void ExecuteStatement(StatementUnit* unit);
+    void ExecuteIf(IfUnit* unit);
+    void ExecuteLoop(LoopUnit* unit);
+    void ExecutePrint(PrintUnit* unit);
+    void ExecuteVarDecl(VarDeclUnit* unit);
+    void ExecuteVarAssign(VarAssignUnit* unit); 
+
+    int ExecuteExpression(ExpressionUnit* unit);
+    int ExecuteObject(ObjectUnit* unit);
+    int ExecuteOperator(OperatorUnit* unit);
   private:
     // std::vector<> vars;
 };
