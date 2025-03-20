@@ -26,6 +26,9 @@ static bool getName(std::istream& in, std::vector<Token>& tokens);
 // skip all space symbols aka spaces, tabs, \n, \r, etc.
 static void skipSpaces(std::istream& in);
 
+// run in.unet() n times
+static void ungetSymbols(std::istream& in, size_t n);
+
 std::vector<Token> tokenize(std::istream& in) {
     std::vector<Token> tokens;
 
@@ -33,13 +36,13 @@ std::vector<Token> tokenize(std::istream& in) {
     {
         skipSpaces(in);
 
-        if (getNum(in, tokens))
-            continue;
         if (getKeyword(in, tokens))
             continue;
         if (getOperator(in, tokens))
             continue;
         if (getSpecialSymbol(in, tokens))
+            continue;
+        if (getNum(in, tokens))
             continue;
         if (getName(in, tokens))
             continue;
@@ -55,7 +58,9 @@ static bool getNum(std::istream& in, std::vector<Token>& tokens) {
 
     int first_sym = in.get();
     in.unget();
-    if ('0' <= first_sym && first_sym <= '9' || first_sym == '-') {
+
+    // Do not wait '-', will work with it during syntax analysis
+    if ('0' <= first_sym && first_sym <= '9') {
         in >> num;
         std::cout << "num = " << num << "\n";
         tokens.emplace_back(NumToken(num));
@@ -70,44 +75,102 @@ static bool getKeyword(std::istream& in, std::vector<Token>& tokens) {
     std::string potential_keyword = "";
     in >> potential_keyword;
 
-    for (auto& keyword : kKeywords) {
-        if (potential_keyword == keyword.name) {
+    for (const auto& keyword : kKeywords) {
+        // check that keyword is a prefix of potential_keyword
+        auto res = std::mismatch(keyword.name.begin(),
+                                keyword.name.end(),
+                                potential_keyword.begin());
+        if (res.first == keyword.name.end()) {
             tokens.emplace_back(KeywordToken(keyword.type));
+
+            std::cout << "keyword = " << keyword.name << "\n";
+
+            ungetSymbols(in, potential_keyword.size() - keyword.name.size());
             return true;
         }
     }
 
-    const size_t get_symbol_num = potential_keyword.size();
-    for(size_t i = 0; i < get_symbol_num; i++)
-        in.unget();
-
+    ungetSymbols(in, potential_keyword.size());
     return false;
 }
 
 static bool getOperator(std::istream& in, std::vector<Token>& tokens) {
+    std::string potential_operator = "";
+    in >> potential_operator;
+
+    for (const Operator& oper : kOperators) {
+        // check that oper is a prefix of potential_operator
+        auto res = std::mismatch(oper.name.begin(),
+                                oper.name.end(),
+                                potential_operator.begin());
+        if (res.first == oper.name.end()) {
+            tokens.emplace_back(OperatorToken(oper.type));
+
+            std::cout << "operator = " << oper.name << "\n";
+
+            ungetSymbols(in, potential_operator.size() - oper.name.size());
+            return true;
+        }
+    }
+
+    ungetSymbols(in, potential_operator.size());
     return false;
 }
 
 static bool getSpecialSymbol(std::istream& in, std::vector<Token>& tokens) {
+    std::string potential_spec_sym = "";
+    in >> potential_spec_sym;
+
+    for (const SpecialSymbol& spec_sym : kSpecialSymbols) {
+        // check that spec_sym is a prefix of potential_spec_sym
+        auto res = std::mismatch(spec_sym.name.begin(),
+                                 spec_sym.name.end(),
+                                 potential_spec_sym.begin());
+        if (res.first == spec_sym.name.end()) {
+            tokens.emplace_back(SpecialSymbolToken(spec_sym.type));
+
+            std::cout << "spec_symbol = " << spec_sym.name << "\n";
+
+            ungetSymbols(in, potential_spec_sym.size() - spec_sym.name.size());
+            return true;
+        }
+    }
+
+    ungetSymbols(in, potential_spec_sym.size());
+    return false;
+
     return false;
 }
 
 static bool getName(std::istream& in, std::vector<Token>& tokens) {
     std::string name = "";
+    int next_sym = 0;
 
-    in >> name;
+    next_sym = in.get();
 
-    if (in.fail()) {
-        std::cout << "fail Name\n";
-        return false;
+    if (isalpha(next_sym) || next_sym == '_') {
+        do {
+            name += next_sym;
+            next_sym = in.get();
+        }
+        while (isalnum(next_sym));
+
+        std::cout << "name = " << name << "\n";
+        tokens.emplace_back(NameToken(std::move(name)));
+
+        in.unget();
+        return true;
     }
 
-    tokens.emplace_back(NameToken(std::move(name)));
-    std::cout << "name = " << name << "\n";
-
+    in.unget();
     return true;
 }
 
 static void skipSpaces(std::istream& in) {
     in >> std::skipws;
+}
+
+static void ungetSymbols(std::istream& in, size_t n) {
+    for (size_t i = 0; i < n; i++)
+        in.unget();
 }

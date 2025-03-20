@@ -1,15 +1,23 @@
 #pragma once
 
-enum class Operator {
+enum class OperatorType {
     ADD,
     SUB,
     MUL,
     DIV,
+    EQUAL,
     OPERATOR_NUM
 };
 
-static const char* Operators[(size_t)Operator::OPERATOR_NUM] = {
-    "+",
-    "-",
-    "*",
-    "/"};
+struct Operator {
+    std::string name;
+    OperatorType type;
+};
+
+const Operator kOperators[] = {
+    {"+", OperatorType::ADD},
+    {"-", OperatorType::SUB},
+    {"*", OperatorType::MUL},
+    {"/", OperatorType::DIV},
+    {"=", OperatorType::EQUAL}
+};
