@@ -60,21 +60,21 @@ class VariableList {
 class ExecutionPass {
 
   public:
-    void execute(GrammarUnit* unit);
+    void execute(const GrammarUnit* unit);
 
   private:
-    void executeScope(ScopeUnit* unit);
+    void executeScope(const ScopeUnit* unit);
 
-    void executeStatement(StatementUnit* unit);
-    void executeIf(IfUnit* unit);
-    void executeLoop(LoopUnit* unit);
-    void executePrint(PrintUnit* unit);
-    void executeVarDecl(VarDeclUnit* unit);
-    void executeVarAssign(VarAssignUnit* unit);
+    void executeStatement(const StatementUnit* unit);
+    void executeIf(const IfUnit* unit);
+    void executeLoop(const LoopUnit* unit);
+    void executePrint(const PrintUnit* unit);
+    void executeVarDecl(const VarDeclUnit* unit);
+    void executeVarAssign(const VarAssignUnit* unit);
 
-    int executeExpression(ExpressionUnit* unit);
-    int executeObject(ObjectUnit* unit);
-    int executeOperator(OperatorUnit* unit);
+    int executeExpression(const ExpressionUnit* unit);
+    int executeObject(const ObjectUnit* unit);
+    int executeOperator(const OperatorUnit* unit);
 
   private:
     VariableList vars_;

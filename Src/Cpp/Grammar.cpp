@@ -1,25 +1,25 @@
 #include "../Headers/Grammar.hpp"
 
-bool isGrammarUnitOperator(GrammarUnit* unit) {
-  return dynamic_cast<OperatorUnit*>(unit) != nullptr;
+bool isGrammarUnitOperator(const GrammarUnit* unit) {
+  return dynamic_cast<const OperatorUnit*>(unit) != nullptr;
 }
 
-bool isGrammarUnitBinaryOperator(GrammarUnit* unit) {
-  return dynamic_cast<BinaryOperUnit*>(unit) != nullptr;
+bool isGrammarUnitBinaryOperator(const GrammarUnit* unit) {
+  return dynamic_cast<const BinaryOperUnit*>(unit) != nullptr;
 }
 
-bool isGrammarUnitUnaryOperator(GrammarUnit* unit) {
-  return dynamic_cast<UnaryOperUnit*>(unit) != nullptr;
+bool isGrammarUnitUnaryOperator(const GrammarUnit* unit) {
+  return dynamic_cast<const UnaryOperUnit*>(unit) != nullptr;
 }
 
-bool isGrammarUnitObject(GrammarUnit* unit) {
-  return dynamic_cast<ObjectUnit*>(unit) != nullptr;
+bool isGrammarUnitObject(const GrammarUnit* unit) {
+  return dynamic_cast<const ObjectUnit*>(unit) != nullptr;
 }
 
-bool isGrammarUnitExpression(GrammarUnit* unit) {
-  return dynamic_cast<ExpressionUnit*>(unit) != nullptr;
+bool isGrammarUnitExpression(const GrammarUnit* unit) {
+  return dynamic_cast<const ExpressionUnit*>(unit) != nullptr;
 }
 
-bool isGrammarUnitStatement(GrammarUnit* unit) {
-  return dynamic_cast<StatementUnit*>(unit) != nullptr;
+bool isGrammarUnitStatement(const GrammarUnit* unit) {
+  return dynamic_cast<const StatementUnit*>(unit) != nullptr;
 }
