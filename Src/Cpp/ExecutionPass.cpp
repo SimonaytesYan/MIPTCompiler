@@ -142,4 +142,5 @@ int ExecutionPass::executeOperator(const OperatorUnit* unit) {
     }
 
     std::cerr << "Error in Execution Pass: unknown operator type\n";
+    return 0;
 }

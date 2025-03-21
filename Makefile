@@ -15,6 +15,19 @@ GRAPHIC_DUMPS = GraphicDumps
 GREEN_COLOR = \033[0;32m
 NO_COLOR = \033[0m
 
+#==================================TEST RUNNERS=================================
+test_execution: $(BIN)/test_execution_object $(BIN)/test_execution_expression $(BIN)/test_execution_scope
+	@echo "${GREEN_COLOR}START LEXER TESTS${NO_COLOR}\n"
+
+	@echo "\n${GREEN_COLOR}LEXER OBJECTS${NO_COLOR}"
+	-@$(BIN)/test_execution_object
+
+	@echo "\n${GREEN_COLOR}LEXER EXPRESSION${NO_COLOR}"
+	-@$(BIN)/test_execution_expression
+
+	@echo "\n${GREEN_COLOR}LEXER SCOPE${NO_COLOR}"
+	-@$(BIN)/test_execution_scope
+
 test_lexer_dump: $(BIN)/test_lexer_dump_objects $(BIN)/test_lexer_dump_expr $(BIN)/test_lexer_dump_scope
 	@echo "${GREEN_COLOR}START LEXER TESTS${NO_COLOR}\n"
 
@@ -27,7 +40,7 @@ test_lexer_dump: $(BIN)/test_lexer_dump_objects $(BIN)/test_lexer_dump_expr $(BI
 	@echo "\n${GREEN_COLOR}LEXER OBJECTS${NO_COLOR}"
 	-@$(BIN)/test_lexer_dump_objects
 
-
+#==================================TESTS========================================
 tests_tokenizer: $(BIN)/test_tokenizer_num $(BIN)/test_tokenizer_name $(BIN)/test_tokenizer_keywords $(BIN)/test_tokenizer_operators $(BIN)/test_tokenizer_spec_symbols
 	@echo "${GREEN_COLOR}START TOKENIZER TESTS${NO_COLOR}\n"
 
@@ -47,27 +60,51 @@ tests_tokenizer: $(BIN)/test_tokenizer_num $(BIN)/test_tokenizer_name $(BIN)/tes
 	@$(BIN)/test_tokenizer_spec_symbols
 
 
-$(BIN)/test_lexer_dump_objects: Tests/Lexer/Objects.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o
+#---------------------------EXECUTION PASS TESTS--------------------------------
+$(BIN)/test_execution_object: Tests/ExecutionPass/Objects.cpp $(OBJ)/Tokenizer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o
+	$(CC) $(CFLAGS) Tests/ExecutionPass/Objects.cpp \
+					$(OBJ)/Tokenizer.o 	\
+					$(OBJ)/Lexer.o		\
+					$(OBJ)/Grammar.o	\
+					$(OBJ)/ExecutionPass.o -o $(BIN)/test_execution_object
+
+$(BIN)/test_execution_expression: Tests/ExecutionPass/Expression.cpp $(OBJ)/Tokenizer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o
+	$(CC) $(CFLAGS) Tests/ExecutionPass/Expression.cpp \
+					$(OBJ)/Tokenizer.o 	\
+					$(OBJ)/Lexer.o		\
+					$(OBJ)/Grammar.o	\
+					$(OBJ)/ExecutionPass.o -o $(BIN)/test_execution_expression
+
+$(BIN)/test_execution_scope: Tests/ExecutionPass/Scope.cpp $(OBJ)/Tokenizer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o
+	$(CC) $(CFLAGS) Tests/ExecutionPass/Scope.cpp \
+					$(OBJ)/Tokenizer.o 	\
+					$(OBJ)/Lexer.o		\
+					$(OBJ)/Grammar.o	\
+					$(OBJ)/ExecutionPass.o -o $(BIN)/test_execution_scope
+
+#------------------------------LEXER TESTS--------------------------------------
+$(BIN)/test_lexer_dump_objects: Tests/Lexer/Objects.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o $(OBJ)/Grammar.o
 	$(CC) $(CFLAGS) Tests/Lexer/Objects.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
 					$(OBJ)/Grammar.o	\
 					$(OBJ)/GraphicDumpPass.o -o $(BIN)/test_lexer_dump_objects
 
-$(BIN)/test_lexer_dump_expr: Tests/Lexer/Expr.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o
+$(BIN)/test_lexer_dump_expr: Tests/Lexer/Expr.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o $(OBJ)/Grammar.o
 	$(CC) $(CFLAGS) Tests/Lexer/Expr.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
 					$(OBJ)/Grammar.o	\
 					$(OBJ)/GraphicDumpPass.o -o $(BIN)/test_lexer_dump_expr
 
-$(BIN)/test_lexer_dump_scope: Tests/Lexer/Scope.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o
+$(BIN)/test_lexer_dump_scope: Tests/Lexer/Scope.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o $(OBJ)/Grammar.o
 	$(CC) $(CFLAGS) Tests/Lexer/Scope.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
 					$(OBJ)/Grammar.o	\
 					$(OBJ)/GraphicDumpPass.o -o $(BIN)/test_lexer_dump_scope
 
+#----------------------------TOKENIZER TESTS------------------------------------
 $(BIN)/test_tokenizer_spec_symbols: $(OBJ)/Tokenizer.o
 	$(CC) $(CFLAGS) Tests/Tokenizer/SpecialSymbols.cpp \
 					$(OBJ)/Tokenizer.o -o $(BIN)/test_tokenizer_spec_symbols
@@ -89,6 +126,7 @@ $(BIN)/test_tokenizer_name: $(OBJ)/Tokenizer.o
 					$(OBJ)/Tokenizer.o -o $(BIN)/test_tokenizer_name
 
 
+#====================================SOURCE=====================================
 $(OBJ)/Tokenizer.o: Src/Cpp/Tokenizer.cpp $(HEADERS)
 	$(CC) -c $(CFLAGS) Src/Cpp/Tokenizer.cpp -o $(OBJ)/Tokenizer.o
 
@@ -99,6 +137,10 @@ $(OBJ)/Lexer.o: Src/Cpp/Lexer.cpp $(HEADER) $(OBJ)/Grammar.o
 $(OBJ)/GraphicDumpPass.o: Src/Cpp/GraphicDumpPass.cpp $(HEADER) $(OBJ)/Grammar.o
 	$(CC) -c $(CFLAGS) Src/Cpp/GraphicDumpPass.cpp \
 					   $(OBJ)/Grammar.o -o $(OBJ)/GraphicDumpPass.o
+
+$(OBJ)/ExecutionPass.o: Src/Cpp/ExecutionPass.cpp $(HEADER) $(OBJ)/Grammar.o
+	$(CC) -c $(CFLAGS) Src/Cpp/ExecutionPass.cpp \
+					   $(OBJ)/Grammar.o -o $(OBJ)/ExecutionPass.o
 
 $(OBJ)/Grammar.o:  Src/Cpp/Grammar.cpp $(HEADER)
 	$(CC) -c $(CFLAGS) Src/Cpp/Grammar.cpp -o $(OBJ)/Grammar.o

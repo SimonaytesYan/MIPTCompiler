@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Grammar.hpp"
+
+#include <iostream>
 #include <string>
 #include <vector>
 
