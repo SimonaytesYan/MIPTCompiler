@@ -20,6 +20,23 @@ class VariableList {
       vars_.push_back(var);
     }
 
+    void setVarValue(std::string name, int value) {
+      const size_t var_num = vars_.size();
+
+        for (size_t var_ind = var_num - 1; var_ind >= 0; var_ind--) {
+            if (std::holds_alternative<ScopeStarter>(vars_[var_ind])) {
+              continue;
+            }
+
+            IntVar& cur_var = std::get<IntVar>(vars_[var_ind]);
+            if (name == cur_var.name_) {
+                cur_var.value_ = value;
+            }
+        }
+
+        std::cerr << "Error in VariableList: unknown variable name\n";
+    }
+
     int getVarValue(std::string name) {
         const size_t var_num = vars_.size();
 
@@ -28,9 +45,10 @@ class VariableList {
               continue;
             }
 
-          const IntVar& cur_var = std::get<IntVar>(vars_[var_ind]);
-          if (name == cur_var.name_)
-            return cur_var.value_;
+            const IntVar& cur_var = std::get<IntVar>(vars_[var_ind]);
+            if (name == cur_var.name_) {
+                return cur_var.value_;
+            }
         }
 
         std::cerr << "Error in VariableList: unknown variable name\n";

@@ -48,6 +48,38 @@ void ExecutionPass::executeStatement(const StatementUnit* unit) {
     }
 }
 
+void ExecutionPass::executePrint(const PrintUnit* unit) {
+    std::cout << unit->expression() << "\n";
+}
+
+void ExecutionPass::executeLoop(const LoopUnit* unit) {
+    while (executeExpression(unit->condition())) {
+        executeScope(unit->body());
+    }
+}
+
+void ExecutionPass::executeIf(const IfUnit* unit) {
+    if (executeExpression(unit->condition())) {
+        executeScope(unit->true_branch());
+    }
+    else {
+        executeScope(unit->false_branch());
+    }
+}
+
+void ExecutionPass::executeVarDecl(const VarDeclUnit* unit) {
+    IntVar var;
+    var.value_ = executeExpression(unit->expr());
+    var.name_ = unit->var()->name();
+
+    vars_.addNewVar(var);
+}
+
+
+void ExecutionPass::executeVarAssign(const VarAssignUnit* unit) {
+    vars_.setVarValue(unit->var()->name(), executeExpression(unit->expr()));
+}
+
 int ExecutionPass::executeExpression(const ExpressionUnit* unit) {
     if (isGrammarUnitObject(unit))
         return executeObject(reinterpret_cast<const ObjectUnit*>(unit));
