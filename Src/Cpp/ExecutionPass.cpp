@@ -3,39 +3,41 @@
 #include <iostream>
 #include <assert.h>
 
-void ExecutionPass::Execute(GrammarUnit* unit) {
+void ExecutionPass::execute(GrammarUnit* unit) {
     if (unit == nullptr)
         return;
 
     if (isGrammarUnitStatement(unit))
-        ExecuteStatement(reinterpret_cast<StatementUnit*>(unit));
+        executeStatement(reinterpret_cast<StatementUnit*>(unit));
     else if (isGrammarUnitStatement(unit))
-        ExecuteScope(reinterpret_cast<ScopeUnit*>(unit));
+        executeScope(reinterpret_cast<ScopeUnit*>(unit));
 }
 
-void ExecutionPass::ExecuteScope(ScopeUnit* scope) {
+void ExecutionPass::executeScope(ScopeUnit* scope) {
+    vars_.startScope();
+
     for (StatementUnit* unit : *scope) {
-        ExecuteStatement(unit);
+        executeStatement(unit);
     }
 }
 
-void ExecutionPass::ExecuteStatement(StatementUnit* unit) {
+void ExecutionPass::executeStatement(StatementUnit* unit) {
     switch(unit->getType())
     {
         case GrammarUnitType::IF:
-            ExecuteIf(reinterpret_cast<IfUnit*>(unit));
+            executeIf(reinterpret_cast<IfUnit*>(unit));
             break;
         case GrammarUnitType::LOOP:
-            ExecuteLoop(reinterpret_cast<LoopUnit*>(unit));
+            executeLoop(reinterpret_cast<LoopUnit*>(unit));
             break;
         case GrammarUnitType::VAR_DECL:
-            ExecuteVarDecl(reinterpret_cast<VarDeclUnit*>(unit));
+            executeVarDecl(reinterpret_cast<VarDeclUnit*>(unit));
             break;
         case GrammarUnitType::PRINT:
-            ExecutePrint(reinterpret_cast<PrintUnit*>(unit));
+            executePrint(reinterpret_cast<PrintUnit*>(unit));
             break;
         case GrammarUnitType::VAR_ASSIGN:
-            ExecuteVarAssign(reinterpret_cast<VarAssignUnit*>(unit));
+            executeVarAssign(reinterpret_cast<VarAssignUnit*>(unit));
             break;
 
         default:
@@ -44,21 +46,21 @@ void ExecutionPass::ExecuteStatement(StatementUnit* unit) {
     }
 }
 
-int ExecutionPass::ExecuteExpression(ExpressionUnit* unit) {
+int ExecutionPass::executeExpression(ExpressionUnit* unit) {
     if (isGrammarUnitObject(unit))
-        return ExecuteObject(reinterpret_cast<ObjectUnit*>(unit));
+        return executeObject(reinterpret_cast<ObjectUnit*>(unit));
     if (isGrammarUnitOperator(unit))
-        return ExecuteOperator(reinterpret_cast<OperatorUnit*>(unit));
+        return executeOperator(reinterpret_cast<OperatorUnit*>(unit));
 
     std::cerr << "Error in ExecutionPass: unknown Expression type\n";
     return 0;
 }
 
-int ExecutionPass::ExecuteObject(ObjectUnit* unit) {
+int ExecutionPass::executeObject(ObjectUnit* unit) {
     switch (unit->getType())
     {
     case GrammarUnitType::VAR:
-        return vars_.GetVarValue(reinterpret_cast<VarUnit*>(unit)->name());
+        return vars_.getVarValue(reinterpret_cast<VarUnit*>(unit)->name());
         return 0;
 
     case GrammarUnitType::NUM:
@@ -69,6 +71,6 @@ int ExecutionPass::ExecuteObject(ObjectUnit* unit) {
     return 0;
 }
 
-int ExecutionPass::ExecuteOperator(OperatorUnit* unit) {
+int ExecutionPass::executeOperator(OperatorUnit* unit) {
     return 0;
 }

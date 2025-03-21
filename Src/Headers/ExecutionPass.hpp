@@ -9,22 +9,22 @@ struct IntVar {
   std::string name_;
 };
 
-struct StartScope {
+struct ScopeStarter {
 };
 
-using Variable = std::variant<IntVar, StartScope>;
+using Variable = std::variant<IntVar, ScopeStarter>;
 
 class VariableList {
   public:
-    void AddNewVar(Variable var) {
+    void addNewVar(Variable var) {
       vars_.push_back(var);
     }
 
-    int GetVarValue(std::string name) {
+    int getVarValue(std::string name) {
         const size_t var_num = vars_.size();
 
         for (size_t var_ind = var_num - 1; var_ind >= 0; var_ind--) {
-            if (std::holds_alternative<StartScope>(vars_[var_ind])) {
+            if (std::holds_alternative<ScopeStarter>(vars_[var_ind])) {
               continue;
             }
 
@@ -37,12 +37,16 @@ class VariableList {
         return 0;
     }
 
-    void EndScope() {
+    void startScope() {
+      vars_.push_back(ScopeStarter());
+    }
+
+    void endScope() {
       const size_t var_num = vars_.size();
 
       for (size_t var_ind = var_num - 1; var_ind >= 0; var_ind--) {
 
-        if (std::holds_alternative<StartScope>(vars_[var_ind])) {
+        if (std::holds_alternative<ScopeStarter>(vars_[var_ind])) {
           vars_.pop_back();
           break;
         }
@@ -56,21 +60,21 @@ class VariableList {
 class ExecutionPass {
 
   public:
-    void Execute(GrammarUnit* unit);
+    void execute(GrammarUnit* unit);
 
   private:
-    void ExecuteScope(ScopeUnit* unit);
+    void executeScope(ScopeUnit* unit);
 
-    void ExecuteStatement(StatementUnit* unit);
-    void ExecuteIf(IfUnit* unit);
-    void ExecuteLoop(LoopUnit* unit);
-    void ExecutePrint(PrintUnit* unit);
-    void ExecuteVarDecl(VarDeclUnit* unit);
-    void ExecuteVarAssign(VarAssignUnit* unit);
+    void executeStatement(StatementUnit* unit);
+    void executeIf(IfUnit* unit);
+    void executeLoop(LoopUnit* unit);
+    void executePrint(PrintUnit* unit);
+    void executeVarDecl(VarDeclUnit* unit);
+    void executeVarAssign(VarAssignUnit* unit);
 
-    int ExecuteExpression(ExpressionUnit* unit);
-    int ExecuteObject(ObjectUnit* unit);
-    int ExecuteOperator(OperatorUnit* unit);
+    int executeExpression(ExpressionUnit* unit);
+    int executeObject(ObjectUnit* unit);
+    int executeOperator(OperatorUnit* unit);
 
   private:
     VariableList vars_;
