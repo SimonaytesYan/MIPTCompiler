@@ -73,18 +73,41 @@ int ExecutionPass::executeObject(const ObjectUnit* unit) {
     return 0;
 }
 
-// int ExecutionPass::executeOperator(const OperatorUnit* unit) {
+int ExecutionPass::executeOperator(const OperatorUnit* unit) {
 
-//     const BinaryOperUnit* bin_oper = dynamic_cast<const BinaryOperUnit*>(unit);
-//     if (bin_oper) {
-//         switch (bin_oper->getType())
-//         {
-//         case GrammarUnitType::ADD:
-//             return executeExpression(bin_oper->left()) +
-//                    executeExpression(bin_oper->right());
-//         default:
-//             break;
-//         }
-//     }
-//     const UnaryOperUnit
-// }
+    const BinaryOperUnit* bin_oper = dynamic_cast<const BinaryOperUnit*>(unit);
+    if (bin_oper) {
+        switch (bin_oper->getType())
+        {
+            case GrammarUnitType::ADD:
+                return executeExpression(bin_oper->left()) +
+                    executeExpression(bin_oper->right());
+            case GrammarUnitType::SUB:
+                return executeExpression(bin_oper->left()) -
+                    executeExpression(bin_oper->right());
+            case GrammarUnitType::MUL:
+                return executeExpression(bin_oper->left()) *
+                    executeExpression(bin_oper->right());
+            case GrammarUnitType::DIV:
+                return executeExpression(bin_oper->left()) /
+                    executeExpression(bin_oper->right());
+            default:
+                std::cerr << "Error in Execution Pass: unknown binary operator type\n";
+                return 0;
+        }
+    }
+
+    const UnaryOperUnit* unary_oper = dynamic_cast<const UnaryOperUnit*>(unit);
+    if (unary_oper) {
+        switch (unary_oper->getType())
+        {
+            case GrammarUnitType::UNARY_MINUS:
+                return -executeExpression(unary_oper->operand());
+            default:
+                std::cerr << "Error in Execution Pass: unknown unary operator type\n";
+                return 0;
+        }
+    }
+
+    std::cerr << "Error in Execution Pass: unknown operator type\n";
+}
