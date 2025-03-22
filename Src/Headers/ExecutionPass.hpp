@@ -18,25 +18,41 @@ using Variable = std::variant<IntVar, ScopeStarter>;
 
 class VariableList {
   public:
+
+    void Dump() {
+        std::cout << "\nVariable list dump\n";
+        for (const Variable& var : vars_) {
+            if (std::holds_alternative<ScopeStarter>(var)) {
+               std::cout << "{ ";
+            }
+            else {
+                IntVar cur_var = std::get<IntVar>(var);
+                std::cout << "'" << cur_var.name_ << "', ";
+            }
+        }
+        std::cout << "\n";
+    }
+
     void addNewVar(Variable var) {
       vars_.push_back(var);
     }
 
     void setVarValue(std::string name, int value) {
-      const int var_num = vars_.size();
+        const int var_num = vars_.size();
 
         for (int var_ind = var_num - 1; var_ind >= 0; var_ind--) {
             if (std::holds_alternative<ScopeStarter>(vars_[var_ind])) {
               continue;
             }
-
             IntVar& cur_var = std::get<IntVar>(vars_[var_ind]);
             if (name == cur_var.name_) {
                 cur_var.value_ = value;
+                return;
             }
         }
 
-        std::cerr << "Error in VariableList set: unknown variable name\n";
+        std::cerr << "Error in VariableList set: '" << name << "' unknown variable name\n";
+        Dump();
     }
 
     int getVarValue(std::string name) {
@@ -53,7 +69,8 @@ class VariableList {
             }
         }
 
-        std::cerr << "Error in VariableList get: unknown variable name\n";
+        std::cerr << "Error in VariableList get: '" << name << "' unknown variable name\n";
+        Dump();
         return 0;
     }
 

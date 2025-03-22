@@ -13,7 +13,8 @@ int main() {
                  "let a = b + 1;"
                  "print(a);}", pass, "Assign variable");
 
-    runOneTest("{ if (10 + 11) { print(1); } else { print(2); } }", pass, "If");
+    runOneTest("{ if (10 + 11) { print(1); } else { print(0); } }", pass, "If");
+    runOneTest("{ if (0) { print(1); } else { print(0); } }", pass, "If else branch");
     runOneTest("{ let a = 10;"
                  "let b = 0;"
                  "if (a - 10) { b = 11; } else { b = 12; }"

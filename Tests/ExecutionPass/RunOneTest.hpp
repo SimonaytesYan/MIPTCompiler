@@ -8,7 +8,8 @@
 #include "../../Src/Headers/ExecutionPass.hpp"
 
 void runOneTest(std::string_view test_case, ExecutionPass& pass, std::string_view test_name) {
-    std::cout << "Test " << test_name << "\n";
+    std::cout << "TEST: " << test_name << "\n";
+    std::cout << "code:\t" << test_case << "\n";
 
     std::istringstream in(test_case.data());
 
