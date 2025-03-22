@@ -7,13 +7,10 @@
 #include "../../Src/Headers/Lexer.hpp"
 #include "../../Src/Headers/ExecutionPass.hpp"
 
-void runOneTest(const char* test_case, ExecutionPass& pass) {
-    static size_t test_cnt = 0;
-    test_cnt++;
+void runOneTest(std::string_view test_case, ExecutionPass& pass, std::string_view test_name) {
+    std::cout << "Test " << test_name << "\n";
 
-    std::cout << "Test " << test_cnt << "\n";
-
-    std::istringstream in(test_case);
+    std::istringstream in(test_case.data());
 
     GrammarUnit* unit = parse(tokenize(in));
     pass.execute(unit);
