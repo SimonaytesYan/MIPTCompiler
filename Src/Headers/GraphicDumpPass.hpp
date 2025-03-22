@@ -11,9 +11,9 @@ class GraphicDumpPass {
 
     void graphicDump(const GrammarUnit* node);
 
-    void createPngFromDot();
 
   private:
+    void createPngFromDot();
 
     void dumpOperator();
     void dumpNodeInFormat(const char* color);

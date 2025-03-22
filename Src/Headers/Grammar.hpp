@@ -8,32 +8,33 @@ class GrammarUnit;
 
   class ScopeUnit;
   class StatementUnit;
-    class ExpressionUnit;
     class IfUnit;
     class LoopUnit;
     class PrintUnit;
     class VarDeclUnit;
+    class VarAssignUnit;
 
-  class ObjectUnit;
-    class NumUnit;
-    class VarUnit;
+  class ExpressionUnit;
+    class ObjectUnit;
+      class NumUnit;
+      class VarUnit;
 
-  class OperatorUnit;
-    class UnaryOperUnit;
-      class UnaryOperMinus;
+    class OperatorUnit;
+      class UnaryOperUnit;
+        class UnaryOperMinus;
 
-    class BinaryOperUnit;
-      class AddExprUnit;
-      class MulExprUnit;
-      class DivExprUnit;
-      class SubExprUnit;
+      class BinaryOperUnit;
+        class AddExprUnit;
+        class MulExprUnit;
+        class DivExprUnit;
+        class SubExprUnit;
 
-bool isGrammarUnitOperator(GrammarUnit* unit);
-bool isGrammarUnitBinaryOperator(GrammarUnit* unit);
-bool isGrammarUnitUnaryOperator(GrammarUnit* unit);
-bool isGrammarUnitObject(GrammarUnit* unit);
-bool isGrammarUnitExpression(GrammarUnit* unit);
-bool isGrammarUnitStatement(GrammarUnit* unit);
+bool isGrammarUnitOperator(const GrammarUnit* unit);
+bool isGrammarUnitBinaryOperator(const GrammarUnit* unit);
+bool isGrammarUnitUnaryOperator(const GrammarUnit* unit);
+bool isGrammarUnitObject(const GrammarUnit* unit);
+bool isGrammarUnitExpression(const GrammarUnit* unit);
+bool isGrammarUnitStatement(const GrammarUnit* unit);
 
 enum class GrammarUnitType {
     VAR,
