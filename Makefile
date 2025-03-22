@@ -5,7 +5,7 @@ SANITIZER_FLAGS = -g -fcheck-new -fsized-deallocation -fstack-protector \
 				  -pie -fPIE -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr,leak
 CFLAGS = $(SANITIZER_FLAGS)
 
-HEADERS_NAMES = Tokens Keywords SpecialSymbols Operators Grammar Lexer Tokenizer
+HEADERS_NAMES = Tokens Keywords SpecialSymbols Operators Grammar Lexer Tokenizer ExecutionPass
 HEADERS = $(addsuffix .hpp, $(addprefix Src/Headers/, $(HEADERS_NAMES)))
 
 OBJ = obj
@@ -17,15 +17,15 @@ NO_COLOR = \033[0m
 
 #==================================TEST RUNNERS=================================
 test_execution: $(BIN)/test_execution_object $(BIN)/test_execution_expression $(BIN)/test_execution_scope
-	@echo "${GREEN_COLOR}START LEXER TESTS${NO_COLOR}\n"
+	@echo "${GREEN_COLOR}START EXECUTION TESTS${NO_COLOR}\n"
 
-	@echo "\n${GREEN_COLOR}LEXER OBJECTS${NO_COLOR}"
+	@echo "\n${GREEN_COLOR}EXECUTION OBJECTS${NO_COLOR}"
 	-@$(BIN)/test_execution_object
 
-	@echo "\n${GREEN_COLOR}LEXER EXPRESSION${NO_COLOR}"
+	@echo "\n${GREEN_COLOR}EXECUTION EXPRESSION${NO_COLOR}"
 	-@$(BIN)/test_execution_expression
 
-	@echo "\n${GREEN_COLOR}LEXER SCOPE${NO_COLOR}"
+	@echo "\n${GREEN_COLOR}EXECUTION SCOPE${NO_COLOR}"
 	-@$(BIN)/test_execution_scope
 
 test_lexer_dump: $(BIN)/test_lexer_dump_objects $(BIN)/test_lexer_dump_expr $(BIN)/test_lexer_dump_scope
@@ -61,21 +61,21 @@ tests_tokenizer: $(BIN)/test_tokenizer_num $(BIN)/test_tokenizer_name $(BIN)/tes
 
 
 #---------------------------EXECUTION PASS TESTS--------------------------------
-$(BIN)/test_execution_object: Tests/ExecutionPass/Objects.cpp $(OBJ)/Tokenizer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o
+$(BIN)/test_execution_object: Tests/ExecutionPass/Objects.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o
 	$(CC) $(CFLAGS) Tests/ExecutionPass/Objects.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
 					$(OBJ)/Grammar.o	\
 					$(OBJ)/ExecutionPass.o -o $(BIN)/test_execution_object
 
-$(BIN)/test_execution_expression: Tests/ExecutionPass/Expression.cpp $(OBJ)/Tokenizer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o
+$(BIN)/test_execution_expression: Tests/ExecutionPass/Expression.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o
 	$(CC) $(CFLAGS) Tests/ExecutionPass/Expression.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
 					$(OBJ)/Grammar.o	\
 					$(OBJ)/ExecutionPass.o -o $(BIN)/test_execution_expression
 
-$(BIN)/test_execution_scope: Tests/ExecutionPass/Scope.cpp $(OBJ)/Tokenizer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o
+$(BIN)/test_execution_scope: Tests/ExecutionPass/Scope.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o
 	$(CC) $(CFLAGS) Tests/ExecutionPass/Scope.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\

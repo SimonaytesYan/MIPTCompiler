@@ -7,10 +7,7 @@ void ExecutionPass::execute(const GrammarUnit* unit) {
     if (unit == nullptr)
         return;
 
-    if (isGrammarUnitStatement(unit))
-        executeStatement(reinterpret_cast<const StatementUnit*>(unit));
-    else if (isGrammarUnitStatement(unit))
-        executeScope(reinterpret_cast<const ScopeUnit*>(unit));
+    executeScope(reinterpret_cast<const ScopeUnit*>(unit));
 }
 
 void ExecutionPass::executeScope(const ScopeUnit* scope) {
@@ -49,7 +46,7 @@ void ExecutionPass::executeStatement(const StatementUnit* unit) {
 }
 
 void ExecutionPass::executePrint(const PrintUnit* unit) {
-    std::cout << unit->expression() << "\n";
+    std::cout << executeExpression(unit->expression()) << "\n";
 }
 
 void ExecutionPass::executeLoop(const LoopUnit* unit) {
