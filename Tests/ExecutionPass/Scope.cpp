@@ -22,8 +22,7 @@ int main() {
 
     runOneTest("{ loop (0) { print(10); } }", pass, "Loop without execution");
     runOneTest("{ let b = 10;"
-                 "loop (b - 10)"
+                 "loop (b)"
                  "{ print(b);"
                    "b = b - 1; } }", pass, "Loop with counter");
-    // runOneTest("{ loop (0) { print(10); } }", pass, "loop without execution");
 }
