@@ -153,7 +153,7 @@ static bool getName(std::istream& in, std::vector<Token>& tokens) {
             name += next_sym;
             next_sym = in.get();
         }
-        while (isalnum(next_sym));
+        while (isalnum(next_sym) || next_sym == '_');
 
         std::cout << "name = " << name << "\n";
         tokens.emplace_back(NameToken(std::move(name)));

@@ -3,7 +3,7 @@
 #include <iostream>
 
 // ScopeUnit      ::= '{' {StatementUnit}+ '}'
-// StatementUnit  ::= VarDeclUnit | IFUnit | LoopUnit | PrintUnit | 0
+// StatementUnit  ::= VarAssignUnit | VarDeclUnit | IFUnit | LoopUnit | PrintUnit | 0
 // PrintUnit      ::= 'print(' ExprUnit ');'
 // LoopUnit       ::= loop '(' ExprUnit ')' ScopeUnit
 // IFUnit         ::= 'if' '(' ExprUnit ')' ScopeUnit 'else' ScopeUnit
@@ -315,8 +315,7 @@ static StatementUnit* getVarAssign(TokenIt& cur_token, TokenIt end) {
     }
 
     if (!CheckTokenValue<OperatorToken, OperatorType>(cur_token, OperatorType::EQUAL)) {
-        std::cerr << "index = " << cur_token->index();
-        std::cerr << "getVarAssign: there is not operator = in var declaration\n";
+        std::cerr << "getVarAssign: there is not operator = in var assign\n";
         return nullptr;
     }
 
