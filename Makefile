@@ -11,7 +11,9 @@ HEADERS = $(addsuffix .hpp, $(addprefix Src/Headers/, $(HEADERS_NAMES)))
 
 OBJ = obj
 BIN = bin
-GRAPHIC_DUMPS = GraphicDumps
+GRAPHIC_DUMPS = graphic_dumps
+
+DIRS = $(OBJ) $(BIN) $(GRAPHIC_DUMPS)
 
 GREEN_COLOR = \033[0;32m
 NO_COLOR = \033[0m
@@ -62,21 +64,21 @@ tests_tokenizer: $(BIN)/test_tokenizer_num $(BIN)/test_tokenizer_name $(BIN)/tes
 
 
 #---------------------------EXECUTION PASS TESTS--------------------------------
-$(BIN)/test_execution_object: Tests/ExecutionPass/Objects.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o Tests/ExecutionPass/RunOneTest.hpp
+$(BIN)/test_execution_object: Tests/ExecutionPass/Objects.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o Tests/ExecutionPass/RunOneTest.hpp | $(DIRS)
 	$(CXX) $(CFLAGS) Tests/ExecutionPass/Objects.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
 					$(OBJ)/Grammar.o	\
 					$(OBJ)/ExecutionPass.o -o $(BIN)/test_execution_object
 
-$(BIN)/test_execution_expression: Tests/ExecutionPass/Expression.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o Tests/ExecutionPass/RunOneTest.hpp
+$(BIN)/test_execution_expression: Tests/ExecutionPass/Expression.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o Tests/ExecutionPass/RunOneTest.hpp | $(DIRS)
 	$(CXX) $(CFLAGS) Tests/ExecutionPass/Expression.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
 					$(OBJ)/Grammar.o	\
 					$(OBJ)/ExecutionPass.o -o $(BIN)/test_execution_expression
 
-$(BIN)/test_execution_scope: Tests/ExecutionPass/Scope.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o Tests/ExecutionPass/RunOneTest.hpp
+$(BIN)/test_execution_scope: Tests/ExecutionPass/Scope.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o Tests/ExecutionPass/RunOneTest.hpp| $(DIRS)
 	$(CXX) $(CFLAGS) Tests/ExecutionPass/Scope.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
@@ -84,21 +86,21 @@ $(BIN)/test_execution_scope: Tests/ExecutionPass/Scope.cpp $(OBJ)/Tokenizer.o $(
 					$(OBJ)/ExecutionPass.o -o $(BIN)/test_execution_scope
 
 #------------------------------LEXER TESTS--------------------------------------
-$(BIN)/test_lexer_dump_objects: Tests/Lexer/Objects.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o $(OBJ)/Grammar.o
+$(BIN)/test_lexer_dump_objects: Tests/Lexer/Objects.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o $(OBJ)/Grammar.o | $(DIRS)
 	$(CXX) $(CFLAGS) Tests/Lexer/Objects.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
 					$(OBJ)/Grammar.o	\
 					$(OBJ)/GraphicDumpPass.o -o $(BIN)/test_lexer_dump_objects
 
-$(BIN)/test_lexer_dump_expr: Tests/Lexer/Expr.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o $(OBJ)/Grammar.o
+$(BIN)/test_lexer_dump_expr: Tests/Lexer/Expr.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o $(OBJ)/Grammar.o | $(DIRS)
 	$(CXX) $(CFLAGS) Tests/Lexer/Expr.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
 					$(OBJ)/Grammar.o	\
 					$(OBJ)/GraphicDumpPass.o -o $(BIN)/test_lexer_dump_expr
 
-$(BIN)/test_lexer_dump_scope: Tests/Lexer/Scope.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o $(OBJ)/Grammar.o
+$(BIN)/test_lexer_dump_scope: Tests/Lexer/Scope.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o $(OBJ)/Grammar.o | $(DIRS)
 	$(CXX) $(CFLAGS) Tests/Lexer/Scope.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
@@ -106,50 +108,54 @@ $(BIN)/test_lexer_dump_scope: Tests/Lexer/Scope.cpp $(OBJ)/Tokenizer.o $(OBJ)/Le
 					$(OBJ)/GraphicDumpPass.o -o $(BIN)/test_lexer_dump_scope
 
 #----------------------------TOKENIZER TESTS------------------------------------
-$(BIN)/test_tokenizer_spec_symbols: $(OBJ)/Tokenizer.o
+$(BIN)/test_tokenizer_spec_symbols: $(OBJ)/Tokenizer.o | $(DIRS)
 	$(CXX) $(CFLAGS) Tests/Tokenizer/SpecialSymbols.cpp \
 					$(OBJ)/Tokenizer.o -o $(BIN)/test_tokenizer_spec_symbols
 
-$(BIN)/test_tokenizer_operators: $(OBJ)/Tokenizer.o
+$(BIN)/test_tokenizer_operators: $(OBJ)/Tokenizer.o | $(DIRS)
 	$(CXX) $(CFLAGS) Tests/Tokenizer/Operators.cpp \
 					$(OBJ)/Tokenizer.o -o $(BIN)/test_tokenizer_operators
 
-$(BIN)/test_tokenizer_keywords: $(OBJ)/Tokenizer.o
+$(BIN)/test_tokenizer_keywords: $(OBJ)/Tokenizer.o | $(DIRS)
 	$(CXX) $(CFLAGS) Tests/Tokenizer/Keywords.cpp \
 					$(OBJ)/Tokenizer.o -o $(BIN)/test_tokenizer_keywords
 
-$(BIN)/test_tokenizer_num: $(OBJ)/Tokenizer.o
+$(BIN)/test_tokenizer_num: $(OBJ)/Tokenizer.o | $(DIRS)
 	$(CXX) $(CFLAGS) Tests/Tokenizer/Num.cpp \
 					$(OBJ)/Tokenizer.o -o $(BIN)/test_tokenizer_num
 
-$(BIN)/test_tokenizer_name: $(OBJ)/Tokenizer.o
+$(BIN)/test_tokenizer_name: $(OBJ)/Tokenizer.o | $(DIRS)
 	$(CXX) $(CFLAGS) Tests/Tokenizer/Name.cpp \
 					$(OBJ)/Tokenizer.o -o $(BIN)/test_tokenizer_name
 
 
 #====================================SOURCE=====================================
-$(OBJ)/Tokenizer.o: Src/Cpp/Tokenizer.cpp $(HEADERS)
+$(OBJ)/Tokenizer.o: Src/Cpp/Tokenizer.cpp $(HEADERS) | $(DIRS)
 	$(CXX) -c $(CFLAGS) Src/Cpp/Tokenizer.cpp -o $(OBJ)/Tokenizer.o
 
-$(OBJ)/Lexer.o: Src/Cpp/Lexer.cpp $(HEADERS)
+$(OBJ)/Lexer.o: Src/Cpp/Lexer.cpp $(HEADERS) | $(DIRS)
 	$(CXX) -c $(CFLAGS) Src/Cpp/Lexer.cpp -o $(OBJ)/Lexer.o
 
-$(OBJ)/GraphicDumpPass.o: Src/Cpp/GraphicDumpPass.cpp $(HEADERS) $(OBJ)/Grammar.o
+$(OBJ)/GraphicDumpPass.o: Src/Cpp/GraphicDumpPass.cpp $(OBJ)/Grammar.o $(HEADERS) | $(DIRS)
 	$(CXX) -c $(CFLAGS) Src/Cpp/GraphicDumpPass.cpp \
 					   $(OBJ)/Grammar.o -o $(OBJ)/GraphicDumpPass.o
 
-$(OBJ)/ExecutionPass.o: Src/Cpp/ExecutionPass.cpp $(HEADERS)
+$(OBJ)/ExecutionPass.o: Src/Cpp/ExecutionPass.cpp $(HEADERS) | $(DIRS)
 	$(CXX) -c $(CFLAGS) Src/Cpp/ExecutionPass.cpp -o $(OBJ)/ExecutionPass.o
 
-$(OBJ)/Grammar.o:  Src/Cpp/Grammar.cpp $(HEADERS)
+$(OBJ)/Grammar.o:  Src/Cpp/Grammar.cpp $(HEADERS) | $(DIRS)
 	$(CXX) -c $(CFLAGS) Src/Cpp/Grammar.cpp -o $(OBJ)/Grammar.o
 
-make_dir:
-	-mkdir $(OBJ)
-	-mkdir $(BIN)
-	-mkdir $(GRAPHIC_DUMPS)
+$(OBJ):
+	mkdir $(OBJ)
+
+$(GRAPHIC_DUMPS):
+	mkdir $(GRAPHIC_DUMPS)
+
+$(BIN):
+	mkdir $(BIN)
 
 clean:
-	-rm $(BIN)/*
-	-rm $(OBJ)/*
-	-rm $(GRAPHIC_DUMPS)/*
+	-rm -r $(BIN)
+	-rm -r $(OBJ)
+	-rm -r $(GRAPHIC_DUMPS)
