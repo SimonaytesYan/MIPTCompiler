@@ -18,14 +18,17 @@ DIRS = $(OBJ) $(BIN) $(GRAPHIC_DUMPS)
 GREEN_COLOR = \033[0;32m
 NO_COLOR = \033[0m
 
+.PHONY: interpreter test clean
+
+#==================================PHONY TARGETS=================================
 interpreter: $(BIN)/interpreter
 
-$(BIN)/interpreter: Src/Interpreter.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o | $(DIRS)
-	$(CXX) $(CFLAGS) Src/Interpreter.cpp \
-					$(OBJ)/Tokenizer.o 	 \
-					$(OBJ)/Lexer.o		 \
-					$(OBJ)/Grammar.o	 \
-					$(OBJ)/ExecutionPass.o -o $(BIN)/Interpreter
+test: test_execution test_lexer_dump tests_tokenizer
+
+clean:
+	-rm -r $(BIN)
+	-rm -r $(OBJ)
+	-rm -r $(GRAPHIC_DUMPS)
 
 #==================================TEST RUNNERS=================================
 test_execution: $(BIN)/test_execution_object $(BIN)/test_execution_expression $(BIN)/test_execution_scope
@@ -52,7 +55,6 @@ test_lexer_dump: $(BIN)/test_lexer_dump_objects $(BIN)/test_lexer_dump_expr $(BI
 	@echo "\n${GREEN_COLOR}LEXER OBJECTS${NO_COLOR}"
 	-@$(BIN)/test_lexer_dump_objects
 
-#==================================TESTS========================================
 tests_tokenizer: $(BIN)/test_tokenizer_num $(BIN)/test_tokenizer_name $(BIN)/test_tokenizer_keywords $(BIN)/test_tokenizer_operators $(BIN)/test_tokenizer_spec_symbols
 	@echo "${GREEN_COLOR}START TOKENIZER TESTS${NO_COLOR}\n"
 
@@ -139,6 +141,13 @@ $(BIN)/test_tokenizer_name: $(OBJ)/Tokenizer.o | $(DIRS)
 
 
 #====================================SOURCE=====================================
+$(BIN)/interpreter: Src/Interpreter.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o | $(DIRS)
+	$(CXX) $(CFLAGS) Src/Interpreter.cpp \
+					$(OBJ)/Tokenizer.o 	 \
+					$(OBJ)/Lexer.o		 \
+					$(OBJ)/Grammar.o	 \
+					$(OBJ)/ExecutionPass.o -o $(BIN)/Interpreter
+
 $(OBJ)/Tokenizer.o: Src/Cpp/Tokenizer.cpp $(HEADERS) | $(DIRS)
 	$(CXX) -c $(CFLAGS) Src/Cpp/Tokenizer.cpp -o $(OBJ)/Tokenizer.o
 
@@ -155,6 +164,8 @@ $(OBJ)/ExecutionPass.o: Src/Cpp/ExecutionPass.cpp $(HEADERS) | $(DIRS)
 $(OBJ)/Grammar.o:  Src/Cpp/Grammar.cpp $(HEADERS) | $(DIRS)
 	$(CXX) -c $(CFLAGS) Src/Cpp/Grammar.cpp -o $(OBJ)/Grammar.o
 
+#=================================DIRECTORIES===================================
+
 $(OBJ):
 	mkdir $(OBJ)
 
@@ -163,8 +174,3 @@ $(GRAPHIC_DUMPS):
 
 $(BIN):
 	mkdir $(BIN)
-
-clean:
-	-rm -r $(BIN)
-	-rm -r $(OBJ)
-	-rm -r $(GRAPHIC_DUMPS)
