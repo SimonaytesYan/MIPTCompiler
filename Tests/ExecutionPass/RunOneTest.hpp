@@ -1,7 +1,7 @@
 #pragma once
 
-#include <sstream>
 #include <iostream>
+#include <sstream>
 
 #include "../../Src/Headers/Tokenizer.hpp"
 #include "../../Src/Headers/Lexer.hpp"

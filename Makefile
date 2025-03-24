@@ -18,6 +18,15 @@ DIRS = $(OBJ) $(BIN) $(GRAPHIC_DUMPS)
 GREEN_COLOR = \033[0;32m
 NO_COLOR = \033[0m
 
+interpreter: $(BIN)/interpreter
+
+$(BIN)/interpreter: Src/Interpreter.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o | $(DIRS)
+	$(CXX) $(CFLAGS) Src/Interpreter.cpp \
+					$(OBJ)/Tokenizer.o 	 \
+					$(OBJ)/Lexer.o		 \
+					$(OBJ)/Grammar.o	 \
+					$(OBJ)/ExecutionPass.o -o $(BIN)/Interpreter
+
 #==================================TEST RUNNERS=================================
 test_execution: $(BIN)/test_execution_object $(BIN)/test_execution_expression $(BIN)/test_execution_scope
 	@echo "${GREEN_COLOR}START EXECUTION TESTS${NO_COLOR}\n"
