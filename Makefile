@@ -5,6 +5,7 @@ SANITIZER_FLAGS = -g -fcheck-new -fsized-deallocation -fstack-protector \
 				  -pie -fPIE -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr,leak
 RELEASE_FLAGS = -O2
 CFLAGS = $(SANITIZER_FLAGS) -ISrc/Headers
+
 HEADERS_NAMES = Tokens Keywords SpecialSymbols Operators Grammar Lexer Tokenizer ExecutionPass Logger
 HEADERS = $(addsuffix .hpp, $(addprefix Src/Headers/, $(HEADERS_NAMES)))
 
