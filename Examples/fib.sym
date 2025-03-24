@@ -1,0 +1,16 @@
+{
+    let fib_n = 10;
+
+    let fib_next = 1;
+    let fib_cur = 0;
+
+    while (fib_n) {
+        let fib_old = fib_cur;
+
+        fib_cur = fib_next;
+        fib_next = fib_cur + fib_next;
+        fib_n = fib_n - 1;
+    }
+
+    print(fib_cur);
+}
