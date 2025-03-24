@@ -1,5 +1,6 @@
 #include "../Headers/Tokens.hpp"
 #include "../Headers/Tokenizer.hpp"
+#include "../Headers/Logger.hpp"
 
 #include <iostream>
 
@@ -62,7 +63,7 @@ static bool getNum(std::istream& in, std::vector<Token>& tokens) {
     // Do not wait '-', will work with it during syntax analysis
     if ('0' <= first_sym && first_sym <= '9') {
         in >> num;
-        std::cout << "num = " << num << "\n";
+        log << "num = " << num << "\n";
         tokens.emplace_back(NumToken(num));
         return true;
     }
@@ -83,7 +84,7 @@ static bool getKeyword(std::istream& in, std::vector<Token>& tokens) {
         if (res.first == keyword.name.end()) {
             tokens.emplace_back(KeywordToken(keyword.type));
 
-            std::cout << "keyword = " << keyword.name << "\n";
+            log << "keyword = " << keyword.name << "\n";
 
             ungetSymbols(in, potential_keyword.size() - keyword.name.size());
             return true;
@@ -106,7 +107,7 @@ static bool getOperator(std::istream& in, std::vector<Token>& tokens) {
         if (res.first == oper.name.end()) {
             tokens.emplace_back(OperatorToken(oper.type));
 
-            std::cout << "operator = " << oper.name << "\n";
+            log << "operator = " << oper.name << "\n";
 
             ungetSymbols(in, potential_operator.size() - oper.name.size());
             return true;
@@ -129,7 +130,7 @@ static bool getSpecialSymbol(std::istream& in, std::vector<Token>& tokens) {
         if (res.first == spec_sym.name.end()) {
             tokens.emplace_back(SpecialSymbolToken(spec_sym.type));
 
-            std::cout << "spec_symbol = " << spec_sym.name << "\n";
+            log << "spec_symbol = " << spec_sym.name << "\n";
 
             ungetSymbols(in, potential_spec_sym.size() - spec_sym.name.size());
             return true;
@@ -155,7 +156,7 @@ static bool getName(std::istream& in, std::vector<Token>& tokens) {
         }
         while (isalnum(next_sym) || next_sym == '_');
 
-        std::cout << "name = " << name << "\n";
+        log << "name = " << name << "\n";
         tokens.emplace_back(NameToken(std::move(name)));
 
         in.unget();

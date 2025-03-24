@@ -6,7 +6,7 @@ SANITIZER_FLAGS = -g -fcheck-new -fsized-deallocation -fstack-protector \
 RELEASE_FLAGS = -O2
 CFLAGS = $(SANITIZER_FLAGS)
 
-HEADERS_NAMES = Tokens Keywords SpecialSymbols Operators Grammar Lexer Tokenizer ExecutionPass
+HEADERS_NAMES = Tokens Keywords SpecialSymbols Operators Grammar Lexer Tokenizer ExecutionPass Logger
 HEADERS = $(addsuffix .hpp, $(addprefix Src/Headers/, $(HEADERS_NAMES)))
 
 OBJ = obj
