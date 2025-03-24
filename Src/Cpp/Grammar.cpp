@@ -1,4 +1,4 @@
-#include "../Headers/Grammar.hpp"
+#include "Grammar.hpp"
 
 bool isGrammarUnitOperator(const GrammarUnit* unit) {
   return dynamic_cast<const OperatorUnit*>(unit) != nullptr;

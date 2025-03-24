@@ -1,4 +1,4 @@
-#include "../Headers/ExecutionPass.hpp"
+#include "ExecutionPass.hpp"
 
 #include <iostream>
 #include <assert.h>

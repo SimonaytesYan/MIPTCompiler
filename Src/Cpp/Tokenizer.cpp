@@ -1,6 +1,6 @@
-#include "../Headers/Tokens.hpp"
-#include "../Headers/Tokenizer.hpp"
-#include "../Headers/Logger.hpp"
+#include "Tokens.hpp"
+#include "Tokenizer.hpp"
+#include "Logger.hpp"
 
 #include <iostream>
 

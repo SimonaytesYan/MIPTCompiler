@@ -1,5 +1,5 @@
-#include "../Headers/Lexer.hpp"
-#include "../Headers/Logger.hpp"
+#include "Lexer.hpp"
+#include "Logger.hpp"
 
 #include <iostream>
 

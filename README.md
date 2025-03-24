@@ -27,5 +27,3 @@ f() !
 Заменить тесты на google tests
 
 Make => Makefile
-
-Добавить -I в компиляцию

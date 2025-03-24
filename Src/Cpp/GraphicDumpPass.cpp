@@ -1,4 +1,4 @@
-#include "../Headers/GraphicDumpPass.hpp"
+#include "GraphicDumpPass.hpp"
 
 #include <iostream>
 #include <fstream>
