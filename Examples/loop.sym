@@ -1,0 +1,7 @@
+{
+    let b = 10;
+    loop (b) {
+        print(b);
+        b = b - 1;
+    }
+}

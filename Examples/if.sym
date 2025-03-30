@@ -1,0 +1,11 @@
+{
+    let a = 0;
+    let b = 10;
+    if (a) {
+        b = a * 10;
+    }
+    else {
+        b = a + 42;
+    }
+    print(b);
+}

@@ -1,4 +1,4 @@
-#include "../Headers/GraphicDumpPass.hpp"
+#include "GraphicDumpPass.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -33,7 +33,7 @@ void GraphicDumpPass::graphicDump(const GrammarUnit* node) {
 }
 
 std::string GraphicDumpPass::fullDumpFileName() {
-    return std::string("GraphicDumps/" + file_name_prefix_ + std::to_string(dump_counter_));
+    return std::string("graphic_dumps/" + file_name_prefix_ + std::to_string(dump_counter_));
 }
 
 void GraphicDumpPass::createPngFromDot() {
