@@ -20,6 +20,11 @@ override CXXFLAGS += $(COMMON_INC) # $(LLVM_FLAGS) $(SANITIZER_FLAGS)
 HEADERS_NAMES = Tokens Keywords SpecialSymbols Operators Grammar Lexer Tokenizer ExecutionPass Logger
 HEADERS = $(addsuffix .hpp, $(addprefix Src/Headers/, $(HEADERS_NAMES)))
 
+BASIC_SOURCE_NAMES = ExecutionPass Grammar GraphicDumpPass Lexer Tokenizer
+BASIC_CPPS = $(addsuffix .cpp, $(addprefix Src/Cpp/, $(BASIC_SOURCE_NAMES)))
+
+BASIC_OBJS = $(addsuffix .o, $(addprefix $(OBJ)/, $(BASIC_SOURCE_NAMES)))
+
 OBJ = obj
 BIN = bin
 GRAPHIC_DUMPS = graphic_dumps
@@ -30,7 +35,7 @@ DIRS = $(OBJ) $(BIN) $(GRAPHIC_DUMPS)
 GREEN_COLOR = \033[0;32m
 NO_COLOR = \033[0m
 
-.PHONY: interpreter test clean
+.PHONY: interpreter test clean test_execution test_lexer_dump test_tokenizer
 #==================================PHONY TARGETS=================================
 interpreter: $(BIN)/interpreter
 
@@ -86,23 +91,23 @@ test_tokenizer: $(BIN)/test_tokenizer_num $(BIN)/test_tokenizer_name $(BIN)/test
 
 
 #---------------------------EXECUTION PASS TESTS--------------------------------
-$(BIN)/test_execution_object: Tests/ExecutionPass/Objects.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o | $(DIRS) # Tests/ExecutionPass/RunOneTest.hpp
+$(BIN)/test_execution_object: Tests/ExecutionPass/Objects.cpp $(BASIC_OBJS) | $(DIRS) # Tests/ExecutionPass/RunOneTest.hpp
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(BIN)/test_execution_expression: Tests/ExecutionPass/Expression.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o | $(DIRS)
+$(BIN)/test_execution_expression: Tests/ExecutionPass/Expression.cpp $(BASIC_OBJS) $(OBJ)/Grammar.o | $(DIRS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(BIN)/test_execution_scope: Tests/ExecutionPass/Scope.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o | $(DIRS)
+$(BIN)/test_execution_scope: Tests/ExecutionPass/Scope.cpp $(BASIC_OBJS) | $(DIRS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 #------------------------------LEXER TESTS--------------------------------------
-$(BIN)/test_lexer_dump_objects: Tests/Lexer/Objects.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o $(OBJ)/Grammar.o | $(DIRS)
+$(BIN)/test_lexer_dump_objects: Tests/Lexer/Objects.cpp $(BASIC_OBJS) | $(DIRS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(BIN)/test_lexer_dump_expr: Tests/Lexer/Expr.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o $(OBJ)/Grammar.o | $(DIRS)
+$(BIN)/test_lexer_dump_expr: Tests/Lexer/Expr.cpp $(BASIC_OBJS) | $(DIRS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(BIN)/test_lexer_dump_scope: Tests/Lexer/Scope.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o $(OBJ)/Grammar.o | $(DIRS)
+$(BIN)/test_lexer_dump_scope: Tests/Lexer/Scope.cpp $(BASIC_OBJS) | $(DIRS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 #----------------------------TOKENIZER TESTS------------------------------------
@@ -122,22 +127,10 @@ $(BIN)/test_tokenizer_name: Tests/Tokenizer/Name.cpp $(OBJ)/Tokenizer.o | $(DIRS
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 #====================================SOURCE=====================================
-$(BIN)/interpreter: Src/Interpreter.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o | $(DIRS)
+$(BIN)/interpreter: Src/Interpreter.cpp $(BASIC_OBJS) | $(DIRS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(OBJ)/Tokenizer.o: Src/Cpp/Tokenizer.cpp | $(DIRS) #$(HEADERS)
-	$(CXX) -c $(CXXFLAGS) $^ -o $@
-
-$(OBJ)/Lexer.o: Src/Cpp/Lexer.cpp | $(DIRS) #$(HEADERS)
-	$(CXX) -c $(CXXFLAGS) $^ -o $@
-
-$(OBJ)/GraphicDumpPass.o: Src/Cpp/GraphicDumpPass.cpp $(OBJ)/Grammar.o | $(DIRS) # $(HEADERS)
-	$(CXX) -c $(CXXFLAGS) $^ -o $@
-
-$(OBJ)/ExecutionPass.o: Src/Cpp/ExecutionPass.cpp | $(DIRS) # $(HEADERS)
-	$(CXX) -c $(CXXFLAGS) $^ -o $@
-
-$(OBJ)/Grammar.o: Src/Cpp/Grammar.cpp | $(DIRS) # $(HEADERS)
+$(OBJ)/%.o: Src/Cpp/%.cpp | $(DIRS)
 	$(CXX) -c $(CXXFLAGS) $^ -o $@
 
 #=================================DIRECTORIES===================================
