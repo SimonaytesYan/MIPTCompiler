@@ -108,8 +108,6 @@ void GraphicDumpPass::dumpEdge(const GrammarUnit* from, const GrammarUnit* to, c
 }
 
 void GraphicDumpPass::dumpNodeInFormat(const char* color) {
-    "[style = \"filled,rounded\", fillcolor = \"%s\", label = \"{{ <v>";
-
     out_ << "GrammarUnit" << node_ << "[style = \"filled,rounded\","
         << "fillcolor = \"" << color << "\", label = \"{{ <v>";
 }

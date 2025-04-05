@@ -1,10 +1,11 @@
-CXX = g++
-DEBUG_FLAGS = -D _DEBUG -ggdb3 -std=c++2a -O0 -Wall -Wextra -Weffc++ -Waggressive-loop-optimizations -Wc++14-compat -Wmissing-declarations -Wcast-align -Wcast-qual -Wchar-subscripts -Wconditionally-supported -Wconversion -Wctor-dtor-privacy -Wempty-body -Wfloat-equal -Wformat-nonliteral -Wformat-security -Wformat-signedness -Wformat=2 -Winline -Wlogical-op -Wnon-virtual-dtor -Wopenmp-simd -Woverloaded-virtual -Wpacked -Wpointer-arith -Winit-self -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=2 -Wsuggest-attribute=noreturn -Wsuggest-final-methods -Wsuggest-final-types -Wsuggest-override -Wswitch-default -Wswitch-enum -Wsync-nand -Wundef -Wunreachable-code -Wunused -Wuseless-cast -Wvariadic-macros -Wno-literal-suffix -Wno-missing-field-initializers -Wno-narrowing -Wno-old-style-cast -Wno-varargs -Wstack-protector -fcheck-new -fsized-deallocation -fstack-protector -fstrict-overflow -flto-odr-type-merging -fno-omit-frame-pointer -Wstack-usage=8192 -pie -fPIE -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,leak,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
+CXX = clang++
+DEBUG_FLAGS = -D _DEBUG -ggdb3 -O0 -Wall -Wextra -Weffc++ -Waggressive-loop-optimizations -Wc++14-compat -Wmissing-declarations -Wcast-align -Wcast-qual -Wchar-subscripts -Wconditionally-supported -Wconversion -Wctor-dtor-privacy -Wempty-body -Wfloat-equal -Wformat-nonliteral -Wformat-security -Wformat-signedness -Wformat=2 -Winline -Wlogical-op -Wnon-virtual-dtor -Wopenmp-simd -Woverloaded-virtual -Wpacked -Wpointer-arith -Winit-self -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=2 -Wsuggest-attribute=noreturn -Wsuggest-final-methods -Wsuggest-final-types -Wsuggest-override -Wswitch-default -Wswitch-enum -Wsync-nand -Wundef -Wunreachable-code -Wunused -Wuseless-cast -Wvariadic-macros -Wno-literal-suffix -Wno-missing-field-initializers -Wno-narrowing -Wno-old-style-cast -Wno-varargs -Wstack-protector -fcheck-new -fsized-deallocation -fstack-protector -fstrict-overflow -flto-odr-type-merging -fno-omit-frame-pointer -Wstack-usage=8192 -pie -fPIE -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,leak,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr
 SANITIZER_FLAGS = -g -fcheck-new -fsized-deallocation -fstack-protector \
 				  -fstrict-overflow -flto-odr-type-merging -fno-omit-frame-pointer \
 				  -pie -fPIE -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr,leak
 RELEASE_FLAGS = -O2
-CFLAGS = $(SANITIZER_FLAGS) -ISrc/Headers
+LLVM_FLAGS = llvm-config --cxxflags --ldflags --system-libs --libs core
+CXXFLAGS = -ISrc/Headers -std=c++2a # $(LLVM_FLAGS) $(SANITIZER_FLAGS)
 
 HEADERS_NAMES = Tokens Keywords SpecialSymbols Operators Grammar Lexer Tokenizer ExecutionPass Logger
 HEADERS = $(addsuffix .hpp, $(addprefix Src/Headers/, $(HEADERS_NAMES)))
@@ -76,21 +77,21 @@ tests_tokenizer: $(BIN)/test_tokenizer_num $(BIN)/test_tokenizer_name $(BIN)/tes
 
 #---------------------------EXECUTION PASS TESTS--------------------------------
 $(BIN)/test_execution_object: Tests/ExecutionPass/Objects.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o Tests/ExecutionPass/RunOneTest.hpp | $(DIRS)
-	$(CXX) $(CFLAGS) Tests/ExecutionPass/Objects.cpp \
+	$(CXX) $(CXXFLAGS) Tests/ExecutionPass/Objects.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
 					$(OBJ)/Grammar.o	\
 					$(OBJ)/ExecutionPass.o -o $(BIN)/test_execution_object
 
 $(BIN)/test_execution_expression: Tests/ExecutionPass/Expression.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o Tests/ExecutionPass/RunOneTest.hpp | $(DIRS)
-	$(CXX) $(CFLAGS) Tests/ExecutionPass/Expression.cpp \
+	$(CXX) $(CXXFLAGS) Tests/ExecutionPass/Expression.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
 					$(OBJ)/Grammar.o	\
 					$(OBJ)/ExecutionPass.o -o $(BIN)/test_execution_expression
 
 $(BIN)/test_execution_scope: Tests/ExecutionPass/Scope.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o Tests/ExecutionPass/RunOneTest.hpp| $(DIRS)
-	$(CXX) $(CFLAGS) Tests/ExecutionPass/Scope.cpp \
+	$(CXX) $(CXXFLAGS) Tests/ExecutionPass/Scope.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
 					$(OBJ)/Grammar.o	\
@@ -98,21 +99,21 @@ $(BIN)/test_execution_scope: Tests/ExecutionPass/Scope.cpp $(OBJ)/Tokenizer.o $(
 
 #------------------------------LEXER TESTS--------------------------------------
 $(BIN)/test_lexer_dump_objects: Tests/Lexer/Objects.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o $(OBJ)/Grammar.o | $(DIRS)
-	$(CXX) $(CFLAGS) Tests/Lexer/Objects.cpp \
+	$(CXX) $(CXXFLAGS) Tests/Lexer/Objects.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
 					$(OBJ)/Grammar.o	\
 					$(OBJ)/GraphicDumpPass.o -o $(BIN)/test_lexer_dump_objects
 
 $(BIN)/test_lexer_dump_expr: Tests/Lexer/Expr.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o $(OBJ)/Grammar.o | $(DIRS)
-	$(CXX) $(CFLAGS) Tests/Lexer/Expr.cpp \
+	$(CXX) $(CXXFLAGS) Tests/Lexer/Expr.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
 					$(OBJ)/Grammar.o	\
 					$(OBJ)/GraphicDumpPass.o -o $(BIN)/test_lexer_dump_expr
 
 $(BIN)/test_lexer_dump_scope: Tests/Lexer/Scope.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/GraphicDumpPass.o $(OBJ)/Grammar.o | $(DIRS)
-	$(CXX) $(CFLAGS) Tests/Lexer/Scope.cpp \
+	$(CXX) $(CXXFLAGS) Tests/Lexer/Scope.cpp \
 					$(OBJ)/Tokenizer.o 	\
 					$(OBJ)/Lexer.o		\
 					$(OBJ)/Grammar.o	\
@@ -120,49 +121,48 @@ $(BIN)/test_lexer_dump_scope: Tests/Lexer/Scope.cpp $(OBJ)/Tokenizer.o $(OBJ)/Le
 
 #----------------------------TOKENIZER TESTS------------------------------------
 $(BIN)/test_tokenizer_spec_symbols: $(OBJ)/Tokenizer.o | $(DIRS)
-	$(CXX) $(CFLAGS) Tests/Tokenizer/SpecialSymbols.cpp \
+	$(CXX) $(CXXFLAGS) Tests/Tokenizer/SpecialSymbols.cpp \
 					$(OBJ)/Tokenizer.o -o $(BIN)/test_tokenizer_spec_symbols
 
 $(BIN)/test_tokenizer_operators: $(OBJ)/Tokenizer.o | $(DIRS)
-	$(CXX) $(CFLAGS) Tests/Tokenizer/Operators.cpp \
+	$(CXX) $(CXXFLAGS) Tests/Tokenizer/Operators.cpp \
 					$(OBJ)/Tokenizer.o -o $(BIN)/test_tokenizer_operators
 
 $(BIN)/test_tokenizer_keywords: $(OBJ)/Tokenizer.o | $(DIRS)
-	$(CXX) $(CFLAGS) Tests/Tokenizer/Keywords.cpp \
+	$(CXX) $(CXXFLAGS) Tests/Tokenizer/Keywords.cpp \
 					$(OBJ)/Tokenizer.o -o $(BIN)/test_tokenizer_keywords
 
 $(BIN)/test_tokenizer_num: $(OBJ)/Tokenizer.o | $(DIRS)
-	$(CXX) $(CFLAGS) Tests/Tokenizer/Num.cpp \
+	$(CXX) $(CXXFLAGS) Tests/Tokenizer/Num.cpp \
 					$(OBJ)/Tokenizer.o -o $(BIN)/test_tokenizer_num
 
 $(BIN)/test_tokenizer_name: $(OBJ)/Tokenizer.o | $(DIRS)
-	$(CXX) $(CFLAGS) Tests/Tokenizer/Name.cpp \
+	$(CXX) $(CXXFLAGS) Tests/Tokenizer/Name.cpp \
 					$(OBJ)/Tokenizer.o -o $(BIN)/test_tokenizer_name
 
 
 #====================================SOURCE=====================================
 $(BIN)/interpreter: Src/Interpreter.cpp $(OBJ)/Tokenizer.o $(OBJ)/Lexer.o $(OBJ)/ExecutionPass.o $(OBJ)/Grammar.o | $(DIRS)
-	$(CXX) $(CFLAGS) Src/Interpreter.cpp \
+	$(CXX) $(CXXFLAGS) Src/Interpreter.cpp \
 					$(OBJ)/Tokenizer.o 	 \
 					$(OBJ)/Lexer.o		 \
 					$(OBJ)/Grammar.o	 \
 					$(OBJ)/ExecutionPass.o -o $(BIN)/Interpreter
 
 $(OBJ)/Tokenizer.o: Src/Cpp/Tokenizer.cpp $(HEADERS) | $(DIRS)
-	$(CXX) -c $(CFLAGS) Src/Cpp/Tokenizer.cpp -o $(OBJ)/Tokenizer.o
+	$(CXX) -c $(CXXFLAGS) Src/Cpp/Tokenizer.cpp -o $(OBJ)/Tokenizer.o
 
 $(OBJ)/Lexer.o: Src/Cpp/Lexer.cpp $(HEADERS) | $(DIRS)
-	$(CXX) -c $(CFLAGS) Src/Cpp/Lexer.cpp -o $(OBJ)/Lexer.o
+	$(CXX) -c $(CXXFLAGS) Src/Cpp/Lexer.cpp -o $(OBJ)/Lexer.o
 
 $(OBJ)/GraphicDumpPass.o: Src/Cpp/GraphicDumpPass.cpp $(OBJ)/Grammar.o $(HEADERS) | $(DIRS)
-	$(CXX) -c $(CFLAGS) Src/Cpp/GraphicDumpPass.cpp \
-					   $(OBJ)/Grammar.o -o $(OBJ)/GraphicDumpPass.o
+	$(CXX) -c $(CXXFLAGS) Src/Cpp/GraphicDumpPass.cpp -o $(OBJ)/GraphicDumpPass.o
 
 $(OBJ)/ExecutionPass.o: Src/Cpp/ExecutionPass.cpp $(HEADERS) | $(DIRS)
-	$(CXX) -c $(CFLAGS) Src/Cpp/ExecutionPass.cpp -o $(OBJ)/ExecutionPass.o
+	$(CXX) -c $(CXXFLAGS) Src/Cpp/ExecutionPass.cpp -o $(OBJ)/ExecutionPass.o
 
 $(OBJ)/Grammar.o:  Src/Cpp/Grammar.cpp $(HEADERS) | $(DIRS)
-	$(CXX) -c $(CFLAGS) Src/Cpp/Grammar.cpp -o $(OBJ)/Grammar.o
+	$(CXX) -c $(CXXFLAGS) Src/Cpp/Grammar.cpp -o $(OBJ)/Grammar.o
 
 #=================================DIRECTORIES===================================
 
