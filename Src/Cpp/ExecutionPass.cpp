@@ -1,7 +1,7 @@
 #include "ExecutionPass.hpp"
+#include "Grammar.hpp"
 
 #include <iostream>
-#include <assert.h>
 
 void ExecutionPass::execute(const GrammarUnit* unit) {
     if (unit == nullptr)

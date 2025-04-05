@@ -1,8 +1,17 @@
-#include "Tokens.hpp"
-#include "Tokenizer.hpp"
+#include "Keywords.hpp"
 #include "Logger.hpp"
+#include "Operators.hpp"
+#include "SpecialSymbols.hpp"
+#include "Tokenizer.hpp"
+#include "Tokens.hpp"
 
+#include <algorithm>
+#include <cstdio>
+#include <cctype>
 #include <iostream>
+#include <string>
+#include <vector>
+#include <utility>
 
 // return true, if number get correctly
 // return false otherwise

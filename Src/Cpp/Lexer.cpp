@@ -1,7 +1,13 @@
 #include "Lexer.hpp"
 #include "Logger.hpp"
+#include "Grammar.hpp"
+#include "Keywords.hpp"
+#include "Operators.hpp"
+#include "SpecialSymbols.hpp"
 
 #include <iostream>
+#include <variant>
+#include <vector>
 
 // ScopeUnit      ::= '{' {StatementUnit}+ '}'
 // StatementUnit  ::= VarAssignUnit | VarDeclUnit | IFUnit | LoopUnit | PrintUnit | 0

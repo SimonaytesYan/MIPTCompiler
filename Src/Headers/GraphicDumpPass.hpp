@@ -2,7 +2,9 @@
 
 #include "Grammar.hpp"
 
+#include <cstddef>
 #include <fstream>
+#include <string>
 
 class GraphicDumpPass {
   public:
