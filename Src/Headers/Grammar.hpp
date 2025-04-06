@@ -2,6 +2,7 @@
 
 #include "Tokens.hpp"
 
+#include <string>
 #include <vector>
 
 class GrammarUnit;

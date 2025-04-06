@@ -1,7 +1,10 @@
 #include "GraphicDumpPass.hpp"
+#include "Grammar.hpp"
 
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 static void dumpNodeAndEdge(const GrammarUnit* node_, std::ofstream& out_);
 
