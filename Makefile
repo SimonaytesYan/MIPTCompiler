@@ -17,21 +17,53 @@ CXXFLAGS = $(RELEASE_FLAGS)
 override CXXFLAGS += $(COMMON_INC) # $(LLVM_FLAGS) $(SANITIZER_FLAGS)
 
 #--------------------------------FILES AND DIRS---------------------------------
+
+#-----------------HEADERS----------------
 HEADERS_NAMES = Tokens Keywords SpecialSymbols Operators Grammar Lexer Tokenizer ExecutionPass Logger
 HEADERS = $(addsuffix .hpp, $(addprefix Src/Headers/, $(HEADERS_NAMES)))
 
+#--------------BASIC_SOURCES-------------
 BASIC_SOURCE_NAMES = ExecutionPass Grammar GraphicDumpPass Lexer Tokenizer
-BASIC_CPPS = $(addsuffix .cpp, $(addprefix Src/Cpp/, $(BASIC_SOURCE_NAMES)))
+BASIC_CPPS = $(addsuffix .cpp, $(addprefix $(SRC), $(BASIC_SOURCE_NAMES)))
 
 BASIC_OBJS = $(addsuffix .o, $(addprefix $(OBJ)/, $(BASIC_SOURCE_NAMES)))
+BASIC_DEPS = $(BASIC_OBJS:.o=.d)
 
+#-------------TOKENIZER TESTS------------
+TOKEN_TEST_DIR = Tests/Tokenizer
+TOKEN_TEST_BIN_DIR = $(BIN)/$(TOKEN_TEST_DIR)
+TOKEN_TEST_SOURCE_NAMES = SpecialSymbols Operators Keywords Num Name
+
+TOKEN_TEST_CPPS = $(addsuffix .cpp, $(addprefix $(TOKEN_TEST_DIR), $(TOKEN_TEST_SOURCE_NAMES)))
+TOKEN_TEST_BIN = $(addprefix $(TOKEN_TEST_BIN_DIR)/, $(TOKEN_TEST_SOURCE_NAMES))
+
+#-------------LEXER TESTS------------
+LEXER_TEST_DIR = Tests/Lexer
+LEXER_TEST_BIN_DIR = $(BIN)/$(LEXER_TEST_DIR)
+LEXER_TEST_SOURCE_NAMES = Expr Objects Scope
+
+LEXER_TEST_CPPS = $(addsuffix .cpp, $(addprefix $(LEXER_TEST_DIR), $(LEXER_TEST_SOURCE_NAMES)))
+LEXER_TEST_BIN = $(addprefix $(LEXER_TEST_BIN_DIR)/, $(LEXER_TEST_SOURCE_NAMES))
+
+#-------------EXECUTION PASS TESTS------------
+EXE_PASS_TEST_DIR = Tests/ExecutionPass
+EXE_PASS_TEST_BIN_DIR = $(BIN)/$(EXE_PASS_TEST_DIR)
+EXE_PASS_TEST_SOURCE_NAMES = Expression Objects Scope
+
+EXE_PASS_TEST_CPPS = $(addsuffix .cpp, $(addprefix $(EXE_PASS_TEST_DIR), $(EXE_PASS_TEST_SOURCE_NAMES)))
+EXE_PASS_TEST_BIN = $(addprefix $(EXE_PASS_TEST_BIN_DIR)/, $(EXE_PASS_TEST_SOURCE_NAMES))
+
+#-----------------DIRS----------------
 OBJ = obj
+SRC = Src/Cpp
 BIN = bin
 GRAPHIC_DUMPS = graphic_dumps
 
 DIRS = $(OBJ) $(BIN) $(GRAPHIC_DUMPS)
 
 #----------------------------------------OTHER----------------------------------
+NO_DEPS=clean
+
 GREEN_COLOR = \033[0;32m
 NO_COLOR = \033[0m
 
@@ -47,91 +79,76 @@ clean:
 	-rm -r $(GRAPHIC_DUMPS)
 
 #==================================TEST RUNNERS=================================
-test_execution: $(BIN)/test_execution_object $(BIN)/test_execution_expression $(BIN)/test_execution_scope
+test_execution: $(EXE_PASS_TEST_BIN)
 	@echo "${GREEN_COLOR}START EXECUTION TESTS${NO_COLOR}\n"
 
 	@echo "\n${GREEN_COLOR}EXECUTION OBJECTS${NO_COLOR}"
-	-@$(BIN)/test_execution_object
+	-@$(EXE_PASS_TEST_BIN_DIR)/Objects
 
 	@echo "\n${GREEN_COLOR}EXECUTION EXPRESSION${NO_COLOR}"
-	-@$(BIN)/test_execution_expression
+	-@$(EXE_PASS_TEST_BIN_DIR)/Expression
 
 	@echo "\n${GREEN_COLOR}EXECUTION SCOPE${NO_COLOR}"
-	-@$(BIN)/test_execution_scope
+	-@$(EXE_PASS_TEST_BIN_DIR)/Scope
 
-test_lexer_dump: $(BIN)/test_lexer_dump_objects $(BIN)/test_lexer_dump_expr $(BIN)/test_lexer_dump_scope
+test_lexer_dump: $(LEXER_TEST_BIN)
 	@echo "${GREEN_COLOR}START LEXER TESTS${NO_COLOR}\n"
 
 	@echo "\n${GREEN_COLOR}LEXER SCOPE${NO_COLOR}"
-	-@$(BIN)/test_lexer_dump_scope
+	-@$(LEXER_TEST_BIN_DIR)/Scope
 
 	@echo "\n${GREEN_COLOR}LEXER EXPRESSION${NO_COLOR}"
-	-@$(BIN)/test_lexer_dump_expr
+	-@$(LEXER_TEST_BIN_DIR)/Expr
 
 	@echo "\n${GREEN_COLOR}LEXER OBJECTS${NO_COLOR}"
-	-@$(BIN)/test_lexer_dump_objects
+	-@$(LEXER_TEST_BIN_DIR)/Objects
 
-test_tokenizer: $(BIN)/test_tokenizer_num $(BIN)/test_tokenizer_name $(BIN)/test_tokenizer_keywords $(BIN)/test_tokenizer_operators $(BIN)/test_tokenizer_spec_symbols
+test_tokenizer: $(TOKEN_TEST_BIN)
 	@echo "${GREEN_COLOR}START TOKENIZER TESTS${NO_COLOR}\n"
 
 	@echo "\n${GREEN_COLOR}TOKENIZER NUM${NO_COLOR}"
-	@$(BIN)/test_tokenizer_num
+	@$(TOKEN_TEST_BIN_DIR)/Num
 
 	@echo "\n${GREEN_COLOR}TOKENIZER NAME${NO_COLOR}"
-	@$(BIN)/test_tokenizer_name
+	@$(TOKEN_TEST_BIN_DIR)/Name
 
 	@echo "\n${GREEN_COLOR}TOKENIZER KEYWORD${NO_COLOR}"
-	@$(BIN)/test_tokenizer_keywords
+	@$(TOKEN_TEST_BIN_DIR)/Keywords
 
 	@echo "\n${GREEN_COLOR}TOKENIZER OPERATOR${NO_COLOR}"
-	@$(BIN)/test_tokenizer_operators
+	@$(TOKEN_TEST_BIN_DIR)/Operators
 
 	@echo "\n${GREEN_COLOR}TOKENIZER SPECIAL SYMBOL${NO_COLOR}"
-	@$(BIN)/test_tokenizer_spec_symbols
-
+	@$(TOKEN_TEST_BIN_DIR)/SpecialSymbols
 
 #---------------------------EXECUTION PASS TESTS--------------------------------
-$(BIN)/test_execution_object: Tests/ExecutionPass/Objects.cpp $(BASIC_OBJS) | $(DIRS) # Tests/ExecutionPass/RunOneTest.hpp
-	$(CXX) $(CXXFLAGS) $^ -o $@
-
-$(BIN)/test_execution_expression: Tests/ExecutionPass/Expression.cpp $(BASIC_OBJS) $(OBJ)/Grammar.o | $(DIRS)
-	$(CXX) $(CXXFLAGS) $^ -o $@
-
-$(BIN)/test_execution_scope: Tests/ExecutionPass/Scope.cpp $(BASIC_OBJS) | $(DIRS)
+$(EXE_PASS_TEST_BIN) : $(EXE_PASS_TEST_BIN_DIR)/% : $(EXE_PASS_TEST_DIR)/%.cpp $(BASIC_OBJS) | $(DIRS)
+	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 #------------------------------LEXER TESTS--------------------------------------
-$(BIN)/test_lexer_dump_objects: Tests/Lexer/Objects.cpp $(BASIC_OBJS) | $(DIRS)
-	$(CXX) $(CXXFLAGS) $^ -o $@
-
-$(BIN)/test_lexer_dump_expr: Tests/Lexer/Expr.cpp $(BASIC_OBJS) | $(DIRS)
-	$(CXX) $(CXXFLAGS) $^ -o $@
-
-$(BIN)/test_lexer_dump_scope: Tests/Lexer/Scope.cpp $(BASIC_OBJS) | $(DIRS)
+$(LEXER_TEST_BIN) : $(LEXER_TEST_BIN_DIR)/% : $(LEXER_TEST_DIR)/%.cpp $(BASIC_OBJS) | $(DIRS)
+	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 #----------------------------TOKENIZER TESTS------------------------------------
-$(BIN)/test_tokenizer_spec_symbols: Tests/Tokenizer/SpecialSymbols.cpp $(OBJ)/Tokenizer.o | $(DIRS)
-	$(CXX) $(CXXFLAGS) $^ -o $@
-
-$(BIN)/test_tokenizer_operators: Tests/Tokenizer/Operators.cpp $(OBJ)/Tokenizer.o | $(DIRS)
-	$(CXX) $(CXXFLAGS) $^ -o $@
-
-$(BIN)/test_tokenizer_keywords: Tests/Tokenizer/Keywords.cpp $(OBJ)/Tokenizer.o | $(DIRS)
-	$(CXX) $(CXXFLAGS) $^ -o $@
-
-$(BIN)/test_tokenizer_num: Tests/Tokenizer/Num.cpp $(OBJ)/Tokenizer.o | $(DIRS)
-	$(CXX) $(CXXFLAGS) $^ -o $@
-
-$(BIN)/test_tokenizer_name: Tests/Tokenizer/Name.cpp $(OBJ)/Tokenizer.o | $(DIRS)
+$(TOKEN_TEST_BIN) : $(TOKEN_TEST_BIN_DIR)/% : $(TOKEN_TEST_DIR)/%.cpp $(OBJ)/Tokenizer.o | $(DIRS)
+	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 #====================================SOURCE=====================================
 $(BIN)/interpreter: Src/Interpreter.cpp $(BASIC_OBJS) | $(DIRS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(OBJ)/%.o: Src/Cpp/%.cpp | $(DIRS)
-	$(CXX) -c $(CXXFLAGS) $^ -o $@
+$(BASIC_OBJS) : $(OBJ)/%.o : $(SRC)/%.cpp | $(DIRS)
+	$(CXX) -c $(CXXFLAGS) $< -o $@
+
+$(BASIC_DEPS) : $(OBJ)/%.d : $(SRC)/%.cpp | $(DIRS)
+	$(CXX) -E $(CXXFLAGS) $^ -MM -MT $(@:.d=.o) > $@
+
+ifeq (0, $(words $(findstring $(MAKECMDGOALS), $(NO_DEPS))))
+include $(BASIC_DEPS)
+endif
 
 #=================================DIRECTORIES===================================
 
