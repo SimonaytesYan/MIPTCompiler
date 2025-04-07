@@ -25,6 +25,8 @@ class IRBuilderPass {
 
     llvm::Value* buildIRExpression(const ExpressionUnit* unit);
     llvm::Value* buildIROperator(const OperatorUnit* unit);
+    llvm::Value* buildIRBinaryOperator(const BinaryOperUnit* unit);
+    llvm::Value* buildIRUnaryOperator(const UnaryOperUnit* unit);
 
     llvm::Value* buildIRObject(const ObjectUnit* unit);
     llvm::Value* buildIRNum(const NumUnit* unit);
