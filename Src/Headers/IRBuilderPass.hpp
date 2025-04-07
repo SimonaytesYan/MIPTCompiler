@@ -11,7 +11,8 @@
 class IRBuilderPass {
 
   public:
-    llvm::Function* buildIR(const GrammarUnit* unit);
+    void buildIR(const GrammarUnit* unit);
+    llvm::Function* buildMain(const GrammarUnit* unit);
 
   private:
     void buildIRScope(const ScopeUnit* unit);
@@ -31,6 +32,9 @@ class IRBuilderPass {
     llvm::Value* buildIRObject(const ObjectUnit* unit);
     llvm::Value* buildIRNum(const NumUnit* unit);
     llvm::Value* buildIRVar(const VarUnit* unit);
+
+  private:
+    llvm::Value* getLLVMInt(int value);
 
   private:
     std::unique_ptr<llvm::IRBuilder<>> builder_;
