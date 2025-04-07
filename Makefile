@@ -23,7 +23,7 @@ HEADERS_NAMES = Tokens Keywords SpecialSymbols Operators Grammar Lexer Tokenizer
 HEADERS = $(addsuffix .hpp, $(addprefix Src/Headers/, $(HEADERS_NAMES)))
 
 #--------------BASIC_SOURCES-------------
-BASIC_SOURCE_NAMES = ExecutionPass Grammar GraphicDumpPass Lexer Tokenizer
+BASIC_SOURCE_NAMES = ExecutionPass GraphicDumpPass Grammar Lexer Tokenizer VariableList
 BASIC_CPPS = $(addsuffix .cpp, $(addprefix $(SRC), $(BASIC_SOURCE_NAMES)))
 
 BASIC_OBJS = $(addsuffix .o, $(addprefix $(OBJ)/, $(BASIC_SOURCE_NAMES)))
@@ -64,8 +64,8 @@ DIRS = $(OBJ) $(BIN) $(GRAPHIC_DUMPS)
 #----------------------------------------OTHER----------------------------------
 NO_DEPS=clean
 
-GREEN_COLOR = \033[0;32m
-NO_COLOR = \033[0m
+GREEN_COLOR = "\033[0;32m"
+NO_COLOR = "\033[0m"
 
 .PHONY: interpreter test clean test_execution test_lexer_dump test_tokenizer
 #==================================PHONY TARGETS=================================
