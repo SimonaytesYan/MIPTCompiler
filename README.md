@@ -26,4 +26,6 @@ f() !
 ## TODO
 Заменить тесты на google tests
 
+Унифицировать пассы по дереву
+
 Make => Makefile
