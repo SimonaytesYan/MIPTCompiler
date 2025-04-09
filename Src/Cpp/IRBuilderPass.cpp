@@ -4,35 +4,37 @@
 #include <iostream>
 #include "llvm/ADT/APInt.h"
 
+IRBuilderPass::IRBuilderPass() :
+    context_(),
+    module_("my cool jit", context_),
+    builder_(context_) { }
 
 void IRBuilderPass::buildIR(const GrammarUnit* unit) {
-    // TODO init modules
-
     // TODO generate main
 
-    module_->print(llvm::outs(), nullptr);
+    module_.print(llvm::outs(), nullptr);
 }
 
 llvm::Function* IRBuilderPass::buildMain(const GrammarUnit* unit) {
     llvm::FunctionType *func_type =
-        llvm::FunctionType::get(llvm::Type::getVoidTy(*context_), false);
+        llvm::FunctionType::get(llvm::Type::getVoidTy(context_), false);
 
     llvm::Function* func =
         llvm::Function::Create(func_type, llvm::Function::ExternalLinkage,
-                               "my_main", module_.get());
+                               "my_main", module_);
     if (func == nullptr) {
         std::cerr << "IRBuilder: error in main function creation\n";
         return nullptr;
     }
 
     llvm::BasicBlock* entry_basic_block =
-        llvm::BasicBlock::Create(*context_, "entry", func);
-    builder_->SetInsertPoint(entry_basic_block);
+        llvm::BasicBlock::Create(context_, "entry", func);
+    builder_.SetInsertPoint(entry_basic_block);
 
     named_values_.clear();
 
     buildIRScope(reinterpret_cast<const ScopeUnit*>(unit));
-    builder_->CreateRetVoid();
+    builder_.CreateRetVoid();
 
     return func;
 }
@@ -83,30 +85,30 @@ void IRBuilderPass::buildIRIf(const IfUnit* unit) {
     llvm::Value* cond_value = buildIRExpression(unit->condition());
     llvm::Value* one = getLLVMInt(1);
     cond_value =
-        builder_->CreateCmp(llvm::CmpInst::Predicate::ICMP_EQ, cond_value, one);
+        builder_.CreateCmp(llvm::CmpInst::Predicate::ICMP_EQ, cond_value, one);
 
-    llvm::Function* func = builder_->GetInsertBlock()->getParent();
+    llvm::Function* func = builder_.GetInsertBlock()->getParent();
 
     llvm::BasicBlock* true_branch_block =
-        llvm::BasicBlock::Create(*context_, "true_branch", func);
+        llvm::BasicBlock::Create(context_, "true_branch", func);
     llvm::BasicBlock* false_branch_block =
-        llvm::BasicBlock::Create(*context_, "false_branch", func);
+        llvm::BasicBlock::Create(context_, "false_branch", func);
     llvm::BasicBlock* final_block =
-        llvm::BasicBlock::Create(*context_, "result_branch", func);
+        llvm::BasicBlock::Create(context_, "result_branch", func);
 
-    builder_->CreateCondBr(cond_value, true_branch_block, false_branch_block);
+    builder_.CreateCondBr(cond_value, true_branch_block, false_branch_block);
 
-    builder_->SetInsertPoint(true_branch_block);
+    builder_.SetInsertPoint(true_branch_block);
     buildIRScope(unit->true_branch());
-    builder_->CreateBr(final_block);
+    builder_.CreateBr(final_block);
 
-    builder_->SetInsertPoint(false_branch_block);
+    builder_.SetInsertPoint(false_branch_block);
     buildIRScope(unit->false_branch());
-    builder_->CreateBr(final_block);
+    builder_.CreateBr(final_block);
 }
 
 llvm::Value* IRBuilderPass::getLLVMInt(int value) {
-    return llvm::ConstantInt::get(*context_, llvm::APInt(32, value, true));
+    return llvm::ConstantInt::get(context_, llvm::APInt(32, value, true));
 }
 
 llvm::Value* IRBuilderPass::buildIRExpression(const ExpressionUnit* unit) {
@@ -141,13 +143,13 @@ llvm::Value* IRBuilderPass::buildIRBinaryOperator(const BinaryOperUnit* unit) {
     switch (unit->getType())
     {
         case GrammarUnitType::ADD:
-            return builder_->CreateAdd(left_value, right_value, "addtmp");
+            return builder_.CreateAdd(left_value, right_value, "addtmp");
         case GrammarUnitType::SUB:
-            return builder_->CreateSub(left_value, right_value, "subtmp");
+            return builder_.CreateSub(left_value, right_value, "subtmp");
         case GrammarUnitType::MUL:
-            return builder_->CreateMul(left_value, right_value, "multmp");
+            return builder_.CreateMul(left_value, right_value, "multmp");
         case GrammarUnitType::DIV:
-            return builder_->CreateSDiv(left_value, right_value, "divtmp");
+            return builder_.CreateSDiv(left_value, right_value, "divtmp");
         default:
             break;
     }
@@ -163,7 +165,7 @@ llvm::Value* IRBuilderPass::buildIRUnaryOperator(const UnaryOperUnit* unit) {
     switch (unit->getType())
     {
         case GrammarUnitType::UNARY_MINUS:
-            return builder_->CreateSub(zero, operand);
+            return builder_.CreateSub(zero, operand);
         default:
             break;
     }

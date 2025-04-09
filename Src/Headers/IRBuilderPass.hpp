@@ -9,8 +9,9 @@
 #include <memory>
 
 class IRBuilderPass {
-
   public:
+    IRBuilderPass();
+
     void buildIR(const GrammarUnit* unit);
     llvm::Function* buildMain(const GrammarUnit* unit);
 
@@ -37,8 +38,8 @@ class IRBuilderPass {
     llvm::Value* getLLVMInt(int value);
 
   private:
-    std::unique_ptr<llvm::IRBuilder<>> builder_;
-    std::unique_ptr<llvm::LLVMContext> context_;
-    std::unique_ptr<llvm::Module> module_;
+    llvm::IRBuilder<> builder_;
+    llvm::LLVMContext context_;
+    llvm::Module module_;
     std::map<std::string, llvm::Value*> named_values_;
 };
