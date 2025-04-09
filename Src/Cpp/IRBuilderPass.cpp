@@ -10,8 +10,7 @@ IRBuilderPass::IRBuilderPass() :
     builder_(context_) { }
 
 void IRBuilderPass::buildIR(const GrammarUnit* unit) {
-    // TODO generate main
-
+    buildMain(unit);
     module_.print(llvm::outs(), nullptr);
 }
 
@@ -21,7 +20,7 @@ llvm::Function* IRBuilderPass::buildMain(const GrammarUnit* unit) {
 
     llvm::Function* func =
         llvm::Function::Create(func_type, llvm::Function::ExternalLinkage,
-                               "my_main", module_);
+                               "main", module_);
     if (func == nullptr) {
         std::cerr << "IRBuilder: error in main function creation\n";
         return nullptr;
@@ -31,19 +30,20 @@ llvm::Function* IRBuilderPass::buildMain(const GrammarUnit* unit) {
         llvm::BasicBlock::Create(context_, "entry", func);
     builder_.SetInsertPoint(entry_basic_block);
 
-    named_values_.clear();
-
     buildIRScope(reinterpret_cast<const ScopeUnit*>(unit));
+
     builder_.CreateRetVoid();
 
     return func;
 }
 
 void IRBuilderPass::buildIRScope(const ScopeUnit* unit) {
+    named_values_.push(std::map<std::string, llvm::Value*>());
 
     for (StatementUnit* unit : *unit) {
         buildIRStatement(unit);
     }
+    named_values_.pop();
 }
 
 void IRBuilderPass::buildIRStatement(const StatementUnit* unit) {
@@ -194,7 +194,7 @@ llvm::Value* IRBuilderPass::buildIRNum(const NumUnit* unit) {
 }
 
 llvm::Value* IRBuilderPass::buildIRVar(const VarUnit* unit) {
-    llvm::Value *var = named_values_[unit->name()];
+    llvm::Value *var = named_values_.top()[unit->name()];
     if (!var) {
         std::cerr << "buildIRObject: Unknown variable\n";
         return nullptr;

@@ -7,6 +7,7 @@
 #include "llvm/IR/LLVMContext.h"
 #include <map>
 #include <memory>
+#include <stack>
 
 class IRBuilderPass {
   public:
@@ -41,5 +42,5 @@ class IRBuilderPass {
     llvm::IRBuilder<> builder_;
     llvm::LLVMContext context_;
     llvm::Module module_;
-    std::map<std::string, llvm::Value*> named_values_;
+    std::stack<std::map<std::string, llvm::Value*>> named_values_;
 };
