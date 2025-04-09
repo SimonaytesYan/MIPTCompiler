@@ -23,8 +23,8 @@ class IRBuilderPass {
     void buildIRIf(const IfUnit* unit);
     void buildIRLoop(const LoopUnit* unit);
     void buildIRPrint(const PrintUnit* unit);
-    llvm::Value* buildIRVarDecl(const VarDeclUnit* unit);
-    llvm::Value* buildIRVarAssign(const VarAssignUnit* unit);
+    void buildIRVarDecl(const VarDeclUnit* unit);
+    void buildIRVarAssign(const VarAssignUnit* unit);
 
     llvm::Value* buildIRExpression(const ExpressionUnit* unit);
     llvm::Value* buildIROperator(const OperatorUnit* unit);

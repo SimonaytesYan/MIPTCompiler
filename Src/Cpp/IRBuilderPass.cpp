@@ -71,17 +71,8 @@ void IRBuilderPass::buildIRStatement(const StatementUnit* unit) {
     std::cerr << "IRBuilderPass: unknown StatementUnitType\n";
 }
 
-
-llvm::Value* IRBuilderPass::buildIRVarDecl(const VarDeclUnit* unit) {
-    return nullptr; // TODO implement
-}
-
-llvm::Value* IRBuilderPass::buildIRVarAssign(const VarAssignUnit* unit) {
-    return nullptr; // TODO implement
-}
-
 void IRBuilderPass::buildIRIf(const IfUnit* unit) {
-
+    // Emit condition
     llvm::Value* cond_value = buildIRExpression(unit->condition());
     llvm::Value* one = getLLVMInt(1);
     cond_value =
@@ -89,23 +80,53 @@ void IRBuilderPass::buildIRIf(const IfUnit* unit) {
 
     llvm::Function* func = builder_.GetInsertBlock()->getParent();
 
+    // Create all basic blocks
     llvm::BasicBlock* true_branch_block =
         llvm::BasicBlock::Create(context_, "true_branch", func);
     llvm::BasicBlock* false_branch_block =
-        llvm::BasicBlock::Create(context_, "false_branch", func);
+        llvm::BasicBlock::Create(context_, "false_branch");
     llvm::BasicBlock* final_block =
-        llvm::BasicBlock::Create(context_, "result_branch", func);
+        llvm::BasicBlock::Create(context_, "result_branch");
 
     builder_.CreateCondBr(cond_value, true_branch_block, false_branch_block);
 
+    // Emit true branch
     builder_.SetInsertPoint(true_branch_block);
     buildIRScope(unit->true_branch());
+
+    // true_branch_block = builder_.GetInsertBlock();
     builder_.CreateBr(final_block);
+
+    // Emit false branch
+    func->getBasicBlockList().insert(func->end(), false_branch_block);
 
     builder_.SetInsertPoint(false_branch_block);
     buildIRScope(unit->false_branch());
+
+    // false_branch_block = builder_.GetInsertBlock();
     builder_.CreateBr(final_block);
+
+    // Emit final block
+    func->getBasicBlockList().insert(func->end(), final_block);
+    builder_.SetInsertPoint(final_block);
 }
+
+void IRBuilderPass::buildIRLoop(const LoopUnit* unit) {
+    // TODO implement
+}
+
+void IRBuilderPass::buildIRPrint(const PrintUnit* unit) {
+    // TODO implement
+}
+
+void IRBuilderPass::buildIRVarDecl(const VarDeclUnit* unit) {
+    // TODO implement
+}
+
+void IRBuilderPass::buildIRVarAssign(const VarAssignUnit* unit) {
+    // TODO implement
+}
+
 
 llvm::Value* IRBuilderPass::getLLVMInt(int value) {
     return llvm::ConstantInt::get(context_, llvm::APInt(32, value, true));
