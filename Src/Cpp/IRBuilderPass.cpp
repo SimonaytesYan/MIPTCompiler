@@ -10,8 +10,23 @@ IRBuilderPass::IRBuilderPass() :
     builder_(context_) { }
 
 void IRBuilderPass::buildIR(const GrammarUnit* unit) {
+    AddStdLibFunctions();
+
     buildMain(unit);
     module_.print(llvm::outs(), nullptr);
+}
+
+void IRBuilderPass::AddStdLibFunctions() {
+    std::vector<llvm::Type*> arg_types(1, llvm::Type::getInt32Ty(context_));
+    llvm::FunctionType* func_type =
+        llvm::FunctionType::get(llvm::Type::getVoidTy(context_), arg_types, false);
+
+    llvm::Function* func =
+        llvm::Function::Create(func_type, llvm::Function::ExternalLinkage,
+                               "print", module_);
+    if (func == nullptr) {
+        std::cerr << "IRBuilder: fail to add std lib function `print`\n";
+    }
 }
 
 llvm::Function* IRBuilderPass::buildMain(const GrammarUnit* unit) {
@@ -66,9 +81,9 @@ void IRBuilderPass::buildIRStatement(const StatementUnit* unit) {
             break;
 
         default:
+            std::cerr << "IRBuilderPass: unknown StatementUnitType\n";
             break;
     }
-    std::cerr << "IRBuilderPass: unknown StatementUnitType\n";
 }
 
 llvm::Value* IRBuilderPass::emitConditionCheck(const ExpressionUnit* unit) {

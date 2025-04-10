@@ -41,6 +41,7 @@ class IRBuilderPass {
     void emitVarAssign(llvm::AllocaInst* var, const ExpressionUnit* unit);
 
     llvm::AllocaInst* findVar(const std::string& name);
+    void AddStdLibFunctions();
 
   private:
     llvm::IRBuilder<> builder_;
