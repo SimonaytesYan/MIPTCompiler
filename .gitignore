@@ -4,3 +4,4 @@ bin
 graphic_dumps
 log
 Example.cpp
+*.ll
