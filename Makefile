@@ -95,7 +95,7 @@ clean:
 	-rm -r $(GRAPHIC_DUMPS)
 
 #==================================TEST RUNNERS=================================
-test_ir_builder: $(IR_BUILD_T_BIN)
+test_ir_builder: $(IR_BUILD_T_BIN) $(OBJ)/StdLib.o
 	@echo "${GREEN_COLOR}START IR BUILDER TESTS${NO_COLOR}\n"
 
 	@echo "\n${GREEN_COLOR}BUILD NUM EXPRESSIONS${NO_COLOR}"
