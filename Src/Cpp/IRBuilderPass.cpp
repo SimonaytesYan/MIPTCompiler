@@ -298,7 +298,7 @@ llvm::Value* IRBuilderPass::buildIRNum(const NumUnit* unit) {
 
 llvm::Value* IRBuilderPass::buildIRVar(const VarUnit* unit) {
     llvm::AllocaInst* var = findVar(unit->name());
-    if (!var) {
+    if (var == nullptr) {
         std::cerr << "buildIRObject: Unknown variable\n";
         return nullptr;
     }
@@ -308,8 +308,9 @@ llvm::Value* IRBuilderPass::buildIRVar(const VarUnit* unit) {
 
 llvm::AllocaInst* IRBuilderPass::findVar(const std::string& name) {
     // Go from top of the 'stack' to the end
-    auto begin_it = named_values_.rend();
+    auto begin_it = named_values_.rbegin();
     auto end_it = named_values_.rend();
+
     for (auto scope_it = begin_it; scope_it != end_it; ++scope_it) {
         llvm::AllocaInst* var_in_cur_scope = (*scope_it)[name];
         if (var_in_cur_scope != nullptr) {
