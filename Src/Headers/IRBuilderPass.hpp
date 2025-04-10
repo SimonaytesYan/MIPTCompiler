@@ -14,9 +14,10 @@ class IRBuilderPass {
     IRBuilderPass();
 
     void buildIR(const GrammarUnit* unit);
-    llvm::Function* buildMain(const GrammarUnit* unit);
+    void buildAndDumpIR(const GrammarUnit* unit, std::string_view output_file_name = "");
 
   private:
+    llvm::Function* buildMain(const GrammarUnit* unit);
     void buildIRScope(const ScopeUnit* unit);
 
     void buildIRStatement(const StatementUnit* unit);

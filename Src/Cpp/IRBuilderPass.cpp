@@ -13,7 +13,17 @@ void IRBuilderPass::buildIR(const GrammarUnit* unit) {
     AddStdLibFunctions();
 
     buildMain(unit);
-    module_.print(llvm::outs(), nullptr);
+}
+
+void IRBuilderPass::buildAndDumpIR(const GrammarUnit* unit, std::string_view output_file_name) {
+    buildIR(unit);
+
+    std::error_code error_code;
+    llvm::raw_fd_ostream* out = &llvm::outs();
+    if (output_file_name != "") {
+        out = new llvm::raw_fd_ostream(output_file_name, error_code);
+    }
+    module_.print(*out, nullptr);
 }
 
 void IRBuilderPass::AddStdLibFunctions() {
@@ -167,7 +177,7 @@ void IRBuilderPass::buildIRPrint(const PrintUnit* unit) {
     // Emit argument
     llvm::Value* argument = buildIRExpression(unit->expression());
     // Emit call
-    builder_.CreateCall(callee_func, argument, "call_print");
+    builder_.CreateCall(callee_func, argument);
 }
 
 void IRBuilderPass::buildIRVarDecl(const VarDeclUnit* unit) {

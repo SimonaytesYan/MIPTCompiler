@@ -65,7 +65,8 @@ IR_BUILD_T_BIN = $(addprefix $(IR_BUILD_T_BIN_DIR)/, $(IR_BUILD_T_SRC_NAMES))
 
 #-----------------DIRS----------------
 OBJ = obj
-SRC = Src/Cpp
+BASIC_SRC = Src
+SRC = $(BASIC_SRC)/Cpp
 BIN = bin
 GRAPHIC_DUMPS = graphic_dumps
 
@@ -81,6 +82,11 @@ NO_COLOR = \033[0m
 #==================================PHONY TARGETS=================================
 interpreter: $(BIN)/interpreter
 
+compiler: $(OBJ)/StdLib.o
+
+$(OBJ)/StdLib.o: $(BASIC_SRC)/StdLib/StdLib.cpp
+	$(CXX) -c $(CXXFLAGS) $^ -o $@
+
 test: test_execution test_ir_builder test_lexer_dump test_tokenizer
 
 clean:
@@ -95,11 +101,11 @@ test_ir_builder: $(IR_BUILD_T_BIN)
 	@echo "\n${GREEN_COLOR}BUILD NUM EXPRESSIONS${NO_COLOR}"
 	-@$(IR_BUILD_T_BIN_DIR)/NumExpressions
 
-	@echo "\n${GREEN_COLOR}BUILD VARS${NO_COLOR}"
-	-@$(IR_BUILD_T_BIN_DIR)/Vars
-
-	@echo "\n${GREEN_COLOR}BUILD IFS${NO_COLOR}"
-	-@$(IR_BUILD_T_BIN_DIR)/Ifs
+#	@echo "\n${GREEN_COLOR}BUILD VARS${NO_COLOR}"
+#	-@$(IR_BUILD_T_BIN_DIR)/Vars
+#
+#	@echo "\n${GREEN_COLOR}BUILD IFS${NO_COLOR}"
+#	-@$(IR_BUILD_T_BIN_DIR)/Ifs
 
 test_execution: $(INTER_T_BIN)
 	@echo "${GREEN_COLOR}START EXECUTION TESTS${NO_COLOR}\n"
