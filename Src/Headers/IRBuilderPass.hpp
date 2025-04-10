@@ -36,13 +36,15 @@ class IRBuilderPass {
     llvm::Value* buildIRVar(const VarUnit* unit);
 
   private:
-    llvm::Value* getLLVMInt(int value);
+    llvm::Value* createLLVMInt(int value);
     llvm::Value* emitConditionCheck(const ExpressionUnit* unit);
-    llvm::Value* findVar(const std::string& name);
+    void emitVarAssign(llvm::AllocaInst* var, const ExpressionUnit* unit);
+
+    llvm::AllocaInst* findVar(const std::string& name);
 
   private:
     llvm::IRBuilder<> builder_;
     llvm::LLVMContext context_;
     llvm::Module module_;
-    std::vector<std::map<std::string, llvm::Value*>> named_values_;
+    std::vector<std::map<std::string, llvm::AllocaInst*>> named_values_;
 };

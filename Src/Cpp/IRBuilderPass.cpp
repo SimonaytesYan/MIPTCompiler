@@ -15,7 +15,7 @@ void IRBuilderPass::buildIR(const GrammarUnit* unit) {
 }
 
 llvm::Function* IRBuilderPass::buildMain(const GrammarUnit* unit) {
-    llvm::FunctionType *func_type =
+    llvm::FunctionType* func_type =
         llvm::FunctionType::get(llvm::Type::getVoidTy(context_), false);
 
     llvm::Function* func =
@@ -38,7 +38,7 @@ llvm::Function* IRBuilderPass::buildMain(const GrammarUnit* unit) {
 }
 
 void IRBuilderPass::buildIRScope(const ScopeUnit* unit) {
-    named_values_.push_back(std::map<std::string, llvm::Value*>());
+    named_values_.push_back(std::map<std::string, llvm::AllocaInst*>());
 
     for (StatementUnit* unit : *unit) {
         buildIRStatement(unit);
@@ -73,7 +73,7 @@ void IRBuilderPass::buildIRStatement(const StatementUnit* unit) {
 
 llvm::Value* IRBuilderPass::emitConditionCheck(const ExpressionUnit* unit) {
     llvm::Value* cond_value = buildIRExpression(unit);
-    llvm::Value* one = getLLVMInt(1);
+    llvm::Value* one = createLLVMInt(1);
     cond_value =
         builder_.CreateCmp(llvm::CmpInst::Predicate::ICMP_EQ, cond_value, one);
     return cond_value;
@@ -117,11 +117,11 @@ void IRBuilderPass::buildIRIf(const IfUnit* unit) {
 
 void IRBuilderPass::buildIRLoop(const LoopUnit* unit) {
     // Create all basic blocks
-    llvm::Function *func = builder_.GetInsertBlock()->getParent();
+    llvm::Function* func = builder_.GetInsertBlock()->getParent();
 
-    llvm::BasicBlock *cond_block =
+    llvm::BasicBlock* cond_block =
         llvm::BasicBlock::Create(context_, "loop_cond", func);;
-    llvm::BasicBlock *loop_block =
+    llvm::BasicBlock* loop_block =
         llvm::BasicBlock::Create(context_, "loop_body");
     llvm::BasicBlock* final_block =
         llvm::BasicBlock::Create(context_, "loop_result");
@@ -143,15 +143,35 @@ void IRBuilderPass::buildIRPrint(const PrintUnit* unit) {
 }
 
 void IRBuilderPass::buildIRVarDecl(const VarDeclUnit* unit) {
-    // TODO implement
+    const std::string name = unit->var()->name();
+    if (named_values_.back()[name] != nullptr) {
+        std::cerr << "IRBuilder: Var " << name << " is already exist\n";
+        return;
+    }
+
+    llvm::AllocaInst* alloc_var =
+        builder_.CreateAlloca(llvm::Type::getInt32Ty(context_), nullptr, name);
+    named_values_.back()[name] = alloc_var;
+
+    emitVarAssign(alloc_var, unit->expr());
 }
 
 void IRBuilderPass::buildIRVarAssign(const VarAssignUnit* unit) {
+    const std::string name = unit->var()->name();
+    llvm::AllocaInst* var = named_values_.back()[name];
+    if (var == nullptr) {
+        std::cerr << "IRBuilder: Var " << name << " is'n exist\n";
+        return;
+    }
+
+    emitVarAssign(var, unit->expr());
+}
+
+void emitVarAssign(llvm::AllocaInst* var, const ExpressionUnit* unit) {
     // TODO implement
 }
 
-
-llvm::Value* IRBuilderPass::getLLVMInt(int value) {
+llvm::Value* IRBuilderPass::createLLVMInt(int value) {
     return llvm::ConstantInt::get(context_, llvm::APInt(32, value, true));
 }
 
@@ -203,7 +223,7 @@ llvm::Value* IRBuilderPass::buildIRBinaryOperator(const BinaryOperUnit* unit) {
 }
 
 llvm::Value* IRBuilderPass::buildIRUnaryOperator(const UnaryOperUnit* unit) {
-    llvm::Value* zero = getLLVMInt(0);
+    llvm::Value* zero = createLLVMInt(0);
     llvm::Value* operand = buildIRExpression(unit->operand());
 
     switch (unit->getType())
@@ -234,25 +254,25 @@ llvm::Value* IRBuilderPass::buildIRObject(const ObjectUnit* unit) {
 }
 
 llvm::Value* IRBuilderPass::buildIRNum(const NumUnit* unit) {
-    return getLLVMInt(unit->num());
+    return createLLVMInt(unit->num());
 }
 
 llvm::Value* IRBuilderPass::buildIRVar(const VarUnit* unit) {
-    llvm::Value *var = findVar(unit->name());
+    llvm::AllocaInst* var = findVar(unit->name());
     if (!var) {
         std::cerr << "buildIRObject: Unknown variable\n";
         return nullptr;
     }
 
-    return var;
+    return builder_.CreateLoad(var->getType(), var, unit->name());
 }
 
-llvm::Value* IRBuilderPass::findVar(const std::string& name) {
+llvm::AllocaInst* IRBuilderPass::findVar(const std::string& name) {
     // Go from top of the 'stack' to the end
     auto begin_it = named_values_.rend();
     auto end_it = named_values_.rend();
     for (auto scope_it = begin_it; scope_it != end_it; ++scope_it) {
-        llvm::Value* var_in_cur_scope = (*scope_it)[name];
+        llvm::AllocaInst* var_in_cur_scope = (*scope_it)[name];
         if (var_in_cur_scope != nullptr) {
             return var_in_cur_scope;
         }
