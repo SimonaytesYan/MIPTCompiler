@@ -80,8 +80,6 @@ llvm::Value* IRBuilderPass::emitConditionCheck(const ExpressionUnit* unit) {
 }
 
 void IRBuilderPass::buildIRIf(const IfUnit* unit) {
-    llvm::Value* cond_value = emitConditionCheck(unit->condition());
-
     llvm::Function* func = builder_.GetInsertBlock()->getParent();
 
     // Create all basic blocks
@@ -92,6 +90,8 @@ void IRBuilderPass::buildIRIf(const IfUnit* unit) {
     llvm::BasicBlock* final_block =
         llvm::BasicBlock::Create(context_, "if_result_branch");
 
+    // Emit if condition
+    llvm::Value* cond_value = emitConditionCheck(unit->condition());
     builder_.CreateCondBr(cond_value, true_branch_block, false_branch_block);
 
     // Emit true branch
@@ -119,6 +119,7 @@ void IRBuilderPass::buildIRLoop(const LoopUnit* unit) {
     // Create all basic blocks
     llvm::Function* func = builder_.GetInsertBlock()->getParent();
 
+    // Create all basic blocks
     llvm::BasicBlock* cond_block =
         llvm::BasicBlock::Create(context_, "loop_cond", func);;
     llvm::BasicBlock* loop_block =
@@ -126,14 +127,17 @@ void IRBuilderPass::buildIRLoop(const LoopUnit* unit) {
     llvm::BasicBlock* final_block =
         llvm::BasicBlock::Create(context_, "loop_result");
 
+    // Emit loop condition
     llvm::Value* cond_value = emitConditionCheck(unit->condition());
     builder_.CreateCondBr(cond_value, loop_block, final_block);
 
+    // Emit loop body
     func->getBasicBlockList().insert(func->end(), loop_block);
     builder_.SetInsertPoint(loop_block);
     buildIRScope(unit->body());
     builder_.CreateBr(cond_block);
 
+    // Emit final basic block
     func->getBasicBlockList().insert(func->end(), final_block);
     builder_.SetInsertPoint(final_block);
 }
@@ -167,8 +171,9 @@ void IRBuilderPass::buildIRVarAssign(const VarAssignUnit* unit) {
     emitVarAssign(var, unit->expr());
 }
 
-void emitVarAssign(llvm::AllocaInst* var, const ExpressionUnit* unit) {
-    // TODO implement
+void IRBuilderPass::emitVarAssign(llvm::AllocaInst* var, const ExpressionUnit* unit) {
+    llvm::Value* var_value = buildIRExpression(unit);
+    builder_.CreateStore(var_value, var);
 }
 
 llvm::Value* IRBuilderPass::createLLVMInt(int value) {
