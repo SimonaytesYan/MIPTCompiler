@@ -33,9 +33,9 @@ void runOneTest(std::string_view test_case, const std::string_view test_name) {
     // Run program
     std::cout << "Program output:\n";
 
-    // std::string command = "Src/Compiler.sh " + output_file_name;
-    // system(command.c_str());
-    // system("bin/a.out");
+    std::string command = "Src/Compiler.sh " + output_file_name;
+    system(command.c_str());
+    system("bin/a.out");
 
     std::cout << "======================================\n";
 }

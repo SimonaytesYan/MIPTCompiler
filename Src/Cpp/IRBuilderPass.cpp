@@ -303,7 +303,7 @@ llvm::Value* IRBuilderPass::buildIRVar(const VarUnit* unit) {
         return nullptr;
     }
 
-    return builder_.CreateLoad(var->getType(), var, unit->name());
+    return builder_.CreateLoad(var->getAllocatedType(), var, unit->name());
 }
 
 llvm::AllocaInst* IRBuilderPass::findVar(const std::string& name) {
