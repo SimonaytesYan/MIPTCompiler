@@ -103,9 +103,9 @@ test_ir_builder: $(IR_BUILD_T_BIN) $(OBJ)/StdLib.o
 
 	@echo "\n${GREEN_COLOR}BUILD VARS${NO_COLOR}"
 	-@$(IR_BUILD_T_BIN_DIR)/Vars
-#
-#	@echo "\n${GREEN_COLOR}BUILD IFS${NO_COLOR}"
-#	-@$(IR_BUILD_T_BIN_DIR)/Ifs
+
+	@echo "\n${GREEN_COLOR}BUILD IFS${NO_COLOR}"
+	-@$(IR_BUILD_T_BIN_DIR)/Ifs
 
 test_execution: $(INTER_T_BIN)
 	@echo "${GREEN_COLOR}START EXECUTION TESTS${NO_COLOR}\n"
