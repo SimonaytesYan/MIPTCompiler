@@ -38,12 +38,12 @@ llvm::Function* IRBuilderPass::buildMain(const GrammarUnit* unit) {
 }
 
 void IRBuilderPass::buildIRScope(const ScopeUnit* unit) {
-    named_values_.push(std::map<std::string, llvm::Value*>());
+    named_values_.push_back(std::map<std::string, llvm::Value*>());
 
     for (StatementUnit* unit : *unit) {
         buildIRStatement(unit);
     }
-    named_values_.pop();
+    named_values_.pop_back();
 }
 
 void IRBuilderPass::buildIRStatement(const StatementUnit* unit) {
@@ -71,22 +71,26 @@ void IRBuilderPass::buildIRStatement(const StatementUnit* unit) {
     std::cerr << "IRBuilderPass: unknown StatementUnitType\n";
 }
 
-void IRBuilderPass::buildIRIf(const IfUnit* unit) {
-    // Emit condition
-    llvm::Value* cond_value = buildIRExpression(unit->condition());
+llvm::Value* IRBuilderPass::emitConditionCheck(const ExpressionUnit* unit) {
+    llvm::Value* cond_value = buildIRExpression(unit);
     llvm::Value* one = getLLVMInt(1);
     cond_value =
         builder_.CreateCmp(llvm::CmpInst::Predicate::ICMP_EQ, cond_value, one);
+    return cond_value;
+}
+
+void IRBuilderPass::buildIRIf(const IfUnit* unit) {
+    llvm::Value* cond_value = emitConditionCheck(unit->condition());
 
     llvm::Function* func = builder_.GetInsertBlock()->getParent();
 
     // Create all basic blocks
     llvm::BasicBlock* true_branch_block =
-        llvm::BasicBlock::Create(context_, "true_branch", func);
+        llvm::BasicBlock::Create(context_, "if_true_branch", func);
     llvm::BasicBlock* false_branch_block =
-        llvm::BasicBlock::Create(context_, "false_branch");
+        llvm::BasicBlock::Create(context_, "if_false_branch");
     llvm::BasicBlock* final_block =
-        llvm::BasicBlock::Create(context_, "result_branch");
+        llvm::BasicBlock::Create(context_, "if_result_branch");
 
     builder_.CreateCondBr(cond_value, true_branch_block, false_branch_block);
 
@@ -112,7 +116,26 @@ void IRBuilderPass::buildIRIf(const IfUnit* unit) {
 }
 
 void IRBuilderPass::buildIRLoop(const LoopUnit* unit) {
-    // TODO implement
+    // Create all basic blocks
+    llvm::Function *func = builder_.GetInsertBlock()->getParent();
+
+    llvm::BasicBlock *cond_block =
+        llvm::BasicBlock::Create(context_, "loop_cond", func);;
+    llvm::BasicBlock *loop_block =
+        llvm::BasicBlock::Create(context_, "loop_body");
+    llvm::BasicBlock* final_block =
+        llvm::BasicBlock::Create(context_, "loop_result");
+
+    llvm::Value* cond_value = emitConditionCheck(unit->condition());
+    builder_.CreateCondBr(cond_value, loop_block, final_block);
+
+    func->getBasicBlockList().insert(func->end(), loop_block);
+    builder_.SetInsertPoint(loop_block);
+    buildIRScope(unit->body());
+    builder_.CreateBr(cond_block);
+
+    func->getBasicBlockList().insert(func->end(), final_block);
+    builder_.SetInsertPoint(final_block);
 }
 
 void IRBuilderPass::buildIRPrint(const PrintUnit* unit) {
@@ -215,11 +238,25 @@ llvm::Value* IRBuilderPass::buildIRNum(const NumUnit* unit) {
 }
 
 llvm::Value* IRBuilderPass::buildIRVar(const VarUnit* unit) {
-    llvm::Value *var = named_values_.top()[unit->name()];
+    llvm::Value *var = findVar(unit->name());
     if (!var) {
         std::cerr << "buildIRObject: Unknown variable\n";
         return nullptr;
     }
 
     return var;
+}
+
+llvm::Value* IRBuilderPass::findVar(const std::string& name) {
+    // Go from top of the 'stack' to the end
+    auto begin_it = named_values_.rend();
+    auto end_it = named_values_.rend();
+    for (auto scope_it = begin_it; scope_it != end_it; ++scope_it) {
+        llvm::Value* var_in_cur_scope = (*scope_it)[name];
+        if (var_in_cur_scope != nullptr) {
+            return var_in_cur_scope;
+        }
+    }
+
+    return nullptr;
 }

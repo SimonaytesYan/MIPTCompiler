@@ -7,7 +7,7 @@
 #include "llvm/IR/LLVMContext.h"
 #include <map>
 #include <memory>
-#include <stack>
+#include <vector>
 
 class IRBuilderPass {
   public:
@@ -37,10 +37,12 @@ class IRBuilderPass {
 
   private:
     llvm::Value* getLLVMInt(int value);
+    llvm::Value* emitConditionCheck(const ExpressionUnit* unit);
+    llvm::Value* findVar(const std::string& name);
 
   private:
     llvm::IRBuilder<> builder_;
     llvm::LLVMContext context_;
     llvm::Module module_;
-    std::stack<std::map<std::string, llvm::Value*>> named_values_;
+    std::vector<std::map<std::string, llvm::Value*>> named_values_;
 };
