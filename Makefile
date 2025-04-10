@@ -11,7 +11,7 @@ SANITIZER_FLAGS = -g -fcheck-new -fsized-deallocation -fstack-protector \
 				  -pie -fPIE -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr,leak
 RELEASE_FLAGS = -O2 -std=c++2a
 LLVM_FLAGS = llvm-config --cxxflags --ldflags --system-libs --libs core
-COMMON_INC = -ISrc/Headers
+COMMON_INC = -ISrc/Headers -ISrc/StdLib
 
 CXXFLAGS = $(RELEASE_FLAGS)
 override CXXFLAGS += $(COMMON_INC) # $(LLVM_FLAGS) $(SANITIZER_FLAGS)

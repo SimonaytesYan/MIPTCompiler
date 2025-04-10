@@ -143,13 +143,22 @@ void IRBuilderPass::buildIRLoop(const LoopUnit* unit) {
 }
 
 void IRBuilderPass::buildIRPrint(const PrintUnit* unit) {
-    // TODO implement
+    llvm::Function *callee_func = module_.getFunction("print");
+    if (!callee_func) {
+        std::cerr << "IRBuilder: Unknown function `print`\n";
+        return;
+    }
+
+    // Emit argument
+    llvm::Value* argument = buildIRExpression(unit->expression());
+    // Emit call
+    builder_.CreateCall(callee_func, argument, "call_print");
 }
 
 void IRBuilderPass::buildIRVarDecl(const VarDeclUnit* unit) {
     const std::string name = unit->var()->name();
     if (named_values_.back()[name] != nullptr) {
-        std::cerr << "IRBuilder: Var " << name << " is already exist\n";
+        std::cerr << "IRBuilder: Var `" << name << "` is already exist\n";
         return;
     }
 
