@@ -98,9 +98,9 @@ void IRBuilderPass::buildIRStatement(const StatementUnit* unit) {
 
 llvm::Value* IRBuilderPass::emitConditionCheck(const ExpressionUnit* unit) {
     llvm::Value* cond_value = buildIRExpression(unit);
-    llvm::Value* one = createLLVMInt(1);
+    llvm::Value* one = createLLVMInt(0);
     cond_value =
-        builder_.CreateCmp(llvm::CmpInst::Predicate::ICMP_EQ, cond_value, one);
+        builder_.CreateCmp(llvm::CmpInst::Predicate::ICMP_NE, cond_value, one);
     return cond_value;
 }
 
@@ -152,7 +152,10 @@ void IRBuilderPass::buildIRLoop(const LoopUnit* unit) {
     llvm::BasicBlock* final_block =
         llvm::BasicBlock::Create(context_, "loop_result");
 
+    builder_.CreateBr(cond_block);
+
     // Emit loop condition
+    builder_.SetInsertPoint(cond_block);
     llvm::Value* cond_value = emitConditionCheck(unit->condition());
     builder_.CreateCondBr(cond_value, loop_block, final_block);
 
@@ -196,7 +199,7 @@ void IRBuilderPass::buildIRVarDecl(const VarDeclUnit* unit) {
 
 void IRBuilderPass::buildIRVarAssign(const VarAssignUnit* unit) {
     const std::string name = unit->var()->name();
-    llvm::AllocaInst* var = named_values_.back()[name];
+    llvm::AllocaInst* var = findVar(name);
     if (var == nullptr) {
         std::cerr << "IRBuilder: Var " << name << " is'n exist\n";
         return;

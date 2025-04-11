@@ -58,7 +58,7 @@ INTER_T_BIN = $(addprefix $(INTER_T_BIN_DIR)/, $(INTER_T_SRC_NAMES))
 #-------------IR BUILDER PASS TESTS-----------
 IR_BUILD_T_DIR = Tests/IRBuilderPass
 IR_BUILD_T_BIN_DIR = $(BIN)/$(IR_BUILD_T_DIR)
-IR_BUILD_T_SRC_NAMES = NumExpressions Vars Ifs
+IR_BUILD_T_SRC_NAMES = NumExpressions Vars Ifs Loops
 
 IR_BUILD_T_CPPS = $(addsuffix .cpp, $(addprefix $(IR_BUILD_T_DIR), $(IR_BUILD_T_SRC_NAMES)))
 IR_BUILD_T_BIN = $(addprefix $(IR_BUILD_T_BIN_DIR)/, $(IR_BUILD_T_SRC_NAMES))
@@ -106,6 +106,9 @@ test_ir_builder: $(IR_BUILD_T_BIN) $(OBJ)/StdLib.o
 
 	@echo "\n${GREEN_COLOR}BUILD IFS${NO_COLOR}"
 	-@$(IR_BUILD_T_BIN_DIR)/Ifs
+
+	@echo "\n${GREEN_COLOR}BUILD LOOPS${NO_COLOR}"
+	-@$(IR_BUILD_T_BIN_DIR)/Loops
 
 test_execution: $(INTER_T_BIN)
 	@echo "${GREEN_COLOR}START EXECUTION TESTS${NO_COLOR}\n"
