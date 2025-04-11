@@ -82,10 +82,7 @@ NO_COLOR = \033[0m
 #==================================PHONY TARGETS=================================
 interpreter: $(BIN)/interpreter
 
-compiler: $(OBJ)/StdLib.o
-
-$(OBJ)/StdLib.o: $(BASIC_SRC)/StdLib/StdLib.cpp
-	$(CXX) -c $(CXXFLAGS) $^ -o $@
+compiler: $(BIN)/compiler
 
 test: test_execution test_ir_builder test_lexer_dump test_tokenizer
 
@@ -175,6 +172,12 @@ $(TOKEN_T_BIN) : $(TOKEN_T_BIN_DIR)/% : $(TOKEN_T_DIR)/%.cpp $(OBJ)/Tokenizer.o
 #====================================SOURCE=====================================
 $(BIN)/interpreter: Src/Interpreter.cpp $(BASIC_OBJS) | $(DIRS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
+
+$(BIN)/compiler: Src/Compiler.cpp $(BASIC_OBJS) $(OBJ)/StdLib.o | $(DIRS)
+	$(CXX) $(CXXFLAGS) $^ -o $@
+
+$(OBJ)/StdLib.o: $(BASIC_SRC)/StdLib/StdLib.cpp
+	$(CXX) -c $(CXXFLAGS) $^ -o $@
 
 $(BASIC_OBJS) : $(OBJ)/%.o : $(SRC)/%.cpp | $(DIRS)
 	$(CXX) -c $(CXXFLAGS) $< -o $@

@@ -5,3 +5,4 @@ graphic_dumps
 log
 Example.cpp
 *.ll
+a.out
