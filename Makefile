@@ -10,11 +10,11 @@ SANITIZER_FLAGS = -g -fcheck-new -fsized-deallocation -fstack-protector \
 				  -fstrict-overflow -flto-odr-type-merging -fno-omit-frame-pointer \
 				  -pie -fPIE -fsanitize=address,alignment,bool,bounds,enum,float-cast-overflow,float-divide-by-zero,integer-divide-by-zero,nonnull-attribute,null,object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,undefined,unreachable,vla-bound,vptr,leak
 RELEASE_FLAGS = -O2 -std=c++2a
-LLVM_FLAGS = `llvm-config --cxxflags --ldflags --libs` # `llvm-config --cxxflags --ldflags --system-libs --libs core orcjit native`
+LLVM_FLAGS = `llvm-config --cxxflags --ldflags --libs` -Illvm-18
 COMMON_INC = -ISrc/Headers -ISrc/StdLib
 
 CXXFLAGS =
-override CXXFLAGS += $(COMMON_INC) $(LLVM_FLAGS) $(RELEASE_FLAGS) # $(LLVM_FLAGS) $(SANITIZER_FLAGS)
+override CXXFLAGS += $(COMMON_INC) $(RELEASE_FLAGS) # $(LLVM_FLAGS) $(SANITIZER_FLAGS)
 
 # LDFLAGS = $(LLVM_FLAGS)
 
@@ -25,11 +25,18 @@ HEADERS_NAMES = Tokens Keywords SpecialSymbols Operators Grammar Lexer Tokenizer
 HEADERS = $(addsuffix .hpp, $(addprefix Src/Headers/, $(HEADERS_NAMES)))
 
 #--------------BASIC_SOURCES-------------
-BASIC_SRC_NAMES = ExecutionPass GraphicDumpPass Grammar Lexer Tokenizer VariableList IRBuilderPass
-BASIC_CPPS = $(addsuffix .cpp, $(addprefix $(SRC), $(BASIC_SRC_NAMES)))
+BASIC_SRC_NAMES = ExecutionPass GraphicDumpPass Grammar Lexer Tokenizer VariableList # IRBuilderPass
+# BASIC_CPPS = $(addsuffix .cpp, $(addprefix $(SRC), $(BASIC_SRC_NAMES)))
 
 BASIC_OBJS = $(addsuffix .o, $(addprefix $(OBJ)/, $(BASIC_SRC_NAMES)))
 BASIC_DEPS = $(BASIC_OBJS:.o=.d)
+
+#-----------LLVM DEPENDED SOURCES-------
+LLVM_DEP_SRC_NAMES = IRBuilderPass
+LLVM_DEP_CPPS = $(addsuffix .cpp, $(addprefix $(SRC), $(LLVM_DEP_SRC_NAMES)))
+
+LLVM_DEP_OBJS = $(addsuffix .o, $(addprefix $(OBJ)/, $(LLVM_DEP_SRC_NAMES)))
+LLVM_DEP_DEPS = $(LLVM_DEP_OBJS:.o=.d)
 
 #-------------TOKENIZER TESTS------------
 TOKEN_T_DIR = Tests/Tokenizer
@@ -150,9 +157,10 @@ test_tokenizer: $(TOKEN_T_BIN)
 	@$(TOKEN_T_BIN_DIR)/SpecialSymbols
 
 #---------------------------BUILD IR PASS TESTS--------------------------------
-$(IR_BUILD_T_BIN) : $(IR_BUILD_T_BIN_DIR)/% : $(IR_BUILD_T_DIR)/%.cpp $(BASIC_OBJS)
+$(IR_BUILD_T_BIN) : $(IR_BUILD_T_BIN_DIR)/% : $(IR_BUILD_T_DIR)/%.cpp $(BASIC_OBJS) $(LLVM_DEP_OBJS)
 	@mkdir -p $(@D)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	echo "Hui"
+	$(CXX) $(CXXFLAGS) $(LLVM_FLAGS) $^ -o $@
 
 #---------------------------EXECUTION PASS TESTS--------------------------------
 $(INTER_T_BIN) : $(INTER_T_BIN_DIR)/% : $(INTER_T_DIR)/%.cpp $(BASIC_OBJS)
@@ -173,11 +181,14 @@ $(TOKEN_T_BIN) : $(TOKEN_T_BIN_DIR)/% : $(TOKEN_T_DIR)/%.cpp $(OBJ)/Tokenizer.o
 $(BIN)/interpreter: Src/Interpreter.cpp $(BASIC_OBJS) | $(DIRS)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
-$(BIN)/compiler: Src/Compiler.cpp $(BASIC_OBJS) $(OBJ)/StdLib.o | $(DIRS)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+$(BIN)/compiler: Src/Compiler.cpp $(BASIC_OBJS) $(OBJ)/StdLib.o $(LLVM_DEP_OBJS) | $(DIRS)
+	$(CXX) $(CXXFLAGS) $(LLVM_FLAGS) $^ -o $@
 
 $(OBJ)/StdLib.o: $(BASIC_SRC)/StdLib/StdLib.cpp
 	$(CXX) -c $(CXXFLAGS) $^ -o $@
+
+$(LLVM_DEP_OBJS) : $(OBJ)/%.o : $(SRC)/%.cpp | $(DIRS)
+	$(CXX) -c $(CXXFLAGS) $(LLVM_FLAGS) $< -o $@
 
 $(BASIC_OBJS) : $(OBJ)/%.o : $(SRC)/%.cpp | $(DIRS)
 	$(CXX) -c $(CXXFLAGS) $< -o $@

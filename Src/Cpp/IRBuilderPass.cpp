@@ -127,7 +127,7 @@ void IRBuilderPass::buildIRIf(const IfUnit* unit) {
     builder_.CreateBr(final_block);
 
     // Emit false branch
-    func->getBasicBlockList().insert(func->end(), false_branch_block);
+    func->insert(func->end(), false_branch_block);
 
     builder_.SetInsertPoint(false_branch_block);
     buildIRScope(unit->false_branch());
@@ -136,7 +136,7 @@ void IRBuilderPass::buildIRIf(const IfUnit* unit) {
     builder_.CreateBr(final_block);
 
     // Emit final block
-    func->getBasicBlockList().insert(func->end(), final_block);
+    func->insert(func->end(), final_block);
     builder_.SetInsertPoint(final_block);
 }
 
@@ -160,13 +160,13 @@ void IRBuilderPass::buildIRLoop(const LoopUnit* unit) {
     builder_.CreateCondBr(cond_value, loop_block, final_block);
 
     // Emit loop body
-    func->getBasicBlockList().insert(func->end(), loop_block);
+    func->insert(func->end(), loop_block);
     builder_.SetInsertPoint(loop_block);
     buildIRScope(unit->body());
     builder_.CreateBr(cond_block);
 
     // Emit final basic block
-    func->getBasicBlockList().insert(func->end(), final_block);
+    func->insert(func->end(), final_block);
     builder_.SetInsertPoint(final_block);
 }
 
