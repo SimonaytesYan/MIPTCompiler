@@ -6,3 +6,4 @@ log
 Example.cpp
 *.ll
 a.out
+compile_flags.txt
