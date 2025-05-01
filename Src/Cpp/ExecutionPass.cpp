@@ -92,7 +92,6 @@ int ExecutionPass::executeObject(const ObjectUnit* unit) {
     {
     case GrammarUnitType::VAR:
         return vars_.getVarValue(reinterpret_cast<const VarUnit*>(unit)->name());
-        return 0;
 
     case GrammarUnitType::NUM:
         return reinterpret_cast<const NumUnit*>(unit)->num();
