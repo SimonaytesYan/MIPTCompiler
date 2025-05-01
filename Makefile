@@ -99,6 +99,7 @@ clean:
 	-rm -r $(BIN)
 	-rm -r $(OBJ)
 	-rm -r $(GRAPHIC_DUMPS)
+	-rm -r *.ll
 
 #==================================TEST RUNNERS=================================
 test_ir_builder: $(IR_BUILD_T_BIN) $(OBJ)/StdLib.o
