@@ -43,7 +43,7 @@ LLVM_DEP_DEPS = $(LLVM_DEP_OBJS:.o=.d)
 #-------------TOKENIZER TESTS------------
 TOKEN_T_DIR = Tests/Tokenizer
 TOKEN_T_BIN_DIR = $(BIN)/$(TOKEN_T_DIR)
-TOKEN_T_SRC_NAMES = SpecialSymbols Operators Keywords Num Name
+TOKEN_T_SRC_NAMES = SpecialSymbols Operators Keywords Num Name VarTypes
 
 TOKEN_T_CPPS = $(addsuffix .cpp, $(addprefix $(TOKEN_T_DIR), $(TOKEN_T_SRC_NAMES)))
 TOKEN_T_BIN = $(addprefix $(TOKEN_T_BIN_DIR)/, $(TOKEN_T_SRC_NAMES))
@@ -158,6 +158,9 @@ test_tokenizer: $(TOKEN_T_BIN)
 
 	@echo "\n${GREEN_COLOR}TOKENIZER SPECIAL SYMBOL${NO_COLOR}"
 	@$(TOKEN_T_BIN_DIR)/SpecialSymbols
+
+	@echo "\n${GREEN_COLOR}TOKENIZER VAR TYPES${NO_COLOR}"
+	@$(TOKEN_T_BIN_DIR)/VarTypes
 
 #---------------------------BUILD IR PASS TESTS--------------------------------
 $(IR_BUILD_T_BIN) : $(IR_BUILD_T_BIN_DIR)/% : $(IR_BUILD_T_DIR)/%.cpp $(BASIC_OBJS) $(LLVM_DEP_OBJS)
