@@ -127,6 +127,21 @@ static bool getOperator(std::istream& in, std::vector<Token>& tokens) {
     return false;
 }
 
+static bool getString(std::istream& in, std::vector<Token>& tokens, SpecialSymbol start_symbol) {
+    std::string str = "";
+    while (in.peek() != EOF) {
+        char symbol = in.get();
+        if (symbol == start_symbol.name[0]) {
+            tokens.push_back(NameToken(std::move(str)));
+            tokens.push_back(SpecialSymbolToken(start_symbol.type));
+            return true;
+        }
+        str.push_back(symbol);
+    }
+
+    return false;
+}
+
 static bool getSpecialSymbol(std::istream& in, std::vector<Token>& tokens) {
     std::string potential_spec_sym = "";
     in >> potential_spec_sym;
@@ -142,13 +157,16 @@ static bool getSpecialSymbol(std::istream& in, std::vector<Token>& tokens) {
             log << "spec_symbol = " << spec_sym.name << "\n";
 
             ungetSymbols(in, potential_spec_sym.size() - spec_sym.name.size());
+
+            if (spec_sym.type == SpecialSymbolType::DOUBLE_QUOTES ||
+                spec_sym.type == SpecialSymbolType::SINGLE_QUOTES)
+                return getString(in, tokens, spec_sym);
+
             return true;
         }
     }
 
     ungetSymbols(in, potential_spec_sym.size());
-    return false;
-
     return false;
 }
 
