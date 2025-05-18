@@ -1,0 +1,9 @@
+{
+    let int a = 10;
+    let flt pi = 3.14;
+    let str hello = "Hello";
+
+    print(a);
+    print(pi);
+    print(str);
+}
