@@ -27,10 +27,11 @@
 // DivExprUnit    ::= Brackets {'/' Brackets}* | Brackets
 // Brackets       ::= '('ExprUnit')' | UnaryMinus
 // UnaryMinus     ::= '-' Object | Object
-// Object         ::= VarUnit | NumUnit | ArrayUnit
+// Object         ::= VarUnit | NumUnit | ArrayUnit | FloatUnit
 // VarUnit        ::= {'_', 'a-z', 'A-Z'}{'_', 'a-z', 'A-Z', '0-9'}*
-// NumUnit        ::= '-'{'0-9'}+ | {'0-9'}+
-// ArrayUnit      ::= [{, ExprUnit}*]
+// NumUnit        ::= {'0-9'}+
+// FloatUnit      ::= {{'0-9'}+}'.'{{'0-9'}+}
+// ArrayUnit      ::= [] | [ExprUnit{, ExprUnit}*]
 
 // using TokenIt = std::vector<Token>::const_iterator;
 
@@ -49,6 +50,7 @@ static ExpressionUnit* getUnaryMinus(TokenIt& cur_token, TokenIt end);
 static ExpressionUnit* getObject(TokenIt& cur_token, TokenIt end);
 static VarUnit* getVar(TokenIt& cur_token, TokenIt end);
 static NumUnit* getNum(TokenIt& cur_token, TokenIt end);
+static FloatUnit* getFloat(TokenIt& cur_token, TokenIt end);
 static ArrayUnit* getArrayUnit(TokenIt& cur_token, TokenIt end);
 
 template<class TokenType, class TokenValueType>
@@ -306,37 +308,23 @@ static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end) {
 static StatementUnit* getVarAssign(TokenIt& cur_token, TokenIt end) {
     LOG << "getVarAssign: start func\n";
 
-    if (cur_token == end) {
-        std::cerr << "getVarAssign: cur_token == end\n";
-        return nullptr;
-    }
+    COMPILER_ASSERT(cur_token != end, "cur_token == end");
 
     VarUnit* variable = getVar(cur_token, end);
+    COMPILER_ASSERT(variable != nullptr, "var is null");
 
-    if (variable == nullptr) {
-        std::cerr << "getVarAssign: var in null";
-        return nullptr;
-    }
-
-    if (!CheckTokenValue<OperatorToken, OperatorType>(cur_token, OperatorType::EQUAL)) {
-        std::cerr << "getVarAssign: there is not operator = in var assign\n";
-        return nullptr;
-    }
+    COMPILER_ASSERT((CheckTokenValue<OperatorToken, OperatorType>(cur_token, OperatorType::EQUAL)),
+                    "there is not operator = in var assign")
 
     ++cur_token;
 
     ExpressionUnit* expression = getExpresion(cur_token, end);
-    if (expression == nullptr) {
-        std::cerr << "getVarAssign: expression in null";
-        return nullptr;
-    }
+    COMPILER_ASSERT(variable != nullptr, "expression is null");
 
-    if (!CheckTokenValue<SpecialSymbolToken,
+    COMPILER_ASSERT((CheckTokenValue<SpecialSymbolToken,
                          SpecialSymbolType>(cur_token,
-                                           SpecialSymbolType::END_STATEMENT)) {
-        std::cerr << "getVarAssign: there is no a ';' at the end of var assignment\n";
-        return nullptr;
-    }
+                                           SpecialSymbolType::END_STATEMENT)),
+                    "there is no a ';' at the end of var assignment")
 
     ++cur_token;
 
@@ -352,10 +340,7 @@ static ExpressionUnit* getAddSub(TokenIt& cur_token, TokenIt end) {
     LOG << "getAddSub: start func\n";
     ExpressionUnit* result = getMulDiv(cur_token, end);
 
-    if (result == nullptr) {
-        std::cerr << "getAddSub: left operand is null\n";
-        return nullptr;
-    }
+    COMPILER_ASSERT(result != nullptr, "left operand is null");
 
     while (cur_token != end) {
         if (!std::holds_alternative<OperatorToken>(*cur_token) ||
@@ -371,10 +356,7 @@ static ExpressionUnit* getAddSub(TokenIt& cur_token, TokenIt end) {
         ++cur_token;
 
         ExpressionUnit* right_op = getMulDiv(cur_token, end);
-        if (right_op == nullptr) {
-            std::cerr << "getAddSub: right operand is null\n";
-            return nullptr;
-        }
+        COMPILER_ASSERT(right_op != nullptr, "right operand is null");
 
         if (oper_type == OperatorType::ADD) {
             result = new AddExprUnit(left_op, right_op);
@@ -442,43 +424,23 @@ static ExpressionUnit* getMulDiv(TokenIt& cur_token, TokenIt end) {
 static ExpressionUnit* getBrackets(TokenIt& cur_token, TokenIt end) {
     LOG << "getBrackets: start func\n";
 
-    if (!std::holds_alternative<SpecialSymbolToken>(*cur_token)) {
+    if (!CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::LEFT_BRACKET)) {
         return getUnaryMinus(cur_token, end);
-    }
-
-    SpecialSymbolType sym_type = std::get<SpecialSymbolToken>(*cur_token).specSym();
-
-    if (sym_type != SpecialSymbolType::LEFT_BRACKET) {
-        std::cerr << "getBrackets: is not open bracket\n";
-        return nullptr;
     }
     ++cur_token;
 
     ExpressionUnit* result = getExpresion(cur_token, end);
-    if (result == nullptr) {
-        std::cerr << "getBrackets: middle expresion is null\n";
-        return nullptr;
-    }
+    COMPILER_ASSERT(result != nullptr, "middle expresion is null");
 
-    if (!std::holds_alternative<SpecialSymbolToken>(*cur_token)) {
-        std::cerr << "getBrackets: is not close bracket\n";
-        recursiveUnitDelete(result);
-        return nullptr;
-    }
-
-    sym_type = std::get<SpecialSymbolToken>(*cur_token).specSym();
-    if (sym_type != SpecialSymbolType::RIGHT_BRACKET) {
-        recursiveUnitDelete(result);
-        std::cerr << "getBrackets: is not close bracket(incorrect symbol)\n";
-        return nullptr;
-    }
+    COMPILER_ASSERT((CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::RIGHT_BRACKET)),
+                    "is not close bracket");
     ++cur_token;
 
     return result;
 }
 
 static ExpressionUnit* getUnaryMinus(TokenIt& cur_token, TokenIt end) {
-    LOG << "getUnaryMinus:: start func\n";
+    LOG << "getUnaryMinus: start func\n";
     if (std::holds_alternative<OperatorToken>(*cur_token)) {
         if (std::get<OperatorToken>(*cur_token).oper() != OperatorType::SUB) {
             std::cerr << "getUnaryMinus:: not minus operator\n";
@@ -498,8 +460,13 @@ static ExpressionUnit* getUnaryMinus(TokenIt& cur_token, TokenIt end) {
 }
 
 static ExpressionUnit* getObject(TokenIt& cur_token, TokenIt end) {
+    LOG << "getObject: start func\n";
     if (std::holds_alternative<NumToken>(*cur_token)) {
         return getNum(cur_token, end);
+    }
+
+    if (std::holds_alternative<FloatToken>(*cur_token)) {
+        return getFloat(cur_token, end);
     }
 
     if (std::holds_alternative<NameToken>(*cur_token)) {
@@ -513,13 +480,9 @@ static ExpressionUnit* getObject(TokenIt& cur_token, TokenIt end) {
     return nullptr;
 }
 
-
 static VarUnit* getVar(TokenIt& cur_token, TokenIt end) {
     LOG << "getVar: start func\n";
-    if (!std::holds_alternative<NameToken>(*cur_token)) {
-        std::cerr << "getVar: is not NameToken\n";
-        return nullptr;
-    }
+    COMPILER_ASSERT((std::holds_alternative<NameToken>(*cur_token)), "Is not NameToken");
 
     VarUnit* result = new VarUnit(std::get<NameToken>(*cur_token).name());
     ++cur_token;
@@ -530,10 +493,7 @@ static VarUnit* getVar(TokenIt& cur_token, TokenIt end) {
 static NumUnit* getNum(TokenIt& cur_token, TokenIt end) {
     LOG << "getNum: start func\n";
 
-    if (!std::holds_alternative<NumToken>(*cur_token)) {
-        std::cerr << "getVar: is not NumToken\n";
-        return nullptr;
-    }
+    COMPILER_ASSERT(std::holds_alternative<NumToken>(*cur_token), "is not NumToken");
 
     int num = std::get<NumToken>(*cur_token).num();
     ++cur_token;
@@ -542,27 +502,47 @@ static NumUnit* getNum(TokenIt& cur_token, TokenIt end) {
     return new NumUnit(num);
 }
 
-static ArrayUnit* getArrayUnit(TokenIt& cur_token, TokenIt end) {
-    std::vector<ExpressionUnit*> array_elements;
-    if (CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::LEFT_SQUARE_BRACKET)) {
-        ++cur_token;
-        while(!CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::RIGHT_SQUARE_BRACKET)) {
-            COMPILER_ASSERT((CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::COMMA)), \
-                            "comma expected")
-            ++cur_token;
+static FloatUnit* getFloat(TokenIt& cur_token, TokenIt end) {
+    LOG << "getNum: start func\n";
 
+    COMPILER_ASSERT(std::holds_alternative<FloatToken>(*cur_token), "is not FloatToken");
+    float num = std::get<FloatToken>(*cur_token).num();
+    ++cur_token;
+
+    LOG << "getNum: end\n";
+    return new FloatUnit(num);
+}
+
+static ArrayUnit* getArrayUnit(TokenIt& cur_token, TokenIt end) {
+    LOG << "getArratUnit: start func\n";
+    
+    COMPILER_ASSERT((CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::LEFT_SQUARE_BRACKET)), 
+        "left square bracket was not found")
+    ++cur_token;
+
+    std::vector<ExpressionUnit*> array_elements;
+    if (CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::RIGHT_SQUARE_BRACKET)) {
+        ++cur_token;
+    }
+    else {
+        while(true) {
             ExpressionUnit* expression = getExpresion(cur_token, end);
             COMPILER_ASSERT(expression != nullptr, "fail to get one of expressions in array")
 
             array_elements.push_back(expression);
-        }
 
-        ++cur_token;
-        return new ArrayUnit(std::move(array_elements));
+            if (CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::RIGHT_SQUARE_BRACKET)) {
+                ++cur_token;
+                break;
+            }
+
+            COMPILER_ASSERT((CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::COMMA)), \
+                            "comma expected")
+            ++cur_token;
+        }
     }
 
-    std::cerr << "GetArrayUnit: open left bracket was not found\n";
-    return nullptr;
+    return new ArrayUnit(std::move(array_elements));
 }
 
 void recursiveUnitDelete(GrammarUnit* unit) {

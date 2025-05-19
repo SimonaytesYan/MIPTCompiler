@@ -76,7 +76,6 @@ static bool getNum(std::istream& in, std::vector<Token>& tokens) {
     }
 
     in >> num;
-    LOG << "num = " << num << "\n";
 
     int sym = in.get();
     if (sym == '.') {
@@ -90,13 +89,17 @@ static bool getNum(std::istream& in, std::vector<Token>& tokens) {
         in >> fractional_part;
 
         int digit_num = std::ceil(std::log10(fractional_part + 1));
-        tokens.emplace_back(FloatToken(num + fractional_part/(double)pow(10, digit_num)));
+        float float_num = num + fractional_part/(double)pow(10, digit_num);
+
+        LOG << "float = " << float_num << "\n";
+        tokens.emplace_back(FloatToken(float_num));
         return true;
     }
     else {
         in.unget();
     }
 
+    LOG << "num = " << num << "\n";
     tokens.emplace_back(NumToken(num));
     return true;
 }

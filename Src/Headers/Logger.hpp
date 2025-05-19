@@ -1,9 +1,9 @@
 #pragma once
 
-// #define DUMP
+#define DUMP
 
 #ifdef DUMP
-    #define LOG std::cout
+    #define LOG std::cerr
 #else
     #include <ostream>
     #include <sstream>

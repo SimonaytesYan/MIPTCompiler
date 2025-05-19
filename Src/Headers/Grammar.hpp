@@ -42,6 +42,7 @@ bool isGrammarUnitStatement(const GrammarUnit* unit);
 enum class GrammarUnitType {
     VAR,
     NUM,
+    FLOAT,
     ARRAY,
     NAME,
     ADD,
@@ -281,6 +282,21 @@ class NumUnit : public ObjectUnit {
     int value_;
 };
 
+class FloatUnit : public ObjectUnit {
+  public:
+
+    FloatUnit(float value) :
+      ObjectUnit(GrammarUnitType::FLOAT),
+      value_(value) { }
+
+    float num() const {
+        return value_;
+    }
+
+  private:
+    float value_;
+};
+
 class VarUnit : public ObjectUnit {
   public:
     VarUnit(const std::string& str, VarType* var_type = nullptr) :
@@ -304,7 +320,7 @@ class VarUnit : public ObjectUnit {
 class ArrayUnit : public ObjectUnit {
   public:
     ArrayUnit(std::vector<ExpressionUnit*>&& array_elements) :
-      ObjectUnit(GrammarUnitType::VAR),
+      ObjectUnit(GrammarUnitType::ARRAY),
       array_elements_(array_elements) { }
 
     const std::vector<ExpressionUnit*>& array_elements() const {

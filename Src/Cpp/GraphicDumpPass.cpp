@@ -123,6 +123,8 @@ void GraphicDumpPass::dumpNodeAndEdge()
     const char light_green[]  = "#B1FF9F";
     const char light_red[]    = "#FF4646";
     const char light_blue[]   = "#87A7FF";
+    const char blue[]         = "#2f56c2";
+    const char dark_blue[]    = "#00258a";
     const char light_grey[]   = "#C8C8C8";
     const char light_yellow[] = "#FFDC4B";
 
@@ -136,6 +138,32 @@ void GraphicDumpPass::dumpNodeAndEdge()
             if (num_node)
                 out_ << "NUM | " << num_node->num();
             out_ << "} }\"]\n";
+            return;
+        }
+        case GrammarUnitType::FLOAT:
+        {
+            dumpNodeInFormat(blue);
+            const FloatUnit* float_node = dynamic_cast<const FloatUnit*>(node_);
+            if (float_node)
+                out_ << "FLOAT | " << float_node->num();
+            out_ << "} }\"]\n";
+            return;
+        }
+        case GrammarUnitType::ARRAY:
+        {
+            dumpNodeInFormat(dark_blue);
+            const ArrayUnit* array_node = dynamic_cast<const ArrayUnit*>(node_);
+            
+            out_ << "ARRAY ";
+            out_ << "} }\"]\n";
+
+            size_t element_num = 0;
+            for (auto statement : array_node->array_elements()) {
+                element_num++;
+                dumpEdge(array_node, statement, std::to_string(element_num).c_str());
+                node_ = statement;
+                dumpNodeAndEdge();
+            }
             return;
         }
         case GrammarUnitType::ADD:
@@ -294,6 +322,7 @@ void GraphicDumpPass::dumpNodeAndEdge()
         }
         default: {
             out_ << "unknown";
+            std::cerr << "Unknown type\n";
             return;
         }
     }
