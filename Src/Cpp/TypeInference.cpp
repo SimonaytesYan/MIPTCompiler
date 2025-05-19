@@ -19,35 +19,74 @@ static bool isInteger(ExpressionUnit* unit) {
             BasicExprType::BasicType::INTEGER);
 }
 
-void inferInScope(ScopeUnit* unit) {
-    TYPE_INF_ASSERT(false, "Not implemented!")
+void TypeSystem::inferInScope(ScopeUnit* unit) {
+    var_table_.startScope();
+    for (StatementUnit* statement : unit) {
+        inferInStatement(statement);
+    }
+    var_table_.endScope();
 }
 
-void inferInStatement(StatementUnit* unit) {
-    TYPE_INF_ASSERT(false, "Not implemented!")
+void TypeSystem::inferInStatement(StatementUnit* unit) {
+    switch (unit->getType())
+    {
+    case GrammarUnitType::IF:
+        inferInIf(static_cast<IfUnit*>(unit));
+        break;
+    case GrammarUnitType::LOOP:
+        inferInLoop(static_cast<LoopUnit*>(unit));
+        break;
+    case GrammarUnitType::PRINT:
+        inferInPrint(static_cast<PrintUnit*>(unit));
+        break;
+    case GrammarUnitType::VAR_DECL:
+        inferInVarDecl(static_cast<VarDeclUnit*>(unit));
+        break;
+    case GrammarUnitType::VAR_ASSIGN:
+        inferInVarAssign(static_cast<VarAssignUnit*>(unit));
+        break;
+    
+    default:
+        break;
+    }
 }
 
-void inferInIf(StatementUnit* unit) {
-    TYPE_INF_ASSERT(false, "Not implemented!")
+void TypeSystem::inferInIf(IfUnit* unit) {
+    inferInExpresion(unit->expression());
+    inferInScope(unit->true_branch());
+    inferInScope(unit->false_branch());
 }
 
-void inferInPrint(StatementUnit* unit) {
-    TYPE_INF_ASSERT(false, "Not implemented!")
+void TypeSystem::inferInPrint(PrintUnit* unit) {
+    inferInExpresion(unit->expression())
 }
 
-void inferInLoop(StatementUnit* unit) {
-    TYPE_INF_ASSERT(false, "Not implemented!")
+void TypeSystem::inferInLoop(LoopUnit* unit) {
+    inferInExpresion(unit->condition())
+    inferInScope(unit->body())
 }
 
-void inferInVarDecl(StatementUnit* unit) {
-    TYPE_INF_ASSERT(false, "Not implemented!")
+void TypeSystem::inferInVarDecl(VarDeclUnit* unit) {
+    inferInExpresion(unit->expr());
+    unit->var()->setExprType(unit->expr()->exprType()->copy());
+
+    unit->updateNameTypeVariable();
+    unit->var()->setVariable(unit->getVariable());
+
+    var_table_.insertVar(unit->getVariable());
 }
 
-void inferInVarAssign(StatementUnit* unit) {
-    TYPE_INF_ASSERT(false, "Not implemented!")
+void TypeSystem::inferInVarAssign(VarAssignUnit* unit) {
+    inferInExpresion(unit->expr());
+
+    Variable* variable = var_table_.findVar(unit->var()->name());
+    unit->var()->setVariable(variable);
+    
+    TYPE_INF_ASSERT((ExpressionType::isEqual(variable->type(), unit->expr()->exprType())), 
+                    "Variable type is not equal to siignment expression")
 }
 
-void inferInExpresion(ExpressionUnit* unit) {
+void TypeSystem::inferInExpresion(ExpressionUnit* unit) {
     if (isGrammarUnitObject(unit)) {
         inferInObject(static_cast<ObjectUnit*>(unit));
     }
@@ -59,7 +98,7 @@ void inferInExpresion(ExpressionUnit* unit) {
     }
 }
 
-void inferInBinaryOp(BinaryOperUnit* unit) {
+void TypeSystem::inferInBinaryOp(BinaryOperUnit* unit) {
     inferInExpresion(unit->left());
     inferInExpresion(unit->right());
     
@@ -76,14 +115,14 @@ void inferInBinaryOp(BinaryOperUnit* unit) {
     }
 }
 
-void inferInUnaryOp(UnaryOperUnit* unit) {
+void TypeSystem::inferInUnaryOp(UnaryOperUnit* unit) {
     inferInExpresion(unit->operand());
     TYPE_INF_ASSERT(isFloat(unit->operand()) || isInteger(unit->operand()),
                     "Not basic type in unary operation expr")
     unit->setExprType(unit->operand()->exprType()->copy());
 }
 
-void inferInObject(ObjectUnit* unit) {
+void TypeSystem::inferInObject(ObjectUnit* unit) {
     switch (unit->getType())
     {
     case GrammarUnitType::NUM:
@@ -104,19 +143,19 @@ void inferInObject(ObjectUnit* unit) {
     }
 }
 
-void inferInVar(VarUnit* unit) {
+void TypeSystem::inferInVar(VarUnit* unit) {
     TYPE_INF_ASSERT(false, "Not implemented!")
 }
 
-void inferInNum(NumUnit* unit) {
+void TypeSystem::inferInNum(NumUnit* unit) {
     unit->setExprType(new IntegerExprType());
 }
 
-void inferInFloat(FloatUnit* unit) {
+void TypeSystem::inferInFloat(FloatUnit* unit) {
     unit->setExprType(new FloatExprType());
 }
 
-void inferInArray(ArrayUnit* unit) {
+void TypeSystem::inferInArray(ArrayUnit* unit) {
     ExpressionType* expr_type = nullptr;
     for (auto elem : unit->arrayElements()) {
         inferInExpresion(elem);
@@ -124,9 +163,37 @@ void inferInArray(ArrayUnit* unit) {
             expr_type = elem->exprType();
         }
         else {
-            TYPE_INF_ASSERT(expr_type == elem->exprType(), "Elements in array has different types")
+            TYPE_INF_ASSERT(expr_type == elem->exprType(),
+                            "Elements in array has different types")
         }
     }
 
     unit->setExprType(new ArrayVarType(unit->arrayElements().size(), expr_type));
+}
+
+Variable* TypeSystem::VarTable::findVar(const std::string& name) {
+    // Go from top of the 'stack' to the end
+    auto begin_it = named_expr_types_.rbegin();
+    auto end_it = named_expr_types_.rend();
+
+    for (auto scope_it = begin_it; scope_it != end_it; ++scope_it) {
+        Variable* var_in_cur_scope = (*scope_it)[name];
+        if (var_in_cur_scope != nullptr) {
+            return var_in_cur_scope;
+        }
+    }
+
+    return nullptr;
+}
+
+void TypeSystem::VarTable::startScope() {
+    named_expr_types_.push_back(std::map<std::string, Variable*>());
+}
+
+void TypeSystem::VarTable::endScope() {
+    named_expr_types_.pop_back();
+}
+
+void TypeSystem::VarTable::insertVar(Variable* var) {
+    named_expr_types_.push_back(var);
 }
