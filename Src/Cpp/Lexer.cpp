@@ -265,28 +265,6 @@ static StatementUnit* getLoop(TokenIt& cur_token, TokenIt end) {
     return new LoopUnit(condition, body);
 }
 
-VarType* getVarType(TokenIt& cur_token) {
-    VarType* var_type = nullptr;
-    if (CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::FLOAT)) {
-        ++cur_token;
-        var_type = new FloatType();
-    }
-    else if (CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::INT)) {
-        ++cur_token;
-        var_type = new IntegerType();
-    }
-    else if (CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::STRING)) {
-        ++cur_token;
-        var_type = new StringType();
-    }
-    else if (CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::ARRAY)) {
-        ++cur_token;
-        var_type = new ArrayVarType(0, getVarType(cur_token));
-    }
-
-    return var_type;
-}
-
 static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end) {
     LOG << "start getVarDecl(\n";
     COMPILER_ASSERT(cur_token != end, "cur_token == end")
