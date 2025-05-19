@@ -292,29 +292,14 @@ static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end) {
                     "do not start with 'let'")
     ++cur_token;
 
-    COMPILER_ASSERT((CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::LET)), 
-                    "do not start with 'let'")
-    ++cur_token;
+    VarAssignUnit* var_assign = static_cast<VarAssignUnit*>(getVarAssign(cur_token, end));
+    COMPILER_ASSERT(var_assign != nullptr, "var assign unit is null")
 
-    VarType* var_type = getVarType(cur_token);
+    VarUnit* var = var_assign->var();
+    ExpressionUnit* expr = var_assign->expr();
+    delete var_assign;
 
-    VarUnit* var = getVar(cur_token, end, var_type);
-    COMPILER_ASSERT(var != nullptr, "var is null")
-
-    COMPILER_ASSERT((CheckTokenValue<OperatorToken, OperatorType>(cur_token, OperatorType::EQUAL)),
-                    "there is not operator `=` in var declaration\n")
-    ++cur_token;
-
-    ExpressionUnit* expression = getExpresion(cur_token, end);
-    COMPILER_ASSERT(expression != nullptr, "expression is null")
-
-    COMPILER_ASSERT((CheckTokenValue<SpecialSymbolToken,
-                                     SpecialSymbolType>(cur_token,
-                                                        SpecialSymbolType::END_STATEMENT)),
-                    "there is no a ';' at the end of var declaration")
-    ++cur_token;
-
-    return new VarDeclUnit(var, expression);
+    return new VarDeclUnit(var, expr);
 }
 
 static StatementUnit* getVarAssign(TokenIt& cur_token, TokenIt end) {
@@ -561,17 +546,13 @@ static ArrayUnit* getArrayUnit(TokenIt& cur_token, TokenIt end) {
     if (CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::LEFT_SQUARE_BRACKET)) {
         ++cur_token;
         while(!CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::RIGHT_SQUARE_BRACKET)) {
-            if (!CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::COMMA)) {
-                std::cerr << "getArrayUnit: comma expected\n";
-                return nullptr;
-            }
+            COMPILER_ASSERT((CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::COMMA)), \
+                            "comma expected")
             ++cur_token;
 
             ExpressionUnit* expression = getExpresion(cur_token, end);
-            if (expression == nullptr) {
-                std::cerr << "getArrayUnit: fail to get one of expressions in array\n";
-                return nullptr;
-            }
+            COMPILER_ASSERT(expression != nullptr, "fail to get one of expressions in array")
+
             array_elements.push_back(expression);
         }
 
@@ -642,6 +623,13 @@ void recursiveUnitDelete(GrammarUnit* unit) {
 
         recursiveUnitDelete(print_unit->expression());
         break;
+    }
+    case GrammarUnitType::ARRAY: {
+        ArrayUnit* array_unit = reinterpret_cast<ArrayUnit*>(unit);
+        
+        for (ExpressionUnit* element : array_unit->array_elements()) {
+            recursiveUnitDelete(element);
+        }
     }
     default:
         break;
