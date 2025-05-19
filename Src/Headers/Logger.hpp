@@ -3,7 +3,7 @@
 // #define DUMP
 
 #ifdef DUMP
-    #define log std::cout
+    #define LOG std::cout
 #else
     #include <ostream>
     #include <sstream>
@@ -16,5 +16,5 @@
     };
     static MyBuf buffer;
 
-    static std::ostream log(&buffer);
+    static std::ostream LOG(&buffer);
 #endif  // DEBUG

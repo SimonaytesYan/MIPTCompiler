@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cctype>
 #include <iostream>
+#include <math.h>
 #include <string>
 #include <vector>
 #include <utility>
@@ -75,7 +76,7 @@ static bool getNum(std::istream& in, std::vector<Token>& tokens) {
     }
 
     in >> num;
-    log << "num = " << num << "\n";
+    LOG << "num = " << num << "\n";
 
     int sym = in.get();
     if (sym == '.') {
@@ -87,6 +88,10 @@ static bool getNum(std::istream& in, std::vector<Token>& tokens) {
             return false;
         }
         in >> fractional_part;
+
+        int digit_num = std::ceil(std::log10(fractional_part + 1));
+        tokens.emplace_back(FloatToken(num + fractional_part/(double)pow(10, digit_num)));
+        return true;
     }
     else {
         in.unget();
@@ -109,7 +114,7 @@ static bool getKeyword(std::istream& in, std::vector<Token>& tokens) {
         if (res.first == keyword.name.end()) {
             tokens.emplace_back(KeywordToken(keyword.type));
 
-            log << "keyword = " << keyword.name << "\n";
+            LOG << "keyword = " << keyword.name << "\n";
 
             ungetSymbols(in, potential_keyword.size() - keyword.name.size());
             return true;
@@ -132,7 +137,7 @@ static bool getOperator(std::istream& in, std::vector<Token>& tokens) {
         if (res.first == oper.name.end()) {
             tokens.emplace_back(OperatorToken(oper.type));
 
-            log << "operator = " << oper.name << "\n";
+            LOG << "operator = " << oper.name << "\n";
 
             ungetSymbols(in, potential_operator.size() - oper.name.size());
             return true;
@@ -170,7 +175,7 @@ static bool getSpecialSymbol(std::istream& in, std::vector<Token>& tokens) {
         if (res.first == spec_sym.name.end()) {
             tokens.emplace_back(SpecialSymbolToken(spec_sym.type));
 
-            log << "spec_symbol = " << spec_sym.name << "\n";
+            LOG << "spec_symbol = " << spec_sym.name << "\n";
 
             ungetSymbols(in, potential_spec_sym.size() - spec_sym.name.size());
 
@@ -199,7 +204,7 @@ static bool getName(std::istream& in, std::vector<Token>& tokens) {
         }
         while (isalnum(next_sym) || next_sym == '_');
 
-        log << "name = " << name << "\n";
+        LOG << "name = " << name << "\n";
         tokens.emplace_back(NameToken(std::move(name)));
 
         in.unget();

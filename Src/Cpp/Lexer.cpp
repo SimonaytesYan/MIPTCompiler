@@ -80,7 +80,7 @@ GrammarUnit* parse(const std::vector<Token>& tokens) {
 }
 
 static ScopeUnit* getScope(TokenIt& cur_token, TokenIt end) {
-    log << "getScope: Start func\n";
+    LOG << "getScope: Start func\n";
     if (cur_token == end) {
         std::cerr << "getScope: cur_token == end\n";
         return nullptr;
@@ -97,7 +97,7 @@ static ScopeUnit* getScope(TokenIt& cur_token, TokenIt end) {
     while (cur_token != end &&
            !CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::END_SCOPE))
     {
-        log << "getScope: new_step\n";
+        LOG << "getScope: new_step\n";
 
         StatementUnit* next_statement = getStatement(cur_token, end);
         if (next_statement == nullptr) {
@@ -114,12 +114,12 @@ static ScopeUnit* getScope(TokenIt& cur_token, TokenIt end) {
     }
 
     ++cur_token;
-    log << "getScope: end function\n";
+    LOG << "getScope: end function\n";
     return scope;
 }
 
 static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end) {
-    log << "getStatement: start func\n";
+    LOG << "getStatement: start func\n";
     if (cur_token == end) {
         std::cerr << "getStatement: cur_token == end\n";
         return nullptr;
@@ -150,7 +150,7 @@ static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end) {
 }
 
 static StatementUnit* getPrint(TokenIt& cur_token, TokenIt end) {
-    log << "getPrint: start print\n";
+    LOG << "getPrint: start print\n";
 
     if (cur_token == end) {
         std::cerr << "getPrint: cur_token == end\n";
@@ -187,7 +187,7 @@ static StatementUnit* getPrint(TokenIt& cur_token, TokenIt end) {
 }
 
 static StatementUnit* getIf(TokenIt& cur_token, TokenIt end) {
-    log << "getIf: start func\n";
+    LOG << "getIf: start func\n";
 
     if (cur_token == end) {
         std::cerr << "getIf: cur_token == end\n";
@@ -228,7 +228,7 @@ static StatementUnit* getIf(TokenIt& cur_token, TokenIt end) {
 }
 
 static StatementUnit* getLoop(TokenIt& cur_token, TokenIt end) {
-    log << "getLoop: start func\n";
+    LOG << "getLoop: start func\n";
 
     if (cur_token == end) {
         std::cerr << "getLoop: cur_token == end\n";
@@ -286,7 +286,7 @@ VarType* getVarType(TokenIt& cur_token) {
 }
 
 static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end) {
-    log << "start getVarDecl(\n";
+    LOG << "start getVarDecl(\n";
     COMPILER_ASSERT(cur_token != end, "cur_token == end")
 
     COMPILER_ASSERT((CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::LET)), 
@@ -304,7 +304,7 @@ static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end) {
 }
 
 static StatementUnit* getVarAssign(TokenIt& cur_token, TokenIt end) {
-    log << "getVarAssign: start func\n";
+    LOG << "getVarAssign: start func\n";
 
     if (cur_token == end) {
         std::cerr << "getVarAssign: cur_token == end\n";
@@ -344,12 +344,12 @@ static StatementUnit* getVarAssign(TokenIt& cur_token, TokenIt end) {
 }
 
 static ExpressionUnit* getExpresion(TokenIt& cur_token, TokenIt end) {
-    log << "getExpresion: start func\n";
+    LOG << "getExpresion: start func\n";
     return getAddSub(cur_token, end);
 }
 
 static ExpressionUnit* getAddSub(TokenIt& cur_token, TokenIt end) {
-    log << "getAddSub: start func\n";
+    LOG << "getAddSub: start func\n";
     ExpressionUnit* result = getMulDiv(cur_token, end);
 
     if (result == nullptr) {
@@ -361,7 +361,7 @@ static ExpressionUnit* getAddSub(TokenIt& cur_token, TokenIt end) {
         if (!std::holds_alternative<OperatorToken>(*cur_token) ||
             (std::get<OperatorToken>(*cur_token).oper() != OperatorType::SUB &&
             std::get<OperatorToken>(*cur_token).oper() != OperatorType::ADD)) {
-            log << "getAddSub: middle token is not operator\n";
+            LOG << "getAddSub: middle token is not operator\n";
             break;
         }
 
@@ -388,12 +388,12 @@ static ExpressionUnit* getAddSub(TokenIt& cur_token, TokenIt end) {
         }
     }
 
-    log << "getAddSub: end func\n";
+    LOG << "getAddSub: end func\n";
     return result;
 }
 
 static ExpressionUnit* getMulDiv(TokenIt& cur_token, TokenIt end) {
-    log << "getMulDiv: start func\n";
+    LOG << "getMulDiv: start func\n";
     ExpressionUnit* result = getBrackets(cur_token, end);
 
     if (result == nullptr) {
@@ -405,7 +405,7 @@ static ExpressionUnit* getMulDiv(TokenIt& cur_token, TokenIt end) {
         if (!std::holds_alternative<OperatorToken>(*cur_token) ||
             (std::get<OperatorToken>(*cur_token).oper() != OperatorType::MUL &&
             std::get<OperatorToken>(*cur_token).oper() != OperatorType::DIV)) {
-            log << "getMulDiv: middle token is not operator\n";
+            LOG << "getMulDiv: middle token is not operator\n";
             break;
         }
 
@@ -435,12 +435,12 @@ static ExpressionUnit* getMulDiv(TokenIt& cur_token, TokenIt end) {
         }
     }
 
-    log << "getMulDiv: end func\n";
+    LOG << "getMulDiv: end func\n";
     return result;
 }
 
 static ExpressionUnit* getBrackets(TokenIt& cur_token, TokenIt end) {
-    log << "getBrackets: start func\n";
+    LOG << "getBrackets: start func\n";
 
     if (!std::holds_alternative<SpecialSymbolToken>(*cur_token)) {
         return getUnaryMinus(cur_token, end);
@@ -478,7 +478,7 @@ static ExpressionUnit* getBrackets(TokenIt& cur_token, TokenIt end) {
 }
 
 static ExpressionUnit* getUnaryMinus(TokenIt& cur_token, TokenIt end) {
-    log << "getUnaryMinus:: start func\n";
+    LOG << "getUnaryMinus:: start func\n";
     if (std::holds_alternative<OperatorToken>(*cur_token)) {
         if (std::get<OperatorToken>(*cur_token).oper() != OperatorType::SUB) {
             std::cerr << "getUnaryMinus:: not minus operator\n";
@@ -515,7 +515,7 @@ static ExpressionUnit* getObject(TokenIt& cur_token, TokenIt end) {
 
 
 static VarUnit* getVar(TokenIt& cur_token, TokenIt end) {
-    log << "getVar: start func\n";
+    LOG << "getVar: start func\n";
     if (!std::holds_alternative<NameToken>(*cur_token)) {
         std::cerr << "getVar: is not NameToken\n";
         return nullptr;
@@ -523,12 +523,12 @@ static VarUnit* getVar(TokenIt& cur_token, TokenIt end) {
 
     VarUnit* result = new VarUnit(std::get<NameToken>(*cur_token).name());
     ++cur_token;
-    log << "getVar: end\n";
+    LOG << "getVar: end\n";
     return result;
 }
 
 static NumUnit* getNum(TokenIt& cur_token, TokenIt end) {
-    log << "getNum: start func\n";
+    LOG << "getNum: start func\n";
 
     if (!std::holds_alternative<NumToken>(*cur_token)) {
         std::cerr << "getVar: is not NumToken\n";
@@ -538,7 +538,7 @@ static NumUnit* getNum(TokenIt& cur_token, TokenIt end) {
     int num = std::get<NumToken>(*cur_token).num();
     ++cur_token;
 
-    log << "getNum: end\n";
+    LOG << "getNum: end\n";
     return new NumUnit(num);
 }
 

@@ -5,5 +5,6 @@ int main() {
 
     runOneTest("{let a = 123; }", pass);
     runOneTest("{let b = -123; }", pass);
-    runOneTest("{let c = Abcd; }", pass);
+    runOneTest("{let c = -0.1; }", pass);
+    runOneTest("{let d = Abcd; }", pass);
 }

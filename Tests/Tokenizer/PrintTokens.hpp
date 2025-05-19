@@ -34,6 +34,10 @@ void printTokens(const std::vector<Token>& tokens) {
             OperatorType val = std::get<OperatorToken>(token).oper();
             std::cout << "oper `" << kOperators[(size_t)val].name << "`";
         }
+        if (std::holds_alternative<FloatToken>(token)) {
+            float val = std::get<FloatToken>(token).num();
+            std::cout << "float `" << val << "`";
+        }
         std::cout << ", ";
     }
     std::cout << "}\n";
