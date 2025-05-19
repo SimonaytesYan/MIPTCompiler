@@ -1,5 +1,7 @@
 #include "VariableList.hpp"
 
+namespace execution_pass {
+
 void VariableList::Dump(std::ostream& out) {
     out << "\nVariable list dump\n";
     for (const Variable& var : vars_) {
@@ -71,3 +73,5 @@ void VariableList::endScope() {
         vars_.pop_back();
     }
 }
+
+} // end namespace execution_pass

@@ -5,6 +5,8 @@
 #include <variant>
 #include <vector>
 
+namespace execution_pass {
+
 struct IntVar {
   int value_;
   std::string name_;
@@ -29,3 +31,5 @@ class VariableList {
   private:
     std::vector<Variable> vars_;
 };
+
+} // end namespace execution_pass
