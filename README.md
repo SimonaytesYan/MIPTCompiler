@@ -6,7 +6,7 @@
 LLVM_CONFIG=llvm-config-<version> make compiler
 ```
 
-где <version> - версия llvm, с которой вы хотите собрать проект.
+где \<version\> - версия llvm, с которой вы хотите собрать проект.
 
 Исполняемый файл можно будет найти по пути `bin/compiler`.
 
