@@ -49,6 +49,7 @@ static ExpressionUnit* getUnaryMinus(TokenIt& cur_token, TokenIt end);
 static ExpressionUnit* getObject(TokenIt& cur_token, TokenIt end);
 static VarUnit* getVar(TokenIt& cur_token, TokenIt end);
 static NumUnit* getNum(TokenIt& cur_token, TokenIt end);
+static ArrayUnit* getArrayUnit(TokenIt& cur_token, TokenIt end);
 
 template<class TokenType, class TokenValueType>
 static bool CheckTokenValue(const TokenIt token, TokenValueType necessary_value) {
@@ -513,14 +514,14 @@ static ExpressionUnit* getObject(TokenIt& cur_token, TokenIt end) {
 }
 
 
-static VarUnit* getVar(TokenIt& cur_token, TokenIt end, VarType* var_type) {
+static VarUnit* getVar(TokenIt& cur_token, TokenIt end) {
     log << "getVar: start func\n";
     if (!std::holds_alternative<NameToken>(*cur_token)) {
         std::cerr << "getVar: is not NameToken\n";
         return nullptr;
     }
 
-    VarUnit* result = new VarUnit(std::get<NameToken>(*cur_token).name(), var_type);
+    VarUnit* result = new VarUnit(std::get<NameToken>(*cur_token).name());
     ++cur_token;
     log << "getVar: end\n";
     return result;

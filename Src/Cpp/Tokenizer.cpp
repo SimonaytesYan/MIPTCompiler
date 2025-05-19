@@ -70,14 +70,30 @@ static bool getNum(std::istream& in, std::vector<Token>& tokens) {
     in.unget();
 
     // Do not wait '-', will work with it during syntax analysis
-    if ('0' <= first_sym && first_sym <= '9') {
-        in >> num;
-        log << "num = " << num << "\n";
-        tokens.emplace_back(NumToken(num));
-        return true;
+    if (!('0' <= first_sym && first_sym <= '9')) {
+        return false;
     }
 
-    return false;
+    in >> num;
+    log << "num = " << num << "\n";
+
+    int sym = in.get();
+    if (sym == '.') {
+        int fractional_part = 0;
+
+        first_sym = in.get();
+        in.unget();
+        if (!('0' <= first_sym && first_sym <= '9')) {
+            return false;
+        }
+        in >> fractional_part;
+    }
+    else {
+        in.unget();
+    }
+
+    tokens.emplace_back(NumToken(num));
+    return true;
 }
 
 static bool getKeyword(std::istream& in, std::vector<Token>& tokens) {

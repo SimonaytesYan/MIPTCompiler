@@ -283,7 +283,7 @@ class NumUnit : public ObjectUnit {
 
 class VarUnit : public ObjectUnit {
   public:
-    VarUnit(const std::string& str, VarType* var_type) :
+    VarUnit(const std::string& str, VarType* var_type = nullptr) :
       ObjectUnit(GrammarUnitType::VAR),
       name_(str),
       var_type_(var_type) { }

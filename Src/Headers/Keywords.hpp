@@ -26,9 +26,5 @@ const Keyword kKeywords[] = {
     {"if",    KeywordType::IF},
     {"else",  KeywordType::ELSE},
     {"print", KeywordType::PRINT},
-    {"loop",  KeywordType::LOOP},
-    {"arr",   KeywordType::ARRAY},
-    {"int",   KeywordType::INT},
-    {"flt",   KeywordType::FLOAT},
-    {"str",   KeywordType::STRING}
+    {"loop",  KeywordType::LOOP}
 };

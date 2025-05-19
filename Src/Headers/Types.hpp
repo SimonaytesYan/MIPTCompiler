@@ -12,8 +12,8 @@ class VarType {
       STRUCT
     };
 
-    virtual size_t size() const;
-    virtual TypeClass typeClass() const;
+    virtual size_t size() const = 0;
+    virtual TypeClass typeClass() const = 0;
 };
 
 class BasicVarType : public VarType {
@@ -27,7 +27,7 @@ class BasicVarType : public VarType {
     size_t size() const override { return 4; }
     TypeClass typeClass() const override { return TypeClass::BASIC; }
 
-    virtual BasicType basicType() const;
+    virtual BasicType basicType() const = 0;
 };
 
 class FloatType : public BasicVarType {
