@@ -158,7 +158,7 @@ void GraphicDumpPass::dumpNodeAndEdge()
             out_ << "} }\"]\n";
 
             size_t element_num = 0;
-            for (auto statement : array_node->array_elements()) {
+            for (auto statement : array_node->arrayElements()) {
                 element_num++;
                 dumpEdge(array_node, statement, std::to_string(element_num).c_str());
                 node_ = statement;

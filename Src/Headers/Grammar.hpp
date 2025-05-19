@@ -254,9 +254,21 @@ class LoopUnit : public StatementUnit {
 class ExpressionUnit : public GrammarUnit {
   public:
     ExpressionUnit(GrammarUnitType type) :
-      GrammarUnit(type) { }
+      GrammarUnit(type),
+      expr_type_(nullptr) { }
+
+    ExpressionType* exprType() const {
+      return expr_type_;
+    }
+
+    void setExprType(ExpressionType* expression_type) {
+      expr_type_ = expression_type;
+    }
 
     virtual ~ExpressionUnit() { }
+
+  private:
+    ExpressionType* expr_type_;
 };
 
 class ObjectUnit : public ExpressionUnit {
@@ -299,22 +311,16 @@ class FloatUnit : public ObjectUnit {
 
 class VarUnit : public ObjectUnit {
   public:
-    VarUnit(const std::string& str, VarType* var_type = nullptr) :
+    VarUnit(const std::string& str) :
       ObjectUnit(GrammarUnitType::VAR),
-      name_(str),
-      var_type_(var_type) { }
+      name_(str){ }
 
     const std::string& name() const {
         return name_;
     }
 
-    VarType* var_type() const {
-        return var_type_;
-    }
-
   private:
     std::string name_;
-    VarType* var_type_;
 };
 
 class ArrayUnit : public ObjectUnit {
@@ -323,7 +329,7 @@ class ArrayUnit : public ObjectUnit {
       ObjectUnit(GrammarUnitType::ARRAY),
       array_elements_(array_elements) { }
 
-    const std::vector<ExpressionUnit*>& array_elements() const {
+    const std::vector<ExpressionUnit*>& arrayElements() const {
       return array_elements_;
     }
 
@@ -377,6 +383,14 @@ class BinaryOperUnit : public OperatorUnit {
     }
 
     const ExpressionUnit* right() const {
+        return right_op_;
+    }
+
+    ExpressionUnit* left() {
+        return left_op_;
+    }
+
+    ExpressionUnit* right() {
         return right_op_;
     }
 

@@ -586,7 +586,7 @@ void recursiveUnitDelete(GrammarUnit* unit) {
     case GrammarUnitType::ARRAY: {
         ArrayUnit* array_unit = reinterpret_cast<ArrayUnit*>(unit);
         
-        for (ExpressionUnit* element : array_unit->array_elements()) {
+        for (ExpressionUnit* element : array_unit->arrayElements()) {
             recursiveUnitDelete(element);
         }
     }
