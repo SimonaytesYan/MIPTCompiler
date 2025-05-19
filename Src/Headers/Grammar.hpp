@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Tokens.hpp"
+#include "Types.hpp"
 
 #include <string>
 #include <vector>
@@ -19,6 +20,7 @@ class GrammarUnit;
     class ObjectUnit;
       class NumUnit;
       class VarUnit;
+      class ArrayUnit;
 
     class OperatorUnit;
       class UnaryOperUnit;
@@ -40,6 +42,8 @@ bool isGrammarUnitStatement(const GrammarUnit* unit);
 enum class GrammarUnitType {
     VAR,
     NUM,
+    ARRAY,
+    NAME,
     ADD,
     SUB,
     MUL,
@@ -279,17 +283,36 @@ class NumUnit : public ObjectUnit {
 
 class VarUnit : public ObjectUnit {
   public:
-    VarUnit(const std::string& str) :
+    VarUnit(const std::string& str, VarType* var_type) :
       ObjectUnit(GrammarUnitType::VAR),
-      name_(str) {
-    }
+      name_(str),
+      var_type_(var_type) { }
 
     const std::string& name() const {
         return name_;
     }
 
+    VarType* var_type() const {
+        return var_type_;
+    }
+
   private:
     std::string name_;
+    VarType* var_type_;
+};
+
+class ArrayUnit : public ObjectUnit {
+  public:
+    ArrayUnit(std::vector<ExpressionUnit*>&& array_elements) :
+      ObjectUnit(GrammarUnitType::VAR),
+      array_elements_(array_elements) { }
+
+    const std::vector<ExpressionUnit*>& array_elements() const {
+      return array_elements_;
+    }
+
+  private:
+    std::vector<ExpressionUnit*> array_elements_;
 };
 
 class OperatorUnit : public ExpressionUnit {

@@ -4,6 +4,8 @@
 #include "Keywords.hpp"
 #include "Operators.hpp"
 #include "SpecialSymbols.hpp"
+#include "Tokens.hpp"
+#include "Utils.hpp"
 
 #include <iostream>
 #include <variant>
@@ -14,7 +16,7 @@
 // PrintUnit      ::= 'print(' ExprUnit ');'
 // LoopUnit       ::= loop '(' ExprUnit ')' ScopeUnit
 // IFUnit         ::= 'if' '(' ExprUnit ')' ScopeUnit 'else' ScopeUnit
-// VarDeclUnit    ::= 'let' VarUnit '=' ExprUnit ';'
+// VarDeclUnit    ::= 'let' VarAssignUnit
 // VarAssignUnit  ::= VarUnit '=' ExprUnit ';'
 // ExpressionUnit ::= AddSub
 // AddSub         ::= AddExprUnit | SubExprUnit
@@ -25,9 +27,10 @@
 // DivExprUnit    ::= Brackets {'/' Brackets}* | Brackets
 // Brackets       ::= '('ExprUnit')' | UnaryMinus
 // UnaryMinus     ::= '-' Object | Object
-// Object         ::= VarUnit | NumUnit
+// Object         ::= VarUnit | NumUnit | ArrayUnit
 // VarUnit        ::= {'_', 'a-z', 'A-Z'}{'_', 'a-z', 'A-Z', '0-9'}*
-// NumUnit        ::= '-'{'0-9'}+ | {'0-9'}
+// NumUnit        ::= '-'{'0-9'}+ | {'0-9'}+
+// ArrayUnit      ::= [{, ExprUnit}*]
 
 // using TokenIt = std::vector<Token>::const_iterator;
 
@@ -259,48 +262,56 @@ static StatementUnit* getLoop(TokenIt& cur_token, TokenIt end) {
     return new LoopUnit(condition, body);
 }
 
+VarType* getVarType(TokenIt& cur_token) {
+    VarType* var_type = nullptr;
+    if (CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::FLOAT)) {
+        ++cur_token;
+        var_type = new FloatType();
+    }
+    else if (CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::INT)) {
+        ++cur_token;
+        var_type = new IntegerType();
+    }
+    else if (CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::STRING)) {
+        ++cur_token;
+        var_type = new StringType();
+    }
+    else if (CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::ARRAY)) {
+        ++cur_token;
+        var_type = new ArrayVarType(0, getVarType(cur_token));
+    }
+
+    return var_type;
+}
+
 static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end) {
-    log << "getVarDecl: start func\n";
+    log << "start getVarDecl(\n";
+    COMPILER_ASSERT(cur_token != end, "cur_token == end")
 
-    if (cur_token == end) {
-        std::cerr << "getVarDecl: cur_token == end\n";
-        return nullptr;
-    }
-
-    if (!CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::LET)) {
-        std::cerr << "getVarDecl: do not start with 'let'\n";
-        return nullptr;
-    }
-
+    COMPILER_ASSERT((CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::LET)), 
+                    "do not start with 'let'")
     ++cur_token;
 
-    VarUnit* var = getVar(cur_token, end);
+    COMPILER_ASSERT((CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::LET)), 
+                    "do not start with 'let'")
+    ++cur_token;
 
-    if (var == nullptr) {
-        std::cerr << "getVarDecl: var in null";
-        return nullptr;
-    }
+    VarType* var_type = getVarType(cur_token);
 
-    if (!CheckTokenValue<OperatorToken, OperatorType>(cur_token, OperatorType::EQUAL)) {
-        std::cerr << "getVarDecl: there is not operator = in var declaration\n";
-        return nullptr;
-    }
+    VarUnit* var = getVar(cur_token, end, var_type);
+    COMPILER_ASSERT(var != nullptr, "var is null")
 
+    COMPILER_ASSERT((CheckTokenValue<OperatorToken, OperatorType>(cur_token, OperatorType::EQUAL)),
+                    "there is not operator `=` in var declaration\n")
     ++cur_token;
 
     ExpressionUnit* expression = getExpresion(cur_token, end);
-    if (expression == nullptr) {
-        std::cerr << "getVarDecl: expression in null";
-        return nullptr;
-    }
+    COMPILER_ASSERT(expression != nullptr, "expression is null")
 
-    if (!CheckTokenValue<SpecialSymbolToken,
-                         SpecialSymbolType>(cur_token,
-                                           SpecialSymbolType::END_STATEMENT)) {
-        std::cerr << "getVarDecl: there is no a ';' at the end of var declaration\n";
-        return nullptr;
-    }
-
+    COMPILER_ASSERT((CheckTokenValue<SpecialSymbolToken,
+                                     SpecialSymbolType>(cur_token,
+                                                        SpecialSymbolType::END_STATEMENT)),
+                    "there is no a ';' at the end of var declaration")
     ++cur_token;
 
     return new VarDeclUnit(var, expression);
@@ -509,18 +520,22 @@ static ExpressionUnit* getObject(TokenIt& cur_token, TokenIt end) {
         return getVar(cur_token, end);
     }
 
+    if (CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::LEFT_SQUARE_BRACKET)) {
+        return getArrayUnit(cur_token, end);
+    }
+
     return nullptr;
 }
 
 
-static VarUnit* getVar(TokenIt& cur_token, TokenIt end) {
+static VarUnit* getVar(TokenIt& cur_token, TokenIt end, VarType* var_type) {
     log << "getVar: start func\n";
     if (!std::holds_alternative<NameToken>(*cur_token)) {
         std::cerr << "getVar: is not NameToken\n";
         return nullptr;
     }
 
-    VarUnit* result = new VarUnit(std::get<NameToken>(*cur_token).name());
+    VarUnit* result = new VarUnit(std::get<NameToken>(*cur_token).name(), var_type);
     ++cur_token;
     log << "getVar: end\n";
     return result;
@@ -539,6 +554,33 @@ static NumUnit* getNum(TokenIt& cur_token, TokenIt end) {
 
     log << "getNum: end\n";
     return new NumUnit(num);
+}
+
+static ArrayUnit* getArrayUnit(TokenIt& cur_token, TokenIt end) {
+    std::vector<ExpressionUnit*> array_elements;
+    if (CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::LEFT_SQUARE_BRACKET)) {
+        ++cur_token;
+        while(!CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::RIGHT_SQUARE_BRACKET)) {
+            if (!CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::COMMA)) {
+                std::cerr << "getArrayUnit: comma expected\n";
+                return nullptr;
+            }
+            ++cur_token;
+
+            ExpressionUnit* expression = getExpresion(cur_token, end);
+            if (expression == nullptr) {
+                std::cerr << "getArrayUnit: fail to get one of expressions in array\n";
+                return nullptr;
+            }
+            array_elements.push_back(expression);
+        }
+
+        ++cur_token;
+        return new ArrayUnit(std::move(array_elements));
+    }
+
+    std::cerr << "GetArrayUnit: open left bracket was not found\n";
+    return nullptr;
 }
 
 void recursiveUnitDelete(GrammarUnit* unit) {
