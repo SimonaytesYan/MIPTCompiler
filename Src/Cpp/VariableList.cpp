@@ -4,7 +4,7 @@ namespace execution_pass {
 
 void VariableList::Dump(std::ostream& out) {
     out << "\nVariable list dump\n";
-    for (const Variable& var : vars_) {
+    for (const VariableListNode& var : vars_) {
         if (std::holds_alternative<ScopeStarter>(var)) {
             out << "{ ";
         }
@@ -16,7 +16,7 @@ void VariableList::Dump(std::ostream& out) {
     out << "\n";
 }
 
-void VariableList::addNewVar(Variable var) {
+void VariableList::addNewVar(VariableListNode var) {
     vars_.push_back(var);
 }
 
