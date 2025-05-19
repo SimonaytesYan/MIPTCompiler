@@ -2,6 +2,7 @@
 
 #include "Tokens.hpp"
 #include "Types.hpp"
+#include "Variable.hpp"
 
 #include <string>
 #include <vector>
@@ -19,6 +20,7 @@ class GrammarUnit;
   class ExpressionUnit;
     class ObjectUnit;
       class NumUnit;
+      class FloatUnit;
       class VarUnit;
       class ArrayUnit;
 
@@ -171,11 +173,11 @@ class VarDeclUnit : public StatementUnit {
   public:
     VarDeclUnit(VarUnit* variable, ExpressionUnit* expression) :
       StatementUnit(GrammarUnitType::VAR_DECL),
-      variable_(variable),
+      variable_unit_(variable),
       expression_(expression) { }
 
     VarUnit* var() {
-      return variable_;
+      return variable_unit_;
     }
 
     ExpressionUnit* expr() {
@@ -183,15 +185,25 @@ class VarDeclUnit : public StatementUnit {
     }
 
     const VarUnit* var() const {
-      return variable_;
+      return variable_unit_;
     }
 
     const ExpressionUnit* expr() const {
       return expression_;
     }
 
+    void updateNameTypeVariable() {
+      variable_.setName(variable_unit_->name());
+      variable_.setType(variable_unit_->exprType());
+    }
+
+    Variable* getVariable() {
+      return &variable_;
+    }
+
   private:
-    VarUnit* variable_;
+    Variable variable_;
+    VarUnit* variable_unit_;
     ExpressionUnit* expression_;
 };
 
@@ -257,7 +269,7 @@ class ExpressionUnit : public GrammarUnit {
       GrammarUnit(type),
       expr_type_(nullptr) { }
 
-    ExpressionType* exprType() const {
+    ExpressionType* exprType() {
       return expr_type_;
     }
 
@@ -319,8 +331,13 @@ class VarUnit : public ObjectUnit {
         return name_;
     }
 
+    void setVariable(const Variable* variable)  {
+        variable_ = variable;
+    }
+
   private:
     std::string name_;
+    const Variable* variable_; // do not own variable
 };
 
 class ArrayUnit : public ObjectUnit {

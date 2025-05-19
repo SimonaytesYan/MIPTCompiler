@@ -5,12 +5,31 @@
 
 class ExpressionType {
   public:
-
     enum class TypeClass {
       BASIC,
       ARRAY,
       STRUCT
     };
+
+    static bool isEqual(const ExpressionType* one, const ExpressionType* other) {
+        if (one->typeClass() != other->typeClass()) {
+            return false;
+        }
+
+        switch (one->typeClass())
+        {
+            case TypeClass::BASIC:
+                return BasicExprType::isEqual(one, other);
+        
+            case TypeClass::ARRAY:
+                return ArrayVarType::isEqual(one, other);
+
+            case TypeClass::STRUCT:
+                return StructVarType::isEqual(one, other);
+        }
+
+        return false;
+    }
 
     virtual ExpressionType* copy() const = 0;
     virtual size_t size() const = 0;
@@ -20,6 +39,11 @@ class ExpressionType {
 };
 
 class BasicExprType : public ExpressionType {
+  public:
+    static bool isEqual(const BasicExprType* one, const BasicExprType* other) {
+        return one->basicType() == other->basicType();
+    }
+
   public:
     enum class BasicType {
       INTEGER,
@@ -54,6 +78,13 @@ class StringExprType : public BasicExprType {
 
 class ArrayVarType : public ExpressionType {
   public:
+    static bool isEqual(const ArrayVarType* one, const ArrayVarType* other) {
+        return ExpressionType::isEqual(one, other) && 
+               one->element_num_ == other->element_num_;
+    }
+
+  public:
+
     ArrayVarType(size_t element_num, ExpressionType* type) :
       element_num_(element_num),
       type_(type->copy()) { }
@@ -73,6 +104,21 @@ class ArrayVarType : public ExpressionType {
 };
 
 class StructVarType : public ExpressionType {
+  public:
+    static bool isEqual(const StructVarType* one, const StructVarType* other) {
+        if (one->fields_type_.size() != other->fields_type_.size()) {
+            return false;
+        }
+
+        for (size_t ind = 0; ind < one->fields_type_.size(); ind++) {
+            if (!ExpressionType::isEqual(one->fields_type_[ind],
+                                         other->fields_type_[ind])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
   public:
     StructVarType(const std::vector<ExpressionType*>& fields_type)
     { 
