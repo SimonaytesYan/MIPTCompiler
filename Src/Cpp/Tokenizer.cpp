@@ -158,6 +158,8 @@ static bool getString(std::istream& in, std::vector<Token>& tokens, SpecialSymbo
         if (symbol == start_symbol.name[0]) {
             tokens.push_back(NameToken(std::move(str)));
             tokens.push_back(SpecialSymbolToken(start_symbol.type));
+            LOG << "str = " << str << "\n";
+            LOG << "spec_symbol = " << symbol << "\n";
             return true;
         }
         str.push_back(symbol);

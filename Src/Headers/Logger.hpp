@@ -1,6 +1,6 @@
 #pragma once
 
-// #define DUMP
+#define DUMP
 
 #ifdef DUMP
     #define LOG std::cerr

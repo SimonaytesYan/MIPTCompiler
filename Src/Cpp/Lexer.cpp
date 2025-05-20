@@ -27,11 +27,12 @@
 // DivExprUnit    ::= Brackets {'/' Brackets}* | Brackets
 // Brackets       ::= '('ExprUnit')' | UnaryMinus
 // UnaryMinus     ::= '-' Object | Object
-// Object         ::= VarUnit | NumUnit | ArrayUnit | FloatUnit
+// Object         ::= VarUnit | NumUnit | ArrayUnit | FloatUnit | StringUnit
 // VarUnit        ::= {'_', 'a-z', 'A-Z'}{'_', 'a-z', 'A-Z', '0-9'}*
 // NumUnit        ::= {'0-9'}+
 // FloatUnit      ::= {{'0-9'}+}'.'{{'0-9'}+}
 // ArrayUnit      ::= [] | [ExprUnit{, ExprUnit}*]
+// StringUnit     ::= ".*" | '.*'
 
 // using TokenIt = std::vector<Token>::const_iterator;
 
@@ -51,7 +52,8 @@ static ExpressionUnit* getObject(TokenIt& cur_token, TokenIt end);
 static VarUnit* getVar(TokenIt& cur_token, TokenIt end);
 static NumUnit* getNum(TokenIt& cur_token, TokenIt end);
 static FloatUnit* getFloat(TokenIt& cur_token, TokenIt end);
-static ArrayUnit* getArrayUnit(TokenIt& cur_token, TokenIt end);
+static ArrayUnit* getArray(TokenIt& cur_token, TokenIt end);
+static StringUnit* getString(TokenIt& cur_token, TokenIt end);
 
 template<class TokenType, class TokenValueType>
 static bool CheckTokenValue(const TokenIt token, TokenValueType necessary_value) {
@@ -452,7 +454,12 @@ static ExpressionUnit* getObject(TokenIt& cur_token, TokenIt end) {
     }
 
     if (CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::LEFT_SQUARE_BRACKET)) {
-        return getArrayUnit(cur_token, end);
+        return getArray(cur_token, end);
+    }
+
+    if (CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::DOUBLE_QUOTES) ||
+        CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::SINGLE_QUOTES)) {
+        return getString(cur_token, end); 
     }
 
     return nullptr;
@@ -491,7 +498,7 @@ static FloatUnit* getFloat(TokenIt& cur_token, TokenIt end) {
     return new FloatUnit(num);
 }
 
-static ArrayUnit* getArrayUnit(TokenIt& cur_token, TokenIt end) {
+static ArrayUnit* getArray(TokenIt& cur_token, TokenIt end) {
     LOG << "getArratUnit: start func\n";
     
     COMPILER_ASSERT((CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::LEFT_SQUARE_BRACKET)), 
@@ -521,6 +528,26 @@ static ArrayUnit* getArrayUnit(TokenIt& cur_token, TokenIt end) {
     }
 
     return new ArrayUnit(std::move(array_elements));
+}
+
+static StringUnit* getString(TokenIt& cur_token, TokenIt end) {
+    LOG << "getString: start func\n";
+
+    COMPILER_ASSERT((CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::DOUBLE_QUOTES) ||
+                    CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::SINGLE_QUOTES)),
+                    "string do not start with \" or \'");
+    SpecialSymbolType spec_sym = std::get<SpecialSymbolToken>(*cur_token).specSym(); 
+    ++cur_token;
+
+    COMPILER_ASSERT((std::holds_alternative<NameToken>(*cur_token)), "is not NameToken");
+    std::string str = std::get<NameToken>(*cur_token).name();
+    ++cur_token;
+
+    COMPILER_ASSERT((CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, spec_sym)),
+                    "string start/finish symbol mismatch")
+    ++cur_token;
+
+    return new StringUnit(str);
 }
 
 void recursiveUnitDelete(GrammarUnit* unit) {

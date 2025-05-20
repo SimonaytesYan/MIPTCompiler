@@ -46,6 +46,7 @@ enum class GrammarUnitType {
     NUM,
     FLOAT,
     ARRAY,
+    STRING,
     NAME,
     ADD,
     SUB,
@@ -318,6 +319,20 @@ class ArrayUnit : public ObjectUnit {
 
   private:
     std::vector<ExpressionUnit*> array_elements_;
+};
+
+class StringUnit : public ObjectUnit  {
+  public:
+    StringUnit(const std::string& str) :
+      ObjectUnit(GrammarUnitType::STRING),
+      str_(str) { }
+
+    const std::string& str() const {
+      return str_;
+    }
+
+  private:
+    std::string str_;
 };
 
 class VarDeclUnit : public StatementUnit {

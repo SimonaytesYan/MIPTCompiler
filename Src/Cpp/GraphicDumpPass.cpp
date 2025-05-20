@@ -127,6 +127,7 @@ void GraphicDumpPass::dumpNodeAndEdge()
 
     const char light_green[]  = "#B1FF9F";
     const char light_red[]    = "#FF4646";
+    const char some_blue[]    = "#2fa7c2";
     const char light_blue[]   = "#87A7FF";
     const char blue[]         = "#2f56c2";
     const char dark_blue[]    = "#00258a";
@@ -168,6 +169,17 @@ void GraphicDumpPass::dumpNodeAndEdge()
                 node_ = statement;
                 dumpNodeAndEdge();
             }
+            return;
+        }
+        case GrammarUnitType::STRING:
+        {
+            dumpNodeInFormat(some_blue);
+            const StringUnit* string_node = dynamic_cast<const StringUnit*>(node_);
+            
+            if (string_node)
+                out_ << "STR | \'" << string_node->str() << "\'";
+            out_ << "} }\"]\n";
+
             return;
         }
         case GrammarUnitType::ADD:

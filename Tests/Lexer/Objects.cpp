@@ -10,4 +10,6 @@ int main() {
     runOneTest("{let e = []; }", pass);
     runOneTest("{let f = [10]; }", pass);
     runOneTest("{let g = [10, 12, 13, 11.7]; }", pass);
+    runOneTest("{let h = \"haha\"; }", pass);
+    runOneTest("{let i = \'iaia\'; }", pass);
 }
