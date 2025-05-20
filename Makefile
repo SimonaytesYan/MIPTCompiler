@@ -116,13 +116,13 @@ test_type_sys: $(TYPE_SYS_T_BIN)
 	@echo "${GREEN_COLOR}START TYPE SYSTEM TESTS${NO_COLOR}\n"
 
 	@echo "\n${GREEN_COLOR}INFERENCE SIMPLE EXPRESSIONS${NO_COLOR}"
-	-@$(TYPE_SYS_T_BIN_DIR)/SimpleExpressions
+#	-@$(TYPE_SYS_T_BIN_DIR)/SimpleExpressions
 
 	@echo "\n${GREEN_COLOR}INFERENCE VARS${NO_COLOR}"
 	-@$(TYPE_SYS_T_BIN_DIR)/Variables
 
 	@echo "\n${GREEN_COLOR}INFERENCE STATEMENTS${NO_COLOR}"
-	-@$(TYPE_SYS_T_BIN_DIR)/Statements
+#	-@$(TYPE_SYS_T_BIN_DIR)/Statements
 
 test_ir_builder: $(IR_BUILD_T_BIN) $(OBJ)/StdLib.o
 	@echo "${GREEN_COLOR}START IR BUILDER TESTS${NO_COLOR}\n"

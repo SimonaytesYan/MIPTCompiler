@@ -106,10 +106,13 @@ void TypeSystem::inferInVarDecl(VarDeclUnit* unit) {
     LOG << __func__ << "\n";
 
     inferInExpresion(unit->expr());
+    TYPE_INF_ASSERT(isSuccessfull(), "");
+
     unit->updateNameTypeVariable();
     var_table_.insertVar(unit->getVariable());
 
     inferInVar(unit->var());
+    TYPE_INF_ASSERT(!isSuccessfull(), "");
 }
 
 void TypeSystem::inferInVarAssign(VarAssignUnit* unit) {

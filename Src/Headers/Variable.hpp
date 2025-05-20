@@ -10,7 +10,9 @@ class Variable {
       name_(name),
       type_(type->copy()) { }
     
-    Variable() {}
+    Variable() :
+    name_("no named"),
+    type_(nullptr) {}
 
     void setName(const std::string& name) {
         name_ = name;
