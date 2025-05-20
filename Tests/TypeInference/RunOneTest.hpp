@@ -11,6 +11,9 @@
 #include "Lexer.hpp"
 
 void runOneTest(std::string test, GraphicDumpPass& pass) {
+    std::cout << '\n';
+    std::cerr << '\n';
+
     std::istringstream in(test);
 
     TypeSystem system;
@@ -22,5 +25,7 @@ void runOneTest(std::string test, GraphicDumpPass& pass) {
     std::cout << "test " << test << "\n";
     std::cout << "is successfull " << system.isSuccessfull() << "\n";
     pass.graphicDump(root);
-    
+
+    std::cout << '\n';
+    std::cerr << '\n';    
 }

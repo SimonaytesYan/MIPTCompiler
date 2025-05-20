@@ -2,6 +2,10 @@
 
 bool ExpressionType::isEqual(const ExpressionType* one, const ExpressionType* other)
 {
+    if (one == nullptr || other == nullptr) {
+        return false;
+    }
+
     if (one->typeClass() != other->typeClass()) {
         return false;
     }

@@ -1,3 +1,4 @@
+#include "Logger.hpp"
 #include "TypeInference.hpp"
 #include "Utils.hpp"
 
@@ -19,16 +20,24 @@ static bool isInteger(ExpressionUnit* unit) {
             BasicExprType::BasicType::INTEGER);
 }
 
+bool TypeSystem::isSuccessfull() {
+    return finished_successfully_;
+}
+
 GrammarUnit* TypeSystem::inferTypes(GrammarUnit* root) {
     if (root == nullptr) {
+        finished_successfully_ = false;
         std::cerr << "Root is nullptr\n";
         return nullptr;
     }
 
     if (root->getType() != GrammarUnitType::SCOPE) {
         std::cerr << "Root is not scope\n";
+        finished_successfully_ = false;
         return nullptr;
     }
+
+    LOG << "Start type inferene\n";
     inferInScope(static_cast<ScopeUnit*>(root));
 
     if (isSuccessfull())
@@ -37,6 +46,8 @@ GrammarUnit* TypeSystem::inferTypes(GrammarUnit* root) {
 }
 
 void TypeSystem::inferInScope(ScopeUnit* unit) {
+    LOG << __func__ << "\n";
+
     var_table_.startScope();
     for (StatementUnit* statement : *unit) {
         inferInStatement(statement);
@@ -44,11 +55,9 @@ void TypeSystem::inferInScope(ScopeUnit* unit) {
     var_table_.endScope();
 }
 
-bool TypeSystem::isSuccessfull() {
-    return finished_successfully_;
-}
-
 void TypeSystem::inferInStatement(StatementUnit* unit) {
+    LOG << __func__ << "\n";
+
     switch (unit->getType())
     {
     case GrammarUnitType::IF:
@@ -73,21 +82,29 @@ void TypeSystem::inferInStatement(StatementUnit* unit) {
 }
 
 void TypeSystem::inferInIf(IfUnit* unit) {
+    LOG << __func__ << "\n";
+
     inferInExpresion(unit->condition());
     inferInScope(unit->true_branch());
     inferInScope(unit->false_branch());
 }
 
 void TypeSystem::inferInPrint(PrintUnit* unit) {
+    LOG << __func__ << "\n";
+
     inferInExpresion(unit->expression());
 }
 
 void TypeSystem::inferInLoop(LoopUnit* unit) {
+    LOG << __func__ << "\n";
+
     inferInExpresion(unit->condition());
     inferInScope(unit->body());
 }
 
 void TypeSystem::inferInVarDecl(VarDeclUnit* unit) {
+    LOG << __func__ << "\n";
+
     inferInExpresion(unit->expr());
     unit->var()->setExprType(unit->expr()->exprType()->copy());
 
@@ -98,6 +115,8 @@ void TypeSystem::inferInVarDecl(VarDeclUnit* unit) {
 }
 
 void TypeSystem::inferInVarAssign(VarAssignUnit* unit) {
+    LOG << __func__ << "\n";
+
     inferInExpresion(unit->expr());
 
     Variable* variable = var_table_.findVar(unit->var()->name());
@@ -108,6 +127,8 @@ void TypeSystem::inferInVarAssign(VarAssignUnit* unit) {
 }
 
 void TypeSystem::inferInExpresion(ExpressionUnit* unit) {
+    LOG << __func__ << "\n";
+
     if (isGrammarUnitObject(unit)) {
         inferInObject(static_cast<ObjectUnit*>(unit));
     }
@@ -120,6 +141,8 @@ void TypeSystem::inferInExpresion(ExpressionUnit* unit) {
 }
 
 void TypeSystem::inferInBinaryOp(BinaryOperUnit* unit) {
+    LOG << __func__ << "\n";
+
     inferInExpresion(unit->left());
     inferInExpresion(unit->right());
     
@@ -137,6 +160,8 @@ void TypeSystem::inferInBinaryOp(BinaryOperUnit* unit) {
 }
 
 void TypeSystem::inferInUnaryOp(UnaryOperUnit* unit) {
+    LOG << __func__ << "\n";
+
     inferInExpresion(unit->operand());
     TYPE_INF_ASSERT(isFloat(unit->operand()) || isInteger(unit->operand()),
                     "Not basic type in unary operation expr")
@@ -144,6 +169,8 @@ void TypeSystem::inferInUnaryOp(UnaryOperUnit* unit) {
 }
 
 void TypeSystem::inferInObject(ObjectUnit* unit) {
+    LOG << __func__ << "\n";
+
     switch (unit->getType())
     {
     case GrammarUnitType::NUM:
@@ -157,6 +184,9 @@ void TypeSystem::inferInObject(ObjectUnit* unit) {
         break;
     case GrammarUnitType::ARRAY:
         inferInArray(static_cast<ArrayUnit*>(unit));
+        break;
+    case GrammarUnitType::STRING:
+        inferInString(static_cast<StringUnit*>(unit));
         break;
     
     default:
@@ -176,6 +206,10 @@ void TypeSystem::inferInFloat(FloatUnit* unit) {
     unit->setExprType(new FloatExprType());
 }
 
+void TypeSystem::inferInString(StringUnit* unit) {
+    unit->setExprType(new StringExprType());
+}
+
 void TypeSystem::inferInArray(ArrayUnit* unit) {
     ExpressionType* expr_type = nullptr;
     for (auto elem : unit->arrayElements()) {
@@ -184,7 +218,7 @@ void TypeSystem::inferInArray(ArrayUnit* unit) {
             expr_type = elem->exprType();
         }
         else {
-            TYPE_INF_ASSERT(expr_type == elem->exprType(),
+            TYPE_INF_ASSERT(ExpressionType::isEqual(expr_type, elem->exprType()),
                             "Elements in array has different types")
         }
     }

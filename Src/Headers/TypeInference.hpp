@@ -40,6 +40,7 @@ class TypeSystem {
     void inferInNum(NumUnit* unit);
     void inferInFloat(FloatUnit* unit);
     void inferInArray(ArrayUnit* unit);
+    void inferInString(StringUnit* unit);
 
   private:
     VarTable var_table_;

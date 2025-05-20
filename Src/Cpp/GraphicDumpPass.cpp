@@ -164,10 +164,10 @@ void GraphicDumpPass::dumpNodeAndEdge()
 
             size_t element_num = 0;
             for (auto statement : array_node->arrayElements()) {
-                element_num++;
                 dumpEdge(array_node, statement, std::to_string(element_num).c_str());
                 node_ = statement;
                 dumpNodeAndEdge();
+                element_num++;
             }
             return;
         }

@@ -1,7 +1,7 @@
 #include "RunOneTest.hpp"
 
 int main() {
-    GraphicDumpPass pass("TypeSimpleDump");
+    GraphicDumpPass pass("TypeVariableDump");
 
     runOneTest("{let a = 10;"
                 "let b = a}", pass);

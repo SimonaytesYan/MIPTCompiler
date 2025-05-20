@@ -1,7 +1,7 @@
 #include "RunOneTest.hpp"
 
 int main() {
-    GraphicDumpPass pass("TypeSimpleDump");
+    GraphicDumpPass pass("TypeStatementDump");
     runOneTest("{ if (1) {"
                     "let b = 1;"
                     "print(b);"
