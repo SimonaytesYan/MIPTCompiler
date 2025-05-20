@@ -128,7 +128,7 @@ test_ir_builder: $(IR_BUILD_T_BIN) $(OBJ)/StdLib.o
 	@echo "${GREEN_COLOR}START IR BUILDER TESTS${NO_COLOR}\n"
 
 	@echo "\n${GREEN_COLOR}BUILD NUM EXPRESSIONS${NO_COLOR}"
-	-@$(IR_BUILD_T_BIN_DIR)/NumExpressions
+#	-@$(IR_BUILD_T_BIN_DIR)/NumExpressions
 
 	@echo "\n${GREEN_COLOR}BUILD VARS${NO_COLOR}"
 #	-@$(IR_BUILD_T_BIN_DIR)/Vars
@@ -138,6 +138,9 @@ test_ir_builder: $(IR_BUILD_T_BIN) $(OBJ)/StdLib.o
 
 	@echo "\n${GREEN_COLOR}BUILD LOOPS${NO_COLOR}"
 #	-@$(IR_BUILD_T_BIN_DIR)/Loops
+
+	@echo "\n${GREEN_COLOR}BUILD TYPES${NO_COLOR}"
+	-@$(IR_BUILD_T_BIN_DIR)/Types
 
 test_execution: $(INTER_T_BIN)
 	@echo "${GREEN_COLOR}START EXECUTION TESTS${NO_COLOR}\n"

@@ -27,6 +27,7 @@ class IRBuilderPass {
     void buildIRPrint(const PrintUnit* unit);
     void buildIRVarDecl(const VarDeclUnit* unit);
     void buildIRVarAssign(const VarAssignUnit* unit);
+    
 
     llvm::Value* buildIRExpression(const ExpressionUnit* unit);
     llvm::Value* buildIROperator(const OperatorUnit* unit);
@@ -36,9 +37,13 @@ class IRBuilderPass {
     llvm::Value* buildIRObject(const ObjectUnit* unit);
     llvm::Value* buildIRNum(const NumUnit* unit);
     llvm::Value* buildIRVar(const VarUnit* unit);
+    llvm::Value* buildIRArray(const ArrayUnit* unit);
+    llvm::Value* buildIRFloat(const FloatUnit* unit);
+    llvm::Value* buildIRString(const StringUnit* unit);
 
   private:
     llvm::Value* createLLVMInt(int value);
+    llvm::Value* createLLVMFloat(float value);
     llvm::Value* emitConditionCheck(const ExpressionUnit* unit);
     void emitVarAssign(llvm::AllocaInst* var, const ExpressionUnit* unit);
   

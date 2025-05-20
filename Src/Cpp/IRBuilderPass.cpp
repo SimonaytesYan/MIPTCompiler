@@ -270,6 +270,10 @@ llvm::Value* IRBuilderPass::createLLVMInt(int value) {
     return llvm::ConstantInt::get(context_, llvm::APInt(32, value, true));
 }
 
+llvm::Value* IRBuilderPass::createLLVMFloat(float value) {
+    return llvm::ConstantFP::get(llvm::Type::getFloatTy(context_), value);
+}
+
 llvm::Value* IRBuilderPass::buildIRExpression(const ExpressionUnit* unit) {
     if (isGrammarUnitObject(unit))
         return buildIRObject(reinterpret_cast<const ObjectUnit*>(unit));
@@ -299,18 +303,48 @@ llvm::Value* IRBuilderPass::buildIRBinaryOperator(const BinaryOperUnit* unit) {
     llvm::Value* left_value = buildIRExpression(unit->left());
     llvm::Value* right_value = buildIRExpression(unit->right());
 
-    switch (unit->getType())
-    {
-        case GrammarUnitType::ADD:
-            return builder_.CreateAdd(left_value, right_value, "addtmp");
-        case GrammarUnitType::SUB:
-            return builder_.CreateSub(left_value, right_value, "subtmp");
-        case GrammarUnitType::MUL:
-            return builder_.CreateMul(left_value, right_value, "multmp");
-        case GrammarUnitType::DIV:
-            return builder_.CreateSDiv(left_value, right_value, "divtmp");
-        default:
-            break;
+    const BasicExprType* basic = static_cast<const BasicExprType*>(unit->exprType());
+
+    if (basic->basicType() == BasicExprType::BasicType::INTEGER) {
+        switch (unit->getType())
+        {
+            case GrammarUnitType::ADD:
+                return builder_.CreateAdd(left_value, right_value, "addtmp");
+            case GrammarUnitType::SUB:
+                return builder_.CreateSub(left_value, right_value, "subtmp");
+            case GrammarUnitType::MUL:
+                return builder_.CreateMul(left_value, right_value, "multmp");
+            case GrammarUnitType::DIV:
+                return builder_.CreateSDiv(left_value, right_value, "divtmp");
+            default:
+                break;
+        }
+    }
+    else {
+        // resuilt is float
+        const BasicExprType* left_basic  = static_cast<const BasicExprType*>(unit->left()->exprType());
+        const BasicExprType* right_basic = static_cast<const BasicExprType*>(unit->right()->exprType());
+
+        if (left_basic->basicType() == BasicExprType::BasicType::INTEGER) {
+            left_value = builder_.CreateSIToFP(left_value, llvm::Type::getFloatTy(builder_.getContext()));
+        }
+        if (right_basic->basicType() == BasicExprType::BasicType::INTEGER) {
+            right_value = builder_.CreateSIToFP(right_value, llvm::Type::getFloatTy(builder_.getContext()));
+        }
+
+        switch (unit->getType())
+        {
+            case GrammarUnitType::ADD:
+                return builder_.CreateFAdd(left_value, right_value, "faddtmp");
+            case GrammarUnitType::SUB:
+                return builder_.CreateFAdd(left_value, right_value, "fsubtmp");
+            case GrammarUnitType::MUL:
+                return builder_.CreateFAdd(left_value, right_value, "fmultmp");
+            case GrammarUnitType::DIV:
+                return builder_.CreateFAdd(left_value, right_value, "fdivtmp");
+            default:
+                break;
+        }
     }
 
     std::cerr << "IRBuilderPass: unknown binary operator type\n";
@@ -340,6 +374,12 @@ llvm::Value* IRBuilderPass::buildIRObject(const ObjectUnit* unit) {
         return buildIRVar(reinterpret_cast<const VarUnit*>(unit));
     case GrammarUnitType::NUM:
         return buildIRNum(reinterpret_cast<const NumUnit*>(unit));
+    case GrammarUnitType::ARRAY:
+        return buildIRArray(reinterpret_cast<const ArrayUnit*>(unit));
+    case GrammarUnitType::FLOAT:
+        return buildIRFloat(reinterpret_cast<const FloatUnit*>(unit));
+    case GrammarUnitType::STRING:
+        return buildIRString(reinterpret_cast<const StringUnit*>(unit));
     default:
         break;
     }
@@ -361,3 +401,16 @@ llvm::Value* IRBuilderPass::buildIRVar(const VarUnit* unit) {
 
     return builder_.CreateLoad(var->getAllocatedType(), var, unit->name());
 }
+
+llvm::Value* IRBuilderPass::buildIRArray(const ArrayUnit* unit) {
+    return nullptr;
+}
+
+llvm::Value* IRBuilderPass::buildIRFloat(const FloatUnit* unit) {
+    return createLLVMFloat(unit->num());
+}
+
+llvm::Value* IRBuilderPass::buildIRString(const StringUnit* unit) {
+    return nullptr;
+}
+
