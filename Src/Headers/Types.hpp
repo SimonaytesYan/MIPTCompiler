@@ -94,6 +94,9 @@ class ArrayVarType : public ExpressionType {
 
     ExpressionType* copy() const override { return new ArrayVarType(element_num_, type_); }
 
+    ExpressionType* elemType() { return type_; }
+    size_t elemNum() { return element_num_; }
+
     ~ArrayVarType() {
         delete type_;
     }

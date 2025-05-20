@@ -27,6 +27,10 @@ void TypeSystem::inferInScope(ScopeUnit* unit) {
     var_table_.endScope();
 }
 
+bool TypeSystem::isSuccessfull() {
+    return finished_successfully_;
+}
+
 void TypeSystem::inferInStatement(StatementUnit* unit) {
     switch (unit->getType())
     {

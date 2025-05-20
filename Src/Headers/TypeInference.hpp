@@ -6,7 +6,6 @@
 #include <map>
 
 class TypeSystem {
-
     class VarTable {
       public:
         Variable* findVar(const std::string& name);
@@ -20,6 +19,7 @@ class TypeSystem {
 
   public:
     GrammarUnit* inferTypes(GrammarUnit* root);
+    bool isSuccessfull();
 
   private:
     void inferInScope(ScopeUnit* unit);
@@ -43,5 +43,5 @@ class TypeSystem {
 
   private:
     VarTable var_table_;
-    bool finished_successfully_;
+    bool finished_successfully_ = true;
 };

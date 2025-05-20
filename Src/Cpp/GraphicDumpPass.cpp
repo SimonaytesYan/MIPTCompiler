@@ -115,6 +115,59 @@ void GraphicDumpPass::dumpNodeInFormat(const char* color) {
         << "fillcolor = \"" << color << "\", label = \"{{ <v>";
 }
 
+void DumpType(ExpressionType* type, std::ofstream& out) {
+    if (type == nullptr)
+        return;
+
+    switch (type->typeClass())
+    {
+    case ExpressionType::TypeClass::BASIC: {
+        BasicExprType* basic_type = static_cast<BasicExprType*>(type);
+        switch (basic_type->basicType())
+        {
+        case BasicExprType::BasicType::INTEGER:
+            out << "INT | ";
+            break;
+        case BasicExprType::BasicType::FLOAT:
+            out << "FLT | ";
+            break;
+        case BasicExprType::BasicType::STRING:
+            out << "STR | ";
+            break;
+        };
+        break;
+    case ExpressionType::TypeClass::ARRAY: {
+        ArrayVarType* arr = static_cast<ArrayVarType*>(type);
+        out << "ARRAY[" << arr->elemNum() << "] ";
+        
+        DumpType(arr->elemType());
+        break;
+    }
+    case ExpressionType::TypeClass::STRUCT {
+        std::cerr << "No implement\n";
+        break;
+    }
+    }
+    
+    default:
+        break;
+    }
+}
+
+void DumpUnitType(GrammarUnit* unit, std::ofstream& out) {
+
+    if (unit == nullptr)
+        return;
+    
+    if (!isGrammarUnitExpression(unit))
+        return;
+    
+    ExpressionUnit* expr = static_cast<ExpressionUnit*>(unit);
+    ExpressionType* type = expr->exprType();
+
+    DumpType(type);
+}
+
 void GraphicDumpPass::dumpNodeAndEdge()
 {
     if (node_ == nullptr)
@@ -128,6 +181,9 @@ void GraphicDumpPass::dumpNodeAndEdge()
     const char light_grey[]   = "#C8C8C8";
     const char light_yellow[] = "#FFDC4B";
 
+    if (isGrammarUnitExpression(node)) {
+        DumpUnitType(static_cast<ExpressionUnit*>(node), out_);
+    }
 
     switch (node_->getType())
     {
