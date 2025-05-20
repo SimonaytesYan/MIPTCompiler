@@ -72,6 +72,14 @@ IR_BUILD_T_SRC_NAMES = NumExpressions Vars Ifs Loops
 IR_BUILD_T_CPPS = $(addsuffix .cpp, $(addprefix $(IR_BUILD_T_DIR), $(IR_BUILD_T_SRC_NAMES)))
 IR_BUILD_T_BIN = $(addprefix $(IR_BUILD_T_BIN_DIR)/, $(IR_BUILD_T_SRC_NAMES))
 
+#-------------TYPE SYSTEM TESTS-----------
+TYPE_SYS_T_DIR = Tests/TypeInference
+TYPE_SYS_T_BIN_DIR = $(BIN)/$(TYPE_SYS_T_DIR)
+TYPE_SYS_T_SRC_NAMES = SimpleExpressions Variables Statements
+
+TYPE_SYS_T_CPPS = $(addsuffix .cpp, $(addprefix $(TYPE_SYS_T_DIR), $(TYPE_SYS_T_SRC_NAMES)))
+TYPE_SYS_T_BIN = $(addprefix $(TYPE_SYS_T_BIN_DIR)/, $(TYPE_SYS_T_SRC_NAMES))
+
 #-----------------DIRS----------------
 OBJ = obj
 BASIC_SRC = Src
@@ -93,7 +101,7 @@ interpreter: $(BIN)/interpreter
 
 compiler: $(BIN)/compiler
 
-test: test_execution test_ir_builder test_lexer_dump test_tokenizer
+test: test_type_sys test_execution test_ir_builder test_lexer_dump test_tokenizer
 
 clean:
 	-rm -r $(BIN)
@@ -102,6 +110,18 @@ clean:
 	-rm -r *.ll
 
 #==================================TEST RUNNERS=================================
+test_type_sys: $(TYPE_SYS_T_BIN)
+	@echo "${GREEN_COLOR}START TYPE SYSTEM TESTS${NO_COLOR}\n"
+
+	@echo "\n${GREEN_COLOR}INFERENCE SIMPLE EXPRESSIONS${NO_COLOR}"
+	-@$(IR_BUILD_T_BIN_DIR)/SimpleExpressions
+
+	@echo "\n${GREEN_COLOR}INFERENCE VARS${NO_COLOR}"
+	-@$(IR_BUILD_T_BIN_DIR)/Variables
+
+	@echo "\n${GREEN_COLOR}INFERENCE STATEMENTS${NO_COLOR}"
+	-@$(IR_BUILD_T_BIN_DIR)/Statements
+
 test_ir_builder: $(IR_BUILD_T_BIN) $(OBJ)/StdLib.o
 	@echo "${GREEN_COLOR}START IR BUILDER TESTS${NO_COLOR}\n"
 
@@ -161,6 +181,11 @@ test_tokenizer: $(TOKEN_T_BIN)
 
 	@echo "\n${GREEN_COLOR}TOKENIZER VAR TYPES${NO_COLOR}"
 	@$(TOKEN_T_BIN_DIR)/VarTypes
+
+#---------------------------TYPE SYSTEM PASS TESTS--------------------------------
+$(TYPE_SYS_T_BIN) : $(TYPE_SYS_T_BIN_DIR)/% : $(TYPE_SYS_T_DIR)/%.cpp $(BASIC_OBJS) $(LLVM_DEP_OBJS)
+	@mkdir -p $(@D)
+	$(CXX) $(CXXFLAGS) $(LLVM_FLAGS) $^ -o $@
 
 #---------------------------BUILD IR PASS TESTS--------------------------------
 $(IR_BUILD_T_BIN) : $(IR_BUILD_T_BIN_DIR)/% : $(IR_BUILD_T_DIR)/%.cpp $(BASIC_OBJS) $(LLVM_DEP_OBJS)
