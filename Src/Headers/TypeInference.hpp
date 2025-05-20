@@ -41,13 +41,7 @@ class TypeSystem {
     void inferInFloat(FloatUnit* unit);
     void inferInArray(ArrayUnit* unit);
 
-    Variable* findVar(const std::string& name);
-    void startScope();
-    void endScope();
-
   private:
-  // TODO 
-  // TODO Добавить функции для работы с named_expr_types в TypeSystem и использовать их
-  // TODO 
     VarTable var_table_;
+    bool finished_successfully_;
 };

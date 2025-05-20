@@ -10,8 +10,9 @@
 
 #define TYPE_INF_ASSERT(statement, messege) TYPE_INFERENCE_ASSERT_(statement, messege, __func__)
 
-#define TYPE_INFERENCE_ASSERT_(statement, messege, func)      \
-    if (!(statement)) {                                 \
-        std::cerr << func << ": " << messege << "\n";   \
-        return;                                 \
+#define TYPE_INFERENCE_ASSERT_(statement, messege, func)    \
+    if (!(statement)) {                                     \
+        std::cerr << func << ": " << messege << "\n";       \
+        finished_successfully_ = false;                     \
+        return;                                             \
     }
