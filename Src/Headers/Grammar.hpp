@@ -302,6 +302,10 @@ class VarUnit : public ObjectUnit {
         variable_ = variable;
     }
 
+    const Variable* variable() {
+      return variable_;
+    }
+
   private:
     std::string name_;
     const Variable* variable_; // do not own variable
@@ -363,7 +367,7 @@ class VarDeclUnit : public StatementUnit {
       variable_.setType(expression_->exprType());
     }
 
-    Variable* getVariable() {
+    Variable* variable() {
       return &variable_;
     }
 

@@ -41,13 +41,14 @@ class IRBuilderPass {
     llvm::Value* createLLVMInt(int value);
     llvm::Value* emitConditionCheck(const ExpressionUnit* unit);
     void emitVarAssign(llvm::AllocaInst* var, const ExpressionUnit* unit);
+  
+    llvm::AllocaInst* declareTypedVar(const ExpressionType* var_type);
 
-    llvm::AllocaInst* findVar(const std::string& name);
     void AddStdLibFunctions();
 
   private:
     llvm::IRBuilder<> builder_;
     llvm::LLVMContext context_;
     llvm::Module module_;
-    std::vector<std::map<std::string, llvm::AllocaInst*>> named_values_;
+    std::map<Variable*, llvm::AllocaInst*> named_values_;
 };

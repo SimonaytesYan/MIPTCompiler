@@ -183,6 +183,34 @@ void IRBuilderPass::buildIRPrint(const PrintUnit* unit) {
     builder_.CreateCall(callee_func, argument);
 }
 
+llvm::Type* IRBuilderPass::translateToLLVMType(const ExpressionType* var_type, const ExpressionUnit* unit) {
+    switch (var_type->TypeClass())
+    {
+        case ExpressionType::TypeClass::BASIC: {
+            const BasicExprType* basic = static_cast<const BasicExprType*>(var_type);
+            switch (basic->basicType()) {
+                case BasicExprType::BasicType::INTEGER:
+                    return llvm::Type::getInt32Ty(context_);
+                case BasicExprType::BasicType::FLOAT:
+                    return llvm::Type::getFloatTy(context_);
+                case BasicExprType::BasicType::STRING: {
+                    const StringUnit* str_unit = static_cast<const StringUnit*>(unit);
+                    return llvm::ArrayType::get(llvm::Type::getInt8Ty(context_), str_unit->str().size());
+                }
+            }
+            return nullptr;
+        }
+
+        case ExpressionType::TypeClass::ARRAY: {
+            const ArrayVarType* array = static_cast<const ArrayVarType*>(var_type);
+
+            return llvm::ArrayType::get(translateToLLVMType(array->elemType()), array->elemNum());
+        }
+    }
+
+    return nullptr;
+}
+
 void IRBuilderPass::buildIRVarDecl(const VarDeclUnit* unit) {
     const std::string name = unit->var()->name();
     if (named_values_.back()[name] != nullptr) {
@@ -191,15 +219,18 @@ void IRBuilderPass::buildIRVarDecl(const VarDeclUnit* unit) {
     }
 
     llvm::AllocaInst* alloc_var =
-        builder_.CreateAlloca(llvm::Type::getInt32Ty(context_), nullptr, name);
-    named_values_.back()[name] = alloc_var;
+        builder_.CreateAlloca(translateToLLVMType(unit->exp()->exprType(), unit->exp()), nullptr, name);
+    
+    named_values_[unit->variable()] = alloc_var;
 
     emitVarAssign(alloc_var, unit->expr());
 }
 
 void IRBuilderPass::buildIRVarAssign(const VarAssignUnit* unit) {
     const std::string name = unit->var()->name();
-    llvm::AllocaInst* var = findVar(name);
+    const Variable* variable = unit->var()->variable();
+
+    llvm::AllocaInst* var = named_values_[variable];
     if (var == nullptr) {
         std::cerr << "IRBuilder: Var " << name << " is'n exist\n";
         return;
@@ -300,26 +331,11 @@ llvm::Value* IRBuilderPass::buildIRNum(const NumUnit* unit) {
 }
 
 llvm::Value* IRBuilderPass::buildIRVar(const VarUnit* unit) {
-    llvm::AllocaInst* var = findVar(unit->name());
+    llvm::AllocaInst* var = named_values_[unit->variable];
     if (var == nullptr) {
         std::cerr << "buildIRObject: Unknown variable\n";
         return nullptr;
     }
 
     return builder_.CreateLoad(var->getAllocatedType(), var, unit->name());
-}
-
-llvm::AllocaInst* IRBuilderPass::findVar(const std::string& name) {
-    // Go from top of the 'stack' to the end
-    auto begin_it = named_values_.rbegin();
-    auto end_it = named_values_.rend();
-
-    for (auto scope_it = begin_it; scope_it != end_it; ++scope_it) {
-        llvm::AllocaInst* var_in_cur_scope = (*scope_it)[name];
-        if (var_in_cur_scope != nullptr) {
-            return var_in_cur_scope;
-        }
-    }
-
-    return nullptr;
 }
