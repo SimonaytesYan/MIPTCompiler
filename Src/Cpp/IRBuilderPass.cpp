@@ -26,17 +26,23 @@ void IRBuilderPass::buildAndDumpIR(const GrammarUnit* unit, std::string_view out
     module_.print(*out, nullptr);
 }
 
-void IRBuilderPass::AddStdLibFunctions() {
-    std::vector<llvm::Type*> arg_types(1, llvm::Type::getInt32Ty(context_));
+void IRBuilderPass::AddStdLibFunction(std::vector<llvm::Type*> arg_types, const char* name) {
     llvm::FunctionType* func_type =
         llvm::FunctionType::get(llvm::Type::getVoidTy(context_), arg_types, false);
 
     llvm::Function* func =
         llvm::Function::Create(func_type, llvm::Function::ExternalLinkage,
-                               "print", module_);
+                               name, module_);
     if (func == nullptr) {
-        std::cerr << "IRBuilder: fail to add std lib function `print`\n";
+        std::cerr << "IRBuilder: fail to add std lib function `" << name << "`\n";
+        return;
     }
+}
+
+void IRBuilderPass::AddStdLibFunctions() {
+    AddStdLibFunction(std::vector<llvm::Type*>(1, llvm::Type::getInt32Ty(context_)), "print_int");
+    AddStdLibFunction(std::vector<llvm::Type*>(1, llvm::Type::getFloatTy(context_)), "print_float");
+    AddStdLibFunction(std::vector<llvm::Type*>(1, llvm::PointerType::get(llvm::Type::getInt8Ty(context_), 0), "print_string");
 }
 
 llvm::Function* IRBuilderPass::buildMain(const GrammarUnit* unit) {
@@ -171,7 +177,25 @@ void IRBuilderPass::buildIRLoop(const LoopUnit* unit) {
 }
 
 void IRBuilderPass::buildIRPrint(const PrintUnit* unit) {
-    llvm::Function *callee_func = module_.getFunction("print");
+
+    if (unit->expression->exprType()->typeClass() != ExpressionType::TypeClass::BASIC) {
+        std::cerr << "buildIRPrint: fail to print this type\n";
+        return;
+    }
+    const BasicExprType* basic = static_cast<const BasicExprType*>(unit->expression->exprType());
+    
+    llvm::Function *callee_func = nullptr;
+    switch (basic->basicType()) {
+        case BasicExprType::BasicType::INTEGER:
+            callee_func = module_.getFunction("print_int");
+            break;
+        case BasicExprType::BasicType::FLOAT:
+            callee_func = module_.getFunction("print_float");
+            break;
+        case BasicExprType::BasicType::STRING:
+            callee_func = module_.getFunction("print_string");
+            break;
+    }
     if (!callee_func) {
         std::cerr << "IRBuilder: Unknown function `print`\n";
         return;

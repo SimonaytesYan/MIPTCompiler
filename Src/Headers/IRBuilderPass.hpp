@@ -11,6 +11,10 @@
 #include <vector>
 
 class IRBuilderPass {
+
+  private:
+    const char* kStdLibFunc[] = {"print_int", "print_float", "print_string"}; 
+
   public:
     IRBuilderPass();
 
@@ -45,6 +49,7 @@ class IRBuilderPass {
     llvm::AllocaInst* declareTypedVar(const ExpressionType* var_type);
 
     void AddStdLibFunctions();
+    void AddStdLibFunction(std::vector<llvm::Type*> arg_types, const char* name);
 
   private:
     llvm::IRBuilder<> builder_;
