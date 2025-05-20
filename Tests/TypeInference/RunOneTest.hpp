@@ -8,7 +8,7 @@
 #include "Grammar.hpp"
 #include "GraphicDumpPass.hpp"
 #include "TypeInference.hpp"
-
+#include "Lexer.hpp"
 
 void runOneTest(std::string test, GraphicDumpPass& pass) {
     std::istringstream in(test);
@@ -17,9 +17,10 @@ void runOneTest(std::string test, GraphicDumpPass& pass) {
     GraphicDumpPass dump;
 
     GrammarUnit* root = parse(tokenize(in));
-    system.inferTypes(root);
-    pass.graphicDump(root);
-
+    GrammarUnit* new_roop = system.inferTypes(root);
+    
+    std::cout << "test " << test << "\n";
     std::cout << "is successfull " << system.isSuccessfull() << "\n";
+    pass.graphicDump(root);
     
 }

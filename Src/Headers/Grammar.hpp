@@ -169,44 +169,6 @@ class IfUnit : public StatementUnit {
     ScopeUnit* false_branch_;
 };
 
-class VarDeclUnit : public StatementUnit {
-  public:
-    VarDeclUnit(VarUnit* variable, ExpressionUnit* expression) :
-      StatementUnit(GrammarUnitType::VAR_DECL),
-      variable_unit_(variable),
-      expression_(expression) { }
-
-    VarUnit* var() {
-      return variable_unit_;
-    }
-
-    ExpressionUnit* expr() {
-      return expression_;
-    }
-
-    const VarUnit* var() const {
-      return variable_unit_;
-    }
-
-    const ExpressionUnit* expr() const {
-      return expression_;
-    }
-
-    void updateNameTypeVariable() {
-      variable_.setName(variable_unit_->name());
-      variable_.setType(variable_unit_->exprType());
-    }
-
-    Variable* getVariable() {
-      return &variable_;
-    }
-
-  private:
-    Variable variable_;
-    VarUnit* variable_unit_;
-    ExpressionUnit* expression_;
-};
-
 class VarAssignUnit : public StatementUnit {
   public:
     VarAssignUnit(VarUnit* variable, ExpressionUnit* expression) :
@@ -270,6 +232,10 @@ class ExpressionUnit : public GrammarUnit {
       expr_type_(nullptr) { }
 
     ExpressionType* exprType() {
+      return expr_type_;
+    }
+
+    const ExpressionType* exprType() const {
       return expr_type_;
     }
 
@@ -352,6 +318,44 @@ class ArrayUnit : public ObjectUnit {
 
   private:
     std::vector<ExpressionUnit*> array_elements_;
+};
+
+class VarDeclUnit : public StatementUnit {
+  public:
+    VarDeclUnit(VarUnit* variable, ExpressionUnit* expression) :
+      StatementUnit(GrammarUnitType::VAR_DECL),
+      variable_unit_(variable),
+      expression_(expression) { }
+
+    VarUnit* var() {
+      return variable_unit_;
+    }
+
+    ExpressionUnit* expr() {
+      return expression_;
+    }
+
+    const VarUnit* var() const {
+      return variable_unit_;
+    }
+
+    const ExpressionUnit* expr() const {
+      return expression_;
+    }
+
+    void updateNameTypeVariable() {
+      variable_.setName(variable_unit_->name());
+      variable_.setType(variable_unit_->exprType());
+    }
+
+    Variable* getVariable() {
+      return &variable_;
+    }
+
+  private:
+    Variable variable_;
+    VarUnit* variable_unit_;
+    ExpressionUnit* expression_;
 };
 
 class OperatorUnit : public ExpressionUnit {

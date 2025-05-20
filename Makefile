@@ -27,7 +27,7 @@ HEADERS_NAMES = Tokens Keywords SpecialSymbols Operators Grammar Lexer Tokenizer
 HEADERS = $(addsuffix .hpp, $(addprefix Src/Headers/, $(HEADERS_NAMES)))
 
 #--------------BASIC_SOURCES-------------
-BASIC_SRC_NAMES = ExecutionPass GraphicDumpPass Grammar Lexer Tokenizer VariableList # IRBuilderPass
+BASIC_SRC_NAMES = ExecutionPass GraphicDumpPass TypeInference Grammar Lexer Tokenizer VariableList Types # IRBuilderPass
 # BASIC_CPPS = $(addsuffix .cpp, $(addprefix $(SRC), $(BASIC_SRC_NAMES)))
 
 BASIC_OBJS = $(addsuffix .o, $(addprefix $(OBJ)/, $(BASIC_SRC_NAMES)))
@@ -114,13 +114,13 @@ test_type_sys: $(TYPE_SYS_T_BIN)
 	@echo "${GREEN_COLOR}START TYPE SYSTEM TESTS${NO_COLOR}\n"
 
 	@echo "\n${GREEN_COLOR}INFERENCE SIMPLE EXPRESSIONS${NO_COLOR}"
-	-@$(IR_BUILD_T_BIN_DIR)/SimpleExpressions
+	-@$(TYPE_SYS_T_BIN_DIR)/SimpleExpressions
 
 	@echo "\n${GREEN_COLOR}INFERENCE VARS${NO_COLOR}"
-	-@$(IR_BUILD_T_BIN_DIR)/Variables
+	-@$(TYPE_SYS_T_BIN_DIR)/Variables
 
 	@echo "\n${GREEN_COLOR}INFERENCE STATEMENTS${NO_COLOR}"
-	-@$(IR_BUILD_T_BIN_DIR)/Statements
+	-@$(TYPE_SYS_T_BIN_DIR)/Statements
 
 test_ir_builder: $(IR_BUILD_T_BIN) $(OBJ)/StdLib.o
 	@echo "${GREEN_COLOR}START IR BUILDER TESTS${NO_COLOR}\n"
@@ -190,7 +190,6 @@ $(TYPE_SYS_T_BIN) : $(TYPE_SYS_T_BIN_DIR)/% : $(TYPE_SYS_T_DIR)/%.cpp $(BASIC_OB
 #---------------------------BUILD IR PASS TESTS--------------------------------
 $(IR_BUILD_T_BIN) : $(IR_BUILD_T_BIN_DIR)/% : $(IR_BUILD_T_DIR)/%.cpp $(BASIC_OBJS) $(LLVM_DEP_OBJS)
 	@mkdir -p $(@D)
-	echo "Hui"
 	$(CXX) $(CXXFLAGS) $(LLVM_FLAGS) $^ -o $@
 
 #---------------------------EXECUTION PASS TESTS--------------------------------

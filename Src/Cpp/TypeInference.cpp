@@ -19,9 +19,26 @@ static bool isInteger(ExpressionUnit* unit) {
             BasicExprType::BasicType::INTEGER);
 }
 
+GrammarUnit* TypeSystem::inferTypes(GrammarUnit* root) {
+    if (root == nullptr) {
+        std::cerr << "Root is nullptr\n";
+        return nullptr;
+    }
+
+    if (root->getType() != GrammarUnitType::SCOPE) {
+        std::cerr << "Root is not scope\n";
+        return nullptr;
+    }
+    inferInScope(static_cast<ScopeUnit*>(root));
+
+    if (isSuccessfull())
+        return root;
+    return nullptr;
+}
+
 void TypeSystem::inferInScope(ScopeUnit* unit) {
     var_table_.startScope();
-    for (StatementUnit* statement : unit) {
+    for (StatementUnit* statement : *unit) {
         inferInStatement(statement);
     }
     var_table_.endScope();
@@ -56,18 +73,18 @@ void TypeSystem::inferInStatement(StatementUnit* unit) {
 }
 
 void TypeSystem::inferInIf(IfUnit* unit) {
-    inferInExpresion(unit->expression());
+    inferInExpresion(unit->condition());
     inferInScope(unit->true_branch());
     inferInScope(unit->false_branch());
 }
 
 void TypeSystem::inferInPrint(PrintUnit* unit) {
-    inferInExpresion(unit->expression())
+    inferInExpresion(unit->expression());
 }
 
 void TypeSystem::inferInLoop(LoopUnit* unit) {
-    inferInExpresion(unit->condition())
-    inferInScope(unit->body())
+    inferInExpresion(unit->condition());
+    inferInScope(unit->body());
 }
 
 void TypeSystem::inferInVarDecl(VarDeclUnit* unit) {
@@ -199,5 +216,5 @@ void TypeSystem::VarTable::endScope() {
 }
 
 void TypeSystem::VarTable::insertVar(Variable* var) {
-    named_expr_types_.push_back(var);
+    named_expr_types_.back()[var->name()] = var;
 }

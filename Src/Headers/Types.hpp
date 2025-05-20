@@ -11,25 +11,7 @@ class ExpressionType {
       STRUCT
     };
 
-    static bool isEqual(const ExpressionType* one, const ExpressionType* other) {
-        if (one->typeClass() != other->typeClass()) {
-            return false;
-        }
-
-        switch (one->typeClass())
-        {
-            case TypeClass::BASIC:
-                return BasicExprType::isEqual(one, other);
-        
-            case TypeClass::ARRAY:
-                return ArrayVarType::isEqual(one, other);
-
-            case TypeClass::STRUCT:
-                return StructVarType::isEqual(one, other);
-        }
-
-        return false;
-    }
+    static bool isEqual(const ExpressionType* one, const ExpressionType* other);
 
     virtual ExpressionType* copy() const = 0;
     virtual size_t size() const = 0;
@@ -95,7 +77,8 @@ class ArrayVarType : public ExpressionType {
     ExpressionType* copy() const override { return new ArrayVarType(element_num_, type_); }
 
     ExpressionType* elemType() { return type_; }
-    size_t elemNum() { return element_num_; }
+    const ExpressionType* elemType() const { return type_; }
+    size_t elemNum() const { return element_num_; }
 
     ~ArrayVarType() {
         delete type_;

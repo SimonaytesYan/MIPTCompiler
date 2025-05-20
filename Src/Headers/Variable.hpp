@@ -3,15 +3,14 @@
 #include "Grammar.hpp"
 #include "Types.hpp"
 
-#include "llvm/IR/Instructions.h"
-
 class Variable {
 
   public:
     Variable(std::string name, ExpressionType* type) :
-      name_(name)
-      type_(type->copy()),
-      alloca_inst_(nullptr) { }
+      name_(name),
+      type_(type->copy()) { }
+    
+    Variable() {}
 
     void setName(const std::string& name) {
         name_ = name;
@@ -26,17 +25,14 @@ class Variable {
     }
 
     const std::string& name() const {
-        return name;
+        return name_;
     }
-
-    ExpressionType
 
     ~Variable() {
         delete type_;
     }
 
   private:
-    std::string name_;              // set by TypeInference
-    ExpressionType* type_;          // set by TypeInference
-    llvm::AllocaInst* alloca_inst_; // set and use by IRBuilderPass
+    std::string name_;
+    ExpressionType* type_;
 };
