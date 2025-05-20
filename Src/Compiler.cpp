@@ -3,6 +3,7 @@
 
 #include "Headers/Tokenizer.hpp"
 #include "Headers/Lexer.hpp"
+#include "Headers/TypeInference.hpp"
 #include "Headers/IRBuilderPass.hpp"
 
 int main(int argc, char** argv) {
@@ -18,6 +19,8 @@ int main(int argc, char** argv) {
         return -1;
     }
     GrammarUnit* unit = parse(tokenize(in));
+    TypeSystem type_sys;
+    unit = type_sys.inferTypes(unit);
 
     // Put llvm IR into file
     IRBuilderPass pass;

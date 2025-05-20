@@ -339,11 +339,11 @@ llvm::Value* IRBuilderPass::buildIRBinaryOperator(const BinaryOperUnit* unit) {
             case GrammarUnitType::ADD:
                 return builder_.CreateFAdd(left_value, right_value, "faddtmp");
             case GrammarUnitType::SUB:
-                return builder_.CreateFAdd(left_value, right_value, "fsubtmp");
+                return builder_.CreateFSub(left_value, right_value, "fsubtmp");
             case GrammarUnitType::MUL:
-                return builder_.CreateFAdd(left_value, right_value, "fmultmp");
+                return builder_.CreateFMul(left_value, right_value, "fmultmp");
             case GrammarUnitType::DIV:
-                return builder_.CreateFAdd(left_value, right_value, "fdivtmp");
+                return builder_.CreateFDiv(left_value, right_value, "fdivtmp");
             default:
                 break;
         }

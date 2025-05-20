@@ -1,9 +1,10 @@
 {
-    let int a = 10;
-    let flt pi = 3.14;
-    let str hello = "Hello";
+    let a = 10;
+    let pi = 3.14;
+    let hello = "Hello";
 
     print(a);
     print(pi);
-    print(str);
+    print(a * pi);
+    print(hello);
 }
