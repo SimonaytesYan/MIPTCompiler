@@ -4,7 +4,7 @@ int main() {
     GraphicDumpPass pass("TypeVariableDump");
 
     runOneTest("{let a = 10;"
-                "let b = a}", pass);
+                "let b = a;}", pass);
     runOneTest("{let a = {10, 11, 12, 13.0};", pass);
     runOneTest("{let a = {10, 11, 12, 13};"
                " a = {10, 11, 12};", pass);

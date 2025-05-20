@@ -26,6 +26,8 @@ void runOneTest(std::string test, GraphicDumpPass& pass) {
     std::cout << "is successfull " << system.isSuccessfull() << "\n";
     pass.graphicDump(root);
 
+    recursiveUnitDelete(root);
+
     std::cout << '\n';
     std::cerr << '\n';    
 }

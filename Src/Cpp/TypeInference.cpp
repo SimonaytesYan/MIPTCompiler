@@ -106,24 +106,20 @@ void TypeSystem::inferInVarDecl(VarDeclUnit* unit) {
     LOG << __func__ << "\n";
 
     inferInExpresion(unit->expr());
-    unit->var()->setExprType(unit->expr()->exprType()->copy());
-
     unit->updateNameTypeVariable();
-    unit->var()->setVariable(unit->getVariable());
-
     var_table_.insertVar(unit->getVariable());
+
+    inferInVar(unit->var());
 }
 
 void TypeSystem::inferInVarAssign(VarAssignUnit* unit) {
     LOG << __func__ << "\n";
 
     inferInExpresion(unit->expr());
-
-    Variable* variable = var_table_.findVar(unit->var()->name());
-    unit->var()->setVariable(variable);
+    inferInExpresion(unit->var());
     
-    TYPE_INF_ASSERT((ExpressionType::isEqual(variable->type(), unit->expr()->exprType())), 
-                    "Variable type is not equal to siignment expression")
+    TYPE_INF_ASSERT((ExpressionType::isEqual(unit->var()->exprType(), unit->expr()->exprType())), 
+                    "Variable type is not equal with assignment expression")
 }
 
 void TypeSystem::inferInExpresion(ExpressionUnit* unit) {
@@ -169,6 +165,7 @@ void TypeSystem::inferInUnaryOp(UnaryOperUnit* unit) {
 }
 
 void TypeSystem::inferInObject(ObjectUnit* unit) {
+    TYPE_INF_ASSERT(unit != nullptr, "object is nullptr");
     LOG << __func__ << "\n";
 
     switch (unit->getType())
@@ -195,7 +192,12 @@ void TypeSystem::inferInObject(ObjectUnit* unit) {
 }
 
 void TypeSystem::inferInVar(VarUnit* unit) {
-    TYPE_INF_ASSERT(false, "Not implemented!")
+    Variable* variable = var_table_.findVar(unit->name());
+    TYPE_INF_ASSERT(variable != nullptr,
+                    "Variable " << variable->name() << " wasn't declare")
+                    
+    unit->setExprType(variable->type()->copy());
+    unit->setVariable(variable);
 }
 
 void TypeSystem::inferInNum(NumUnit* unit) {

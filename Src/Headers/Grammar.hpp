@@ -244,7 +244,7 @@ class ExpressionUnit : public GrammarUnit {
       expr_type_ = expression_type;
     }
 
-    virtual ~ExpressionUnit() { }
+    virtual ~ExpressionUnit() { delete expr_type_; }
 
   private:
     ExpressionType* expr_type_;
@@ -360,7 +360,7 @@ class VarDeclUnit : public StatementUnit {
 
     void updateNameTypeVariable() {
       variable_.setName(variable_unit_->name());
-      variable_.setType(variable_unit_->exprType());
+      variable_.setType(expression_->exprType());
     }
 
     Variable* getVariable() {
