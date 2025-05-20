@@ -12,7 +12,7 @@ int main() {
 
     runOneTest("{ let b = 1;"
                 "if (1) {"
-                "let b = 42;"
+                "let b = 42.0;"
                 "print(b);"
                 "}"
                 "else {"
