@@ -17,6 +17,9 @@ class IRBuilderPass {
     void buildIR(const GrammarUnit* unit);
     void buildAndDumpIR(const GrammarUnit* unit, std::string_view output_file_name = "");
 
+    // TODO delete GlobalVariables from string_constants_
+    // ~IRBuilderPass();
+
   private:
     llvm::Function* buildMain(const GrammarUnit* unit);
     void buildIRScope(const ScopeUnit* unit);
@@ -59,4 +62,5 @@ class IRBuilderPass {
     llvm::LLVMContext context_;
     llvm::Module module_;
     std::map<const Variable*, llvm::AllocaInst*> named_values_;
+    std::map<std::string, llvm::GlobalVariable*> string_constants_;
 };

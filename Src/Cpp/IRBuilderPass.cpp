@@ -217,8 +217,10 @@ llvm::Type* IRBuilderPass::translateToLLVMType(const ExpressionType* var_type, c
                 case BasicExprType::BasicType::FLOAT:
                     return llvm::Type::getFloatTy(context_);
                 case BasicExprType::BasicType::STRING: {
-                    const StringUnit* str_unit = static_cast<const StringUnit*>(unit);
-                    return llvm::ArrayType::get(llvm::Type::getInt8Ty(context_), str_unit->str().size());
+                    return llvm::PointerType::get(llvm::Type::getInt8Ty(context_), 0);
+                    // Constant *str = ConstantDataArray::getString(context, "hello");
+                    // const StringUnit* str_unit = static_cast<const StringUnit*>(unit);
+                    // return llvm::ArrayType::get(llvm::Type::getInt8Ty(context_), str_unit->str().size());
                 }
             }
             return nullptr;
@@ -411,6 +413,15 @@ llvm::Value* IRBuilderPass::buildIRFloat(const FloatUnit* unit) {
 }
 
 llvm::Value* IRBuilderPass::buildIRString(const StringUnit* unit) {
-    return nullptr;
+    if (string_constants_[unit->str()] == nullptr) {
+        // Creating a global string constant
+        llvm::Constant* str = llvm::ConstantDataArray::getString(context_, unit->str());
+        string_constants_[unit->str()] = new llvm::GlobalVariable(module_, str->getType(), true, llvm::GlobalValue::PrivateLinkage, str, unit->str());
+    }
+
+    // Creating a ptr to string constant
+    return builder_.CreateInBoundsGEP(string_constants_[unit->str()]->getValueType(),
+                                      string_constants_[unit->str()],
+                                      {createLLVMInt(0), createLLVMInt(0)});
 }
 

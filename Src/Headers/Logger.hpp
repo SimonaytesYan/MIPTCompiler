@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#define DUMP
+// #define DUMP
 
 #ifdef DUMP
     #define LOG std::cerr
