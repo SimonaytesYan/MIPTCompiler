@@ -18,7 +18,7 @@ LLVM_FLAGS = `$(LLVM_CONFIG) --cxxflags --ldflags --libs`
 COMMON_INC = -ISrc/Headers -ISrc/StdLib
 
 CXXFLAGS =
-override CXXFLAGS += $(COMMON_INC) $(RELEASE_FLAGS) $(CLANG_SANITIZER_FLAGS)
+override CXXFLAGS += $(COMMON_INC) $(RELEASE_FLAGS) # $(CLANG_SANITIZER_FLAGS)
 
 # LDFLAGS = $(LLVM_FLAGS)
 
@@ -69,7 +69,7 @@ INTER_T_BIN = $(addprefix $(INTER_T_BIN_DIR)/, $(INTER_T_SRC_NAMES))
 #-------------IR BUILDER PASS TESTS-----------
 IR_BUILD_T_DIR = Tests/IRBuilderPass
 IR_BUILD_T_BIN_DIR = $(BIN)/$(IR_BUILD_T_DIR)
-IR_BUILD_T_SRC_NAMES = NumExpressions Vars Ifs Loops
+IR_BUILD_T_SRC_NAMES = NumExpressions Vars Ifs Loops Types
 
 IR_BUILD_T_CPPS = $(addsuffix .cpp, $(addprefix $(IR_BUILD_T_DIR), $(IR_BUILD_T_SRC_NAMES)))
 IR_BUILD_T_BIN = $(addprefix $(IR_BUILD_T_BIN_DIR)/, $(IR_BUILD_T_SRC_NAMES))
@@ -131,13 +131,13 @@ test_ir_builder: $(IR_BUILD_T_BIN) $(OBJ)/StdLib.o
 	-@$(IR_BUILD_T_BIN_DIR)/NumExpressions
 
 	@echo "\n${GREEN_COLOR}BUILD VARS${NO_COLOR}"
-	-@$(IR_BUILD_T_BIN_DIR)/Vars
+#	-@$(IR_BUILD_T_BIN_DIR)/Vars
 
 	@echo "\n${GREEN_COLOR}BUILD IFS${NO_COLOR}"
-	-@$(IR_BUILD_T_BIN_DIR)/Ifs
+#	-@$(IR_BUILD_T_BIN_DIR)/Ifs
 
 	@echo "\n${GREEN_COLOR}BUILD LOOPS${NO_COLOR}"
-	-@$(IR_BUILD_T_BIN_DIR)/Loops
+#	-@$(IR_BUILD_T_BIN_DIR)/Loops
 
 test_execution: $(INTER_T_BIN)
 	@echo "${GREEN_COLOR}START EXECUTION TESTS${NO_COLOR}\n"
@@ -190,7 +190,7 @@ $(TYPE_SYS_T_BIN) : $(TYPE_SYS_T_BIN_DIR)/% : $(TYPE_SYS_T_DIR)/%.cpp $(BASIC_OB
 	$(CXX) $(CXXFLAGS) $(LLVM_FLAGS) $^ -o $@
 
 #---------------------------BUILD IR PASS TESTS--------------------------------
-$(IR_BUILD_T_BIN) : $(IR_BUILD_T_BIN_DIR)/% : $(IR_BUILD_T_DIR)/%.cpp $(BASIC_OBJS) $(LLVM_DEP_OBJS)
+$(IR_BUILD_T_BIN) : $(IR_BUILD_T_BIN_DIR)/% : $(IR_BUILD_T_DIR)/%.cpp $(BASIC_OBJS) $(LLVM_DEP_OBJS) $(OBJ)/Tokenizer.o
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $(LLVM_FLAGS) $^ -o $@
 

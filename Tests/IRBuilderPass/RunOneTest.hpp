@@ -6,6 +6,7 @@
 
 #include "../../Src/Headers/Tokenizer.hpp"
 #include "../../Src/Headers/Lexer.hpp"
+#include "TypeInference.hpp"
 #include "../../Src/Headers/IRBuilderPass.hpp"
 
 void runOneTest(std::string_view test_case, const std::string_view test_name) {
@@ -15,6 +16,9 @@ void runOneTest(std::string_view test_case, const std::string_view test_name) {
     IRBuilderPass pass;
     std::istringstream in(test_case.data());
     GrammarUnit* unit = parse(tokenize(in));
+    
+    TypeSystem type_sys;
+    unit = type_sys.inferTypes(unit);
 
     // Put llvm IR into file
     std::string output_file_name = test_name.data();

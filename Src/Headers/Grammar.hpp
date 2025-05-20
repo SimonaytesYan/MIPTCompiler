@@ -302,7 +302,7 @@ class VarUnit : public ObjectUnit {
         variable_ = variable;
     }
 
-    const Variable* variable() {
+    const Variable* variable() const {
       return variable_;
     }
 
@@ -365,6 +365,10 @@ class VarDeclUnit : public StatementUnit {
     void updateNameTypeVariable() {
       variable_.setName(variable_unit_->name());
       variable_.setType(expression_->exprType());
+    }
+
+    const Variable* variable() const {
+      return &variable_;
     }
 
     Variable* variable() {
