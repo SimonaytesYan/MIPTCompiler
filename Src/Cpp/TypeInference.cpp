@@ -112,7 +112,7 @@ void TypeSystem::inferInVarDecl(VarDeclUnit* unit) {
     var_table_.insertVar(unit->getVariable());
 
     inferInVar(unit->var());
-    TYPE_INF_ASSERT(!isSuccessfull(), "");
+    TYPE_INF_ASSERT(isSuccessfull(), "");
 }
 
 void TypeSystem::inferInVarAssign(VarAssignUnit* unit) {

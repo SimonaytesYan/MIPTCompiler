@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #define DUMP
 
 #ifdef DUMP

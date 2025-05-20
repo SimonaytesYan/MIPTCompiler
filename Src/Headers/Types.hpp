@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Logger.hpp"
+
 #include <cstddef>
 #include <vector>
 
@@ -61,8 +63,8 @@ class StringExprType : public BasicExprType {
 class ArrayVarType : public ExpressionType {
   public:
     static bool isEqual(const ArrayVarType* one, const ArrayVarType* other) {
-        return ExpressionType::isEqual(one, other) && 
-               one->element_num_ == other->element_num_;
+        return ExpressionType::isEqual(one->elemType(), other->elemType()) && 
+               one->elemNum() == other->elemNum();
     }
 
   public:
