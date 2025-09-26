@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Tokens.hpp"
+#include "Types.hpp"
+#include "Variable.hpp"
 
 #include <string>
 #include <vector>
@@ -18,7 +20,9 @@ class GrammarUnit;
   class ExpressionUnit;
     class ObjectUnit;
       class NumUnit;
+      class FloatUnit;
       class VarUnit;
+      class ArrayUnit;
 
     class OperatorUnit;
       class UnaryOperUnit;
@@ -40,6 +44,10 @@ bool isGrammarUnitStatement(const GrammarUnit* unit);
 enum class GrammarUnitType {
     VAR,
     NUM,
+    FLOAT,
+    ARRAY,
+    STRING,
+    NAME,
     ADD,
     SUB,
     MUL,
@@ -162,34 +170,6 @@ class IfUnit : public StatementUnit {
     ScopeUnit* false_branch_;
 };
 
-class VarDeclUnit : public StatementUnit {
-  public:
-    VarDeclUnit(VarUnit* variable, ExpressionUnit* expression) :
-      StatementUnit(GrammarUnitType::VAR_DECL),
-      variable_(variable),
-      expression_(expression) { }
-
-    VarUnit* var() {
-      return variable_;
-    }
-
-    ExpressionUnit* expr() {
-      return expression_;
-    }
-
-    const VarUnit* var() const {
-      return variable_;
-    }
-
-    const ExpressionUnit* expr() const {
-      return expression_;
-    }
-
-  private:
-    VarUnit* variable_;
-    ExpressionUnit* expression_;
-};
-
 class VarAssignUnit : public StatementUnit {
   public:
     VarAssignUnit(VarUnit* variable, ExpressionUnit* expression) :
@@ -249,9 +229,25 @@ class LoopUnit : public StatementUnit {
 class ExpressionUnit : public GrammarUnit {
   public:
     ExpressionUnit(GrammarUnitType type) :
-      GrammarUnit(type) { }
+      GrammarUnit(type),
+      expr_type_(nullptr) { }
 
-    virtual ~ExpressionUnit() { }
+    ExpressionType* exprType() {
+      return expr_type_;
+    }
+
+    const ExpressionType* exprType() const {
+      return expr_type_;
+    }
+
+    void setExprType(ExpressionType* expression_type) {
+      expr_type_ = expression_type;
+    }
+
+    virtual ~ExpressionUnit() { delete expr_type_; }
+
+  private:
+    ExpressionType* expr_type_;
 };
 
 class ObjectUnit : public ExpressionUnit {
@@ -277,19 +273,112 @@ class NumUnit : public ObjectUnit {
     int value_;
 };
 
+class FloatUnit : public ObjectUnit {
+  public:
+
+    FloatUnit(float value) :
+      ObjectUnit(GrammarUnitType::FLOAT),
+      value_(value) { }
+
+    float num() const {
+        return value_;
+    }
+
+  private:
+    float value_;
+};
+
 class VarUnit : public ObjectUnit {
   public:
     VarUnit(const std::string& str) :
       ObjectUnit(GrammarUnitType::VAR),
-      name_(str) {
-    }
+      name_(str){ }
 
     const std::string& name() const {
         return name_;
     }
 
+    void setVariable(const Variable* variable)  {
+        variable_ = variable;
+    }
+
+    const Variable* variable() const {
+      return variable_;
+    }
+
   private:
     std::string name_;
+    const Variable* variable_; // do not own variable
+};
+
+class ArrayUnit : public ObjectUnit {
+  public:
+    ArrayUnit(std::vector<ExpressionUnit*>&& array_elements) :
+      ObjectUnit(GrammarUnitType::ARRAY),
+      array_elements_(array_elements) { }
+
+    const std::vector<ExpressionUnit*>& arrayElements() const {
+      return array_elements_;
+    }
+
+  private:
+    std::vector<ExpressionUnit*> array_elements_;
+};
+
+class StringUnit : public ObjectUnit  {
+  public:
+    StringUnit(const std::string& str) :
+      ObjectUnit(GrammarUnitType::STRING),
+      str_(str) { }
+
+    const std::string& str() const {
+      return str_;
+    }
+
+  private:
+    std::string str_;
+};
+
+class VarDeclUnit : public StatementUnit {
+  public:
+    VarDeclUnit(VarUnit* variable, ExpressionUnit* expression) :
+      StatementUnit(GrammarUnitType::VAR_DECL),
+      variable_unit_(variable),
+      expression_(expression) { }
+
+    VarUnit* var() {
+      return variable_unit_;
+    }
+
+    ExpressionUnit* expr() {
+      return expression_;
+    }
+
+    const VarUnit* var() const {
+      return variable_unit_;
+    }
+
+    const ExpressionUnit* expr() const {
+      return expression_;
+    }
+
+    void updateNameTypeVariable() {
+      variable_.setName(variable_unit_->name());
+      variable_.setType(expression_->exprType());
+    }
+
+    const Variable* variable() const {
+      return &variable_;
+    }
+
+    Variable* variable() {
+      return &variable_;
+    }
+
+  private:
+    Variable variable_;
+    VarUnit* variable_unit_;
+    ExpressionUnit* expression_;
 };
 
 class OperatorUnit : public ExpressionUnit {
@@ -338,6 +427,14 @@ class BinaryOperUnit : public OperatorUnit {
     }
 
     const ExpressionUnit* right() const {
+        return right_op_;
+    }
+
+    ExpressionUnit* left() {
+        return left_op_;
+    }
+
+    ExpressionUnit* right() {
         return right_op_;
     }
 

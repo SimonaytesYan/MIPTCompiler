@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+namespace execution_pass {
+
 void ExecutionPass::execute(const GrammarUnit* unit) {
     if (unit == nullptr)
         return;
@@ -140,3 +142,5 @@ int ExecutionPass::executeOperator(const OperatorUnit* unit) {
     std::cerr << "Error in Execution Pass: unknown operator type\n";
     return 0;
 }
+
+} // end namespace execution_pass

@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
 
     GrammarUnit* unit = parse(tokenize(in));
 
-    ExecutionPass pass;
+    execution_pass::ExecutionPass pass;
     pass.execute(unit);
 
     recursiveUnitDelete(unit);

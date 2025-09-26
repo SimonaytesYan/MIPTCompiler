@@ -28,6 +28,20 @@ class NumToken {
     TokenInfo info_;
 };
 
+class FloatToken {
+  public:
+    FloatToken(float num) :
+      num_(num) { }
+
+  float num() const {
+    return num_;
+  }
+
+  private:
+    float num_;
+    TokenInfo info_;
+};
+
 class NameToken {
   public:
     NameToken(std::string&& name) :
@@ -83,8 +97,8 @@ class OperatorToken {
     TokenInfo info_;
 };
 
-using Token = std::variant<NumToken, NameToken, KeywordToken,
-                           SpecialSymbolToken, OperatorToken>;
+using Token = std::variant<NumToken, NameToken, FloatToken,
+                           KeywordToken, SpecialSymbolToken, OperatorToken>;
 
 using TokenIt = std::vector<Token>::const_iterator;
 

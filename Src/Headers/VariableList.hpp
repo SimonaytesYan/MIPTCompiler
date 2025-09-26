@@ -5,6 +5,8 @@
 #include <variant>
 #include <vector>
 
+namespace execution_pass {
+
 struct IntVar {
   int value_;
   std::string name_;
@@ -13,13 +15,13 @@ struct IntVar {
 struct ScopeStarter {
 };
 
-using Variable = std::variant<IntVar, ScopeStarter>;
+using VariableListNode = std::variant<IntVar, ScopeStarter>;
 
 class VariableList {
   public:
     void Dump(std::ostream& out);
 
-    void addNewVar(Variable var);
+    void addNewVar(VariableListNode var);
     void setVarValue(std::string name, int value);
     int getVarValue(std::string name);
 
@@ -27,5 +29,7 @@ class VariableList {
     void endScope();
 
   private:
-    std::vector<Variable> vars_;
+    std::vector<VariableListNode> vars_;
 };
+
+} // end namespace execution_pass

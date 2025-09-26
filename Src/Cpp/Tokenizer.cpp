@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cctype>
 #include <iostream>
+#include <math.h>
 #include <string>
 #include <vector>
 #include <utility>
@@ -70,14 +71,37 @@ static bool getNum(std::istream& in, std::vector<Token>& tokens) {
     in.unget();
 
     // Do not wait '-', will work with it during syntax analysis
-    if ('0' <= first_sym && first_sym <= '9') {
-        in >> num;
-        log << "num = " << num << "\n";
-        tokens.emplace_back(NumToken(num));
-        return true;
+    if (!('0' <= first_sym && first_sym <= '9')) {
+        return false;
     }
 
-    return false;
+    in >> num;
+
+    int sym = in.get();
+    if (sym == '.') {
+        int fractional_part = 0;
+
+        first_sym = in.get();
+        in.unget();
+        if (!('0' <= first_sym && first_sym <= '9')) {
+            return false;
+        }
+        in >> fractional_part;
+
+        int digit_num = std::ceil(std::log10(fractional_part + 1));
+        float float_num = num + fractional_part/(double)pow(10, digit_num);
+
+        LOG << "float = " << float_num << "\n";
+        tokens.emplace_back(FloatToken(float_num));
+        return true;
+    }
+    else {
+        in.unget();
+    }
+
+    LOG << "num = " << num << "\n";
+    tokens.emplace_back(NumToken(num));
+    return true;
 }
 
 static bool getKeyword(std::istream& in, std::vector<Token>& tokens) {
@@ -93,7 +117,7 @@ static bool getKeyword(std::istream& in, std::vector<Token>& tokens) {
         if (res.first == keyword.name.end()) {
             tokens.emplace_back(KeywordToken(keyword.type));
 
-            log << "keyword = " << keyword.name << "\n";
+            LOG << "keyword = " << keyword.name << "\n";
 
             ungetSymbols(in, potential_keyword.size() - keyword.name.size());
             return true;
@@ -116,7 +140,7 @@ static bool getOperator(std::istream& in, std::vector<Token>& tokens) {
         if (res.first == oper.name.end()) {
             tokens.emplace_back(OperatorToken(oper.type));
 
-            log << "operator = " << oper.name << "\n";
+            LOG << "operator = " << oper.name << "\n";
 
             ungetSymbols(in, potential_operator.size() - oper.name.size());
             return true;
@@ -124,6 +148,23 @@ static bool getOperator(std::istream& in, std::vector<Token>& tokens) {
     }
 
     ungetSymbols(in, potential_operator.size());
+    return false;
+}
+
+static bool getString(std::istream& in, std::vector<Token>& tokens, SpecialSymbol start_symbol) {
+    std::string str = "";
+    while (in.peek() != EOF) {
+        char symbol = in.get();
+        if (symbol == start_symbol.name[0]) {
+            tokens.push_back(NameToken(std::move(str)));
+            tokens.push_back(SpecialSymbolToken(start_symbol.type));
+            LOG << "str = " << str << "\n";
+            LOG << "spec_symbol = " << symbol << "\n";
+            return true;
+        }
+        str.push_back(symbol);
+    }
+
     return false;
 }
 
@@ -139,16 +180,19 @@ static bool getSpecialSymbol(std::istream& in, std::vector<Token>& tokens) {
         if (res.first == spec_sym.name.end()) {
             tokens.emplace_back(SpecialSymbolToken(spec_sym.type));
 
-            log << "spec_symbol = " << spec_sym.name << "\n";
+            LOG << "spec_symbol = " << spec_sym.name << "\n";
 
             ungetSymbols(in, potential_spec_sym.size() - spec_sym.name.size());
+
+            if (spec_sym.type == SpecialSymbolType::DOUBLE_QUOTES ||
+                spec_sym.type == SpecialSymbolType::SINGLE_QUOTES)
+                return getString(in, tokens, spec_sym);
+
             return true;
         }
     }
 
     ungetSymbols(in, potential_spec_sym.size());
-    return false;
-
     return false;
 }
 
@@ -165,7 +209,7 @@ static bool getName(std::istream& in, std::vector<Token>& tokens) {
         }
         while (isalnum(next_sym) || next_sym == '_');
 
-        log << "name = " << name << "\n";
+        LOG << "name = " << name << "\n";
         tokens.emplace_back(NameToken(std::move(name)));
 
         in.unget();

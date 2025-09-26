@@ -1,0 +1,10 @@
+{
+    let a = 10;
+    let pi = 3.14;
+    let hello = "Hello";
+
+    print(a);
+    print(pi);
+    print(a * pi);
+    print(hello);
+}

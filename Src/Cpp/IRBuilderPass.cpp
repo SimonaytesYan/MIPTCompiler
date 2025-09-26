@@ -24,19 +24,28 @@ void IRBuilderPass::buildAndDumpIR(const GrammarUnit* unit, std::string_view out
         out = new llvm::raw_fd_ostream(output_file_name, error_code);
     }
     module_.print(*out, nullptr);
+
+    if (output_file_name != "")
+        delete out;
 }
 
-void IRBuilderPass::AddStdLibFunctions() {
-    std::vector<llvm::Type*> arg_types(1, llvm::Type::getInt32Ty(context_));
+void IRBuilderPass::AddStdLibFunction(std::vector<llvm::Type*> arg_types, const char* name) {
     llvm::FunctionType* func_type =
         llvm::FunctionType::get(llvm::Type::getVoidTy(context_), arg_types, false);
 
     llvm::Function* func =
         llvm::Function::Create(func_type, llvm::Function::ExternalLinkage,
-                               "print", module_);
+                               name, module_);
     if (func == nullptr) {
-        std::cerr << "IRBuilder: fail to add std lib function `print`\n";
+        std::cerr << "IRBuilder: fail to add std lib function `" << name << "`\n";
+        return;
     }
+}
+
+void IRBuilderPass::AddStdLibFunctions() {
+    AddStdLibFunction(std::vector<llvm::Type*>(1, llvm::Type::getInt32Ty(context_)), "print_int");
+    AddStdLibFunction(std::vector<llvm::Type*>(1, llvm::Type::getFloatTy(context_)), "print_float");
+    AddStdLibFunction(std::vector<llvm::Type*>(1, llvm::PointerType::get(llvm::Type::getInt8Ty(context_), 0)), "print_string");
 }
 
 llvm::Function* IRBuilderPass::buildMain(const GrammarUnit* unit) {
@@ -63,12 +72,9 @@ llvm::Function* IRBuilderPass::buildMain(const GrammarUnit* unit) {
 }
 
 void IRBuilderPass::buildIRScope(const ScopeUnit* unit) {
-    named_values_.push_back(std::map<std::string, llvm::AllocaInst*>());
-
     for (StatementUnit* unit : *unit) {
         buildIRStatement(unit);
     }
-    named_values_.pop_back();
 }
 
 void IRBuilderPass::buildIRStatement(const StatementUnit* unit) {
@@ -171,9 +177,26 @@ void IRBuilderPass::buildIRLoop(const LoopUnit* unit) {
 }
 
 void IRBuilderPass::buildIRPrint(const PrintUnit* unit) {
-    llvm::Function *callee_func = module_.getFunction("print");
+    if (unit->expression()->exprType()->typeClass() != ExpressionType::TypeClass::BASIC) {
+        std::cerr << "buildIRPrint: fail to print this type\n";
+        return;
+    }
+    const BasicExprType* basic = static_cast<const BasicExprType*>(unit->expression()->exprType());
+    
+    llvm::Function *callee_func = nullptr;
+    switch (basic->basicType()) {
+        case BasicExprType::BasicType::INTEGER:
+            callee_func = module_.getFunction("print_int");
+            break;
+        case BasicExprType::BasicType::FLOAT:
+            callee_func = module_.getFunction("print_float");
+            break;
+        case BasicExprType::BasicType::STRING:
+            callee_func = module_.getFunction("print_string");
+            break;
+    }
     if (!callee_func) {
-        std::cerr << "IRBuilder: Unknown function `print`\n";
+        std::cerr << "IRBuilder: Faild to find neccesery function\n";
         return;
     }
 
@@ -183,23 +206,55 @@ void IRBuilderPass::buildIRPrint(const PrintUnit* unit) {
     builder_.CreateCall(callee_func, argument);
 }
 
-void IRBuilderPass::buildIRVarDecl(const VarDeclUnit* unit) {
-    const std::string name = unit->var()->name();
-    if (named_values_.back()[name] != nullptr) {
-        std::cerr << "IRBuilder: Var `" << name << "` is already exist\n";
-        return;
+llvm::Type* IRBuilderPass::translateToLLVMType(const ExpressionType* var_type, const ExpressionUnit* unit) {
+    switch (var_type->typeClass())
+    {
+        case ExpressionType::TypeClass::BASIC: {
+            const BasicExprType* basic = static_cast<const BasicExprType*>(var_type);
+            switch (basic->basicType()) {
+                case BasicExprType::BasicType::INTEGER:
+                    return llvm::Type::getInt32Ty(context_);
+                case BasicExprType::BasicType::FLOAT:
+                    return llvm::Type::getFloatTy(context_);
+                case BasicExprType::BasicType::STRING: {
+                    return llvm::PointerType::get(llvm::Type::getInt8Ty(context_), 0);
+                    // Constant *str = ConstantDataArray::getString(context, "hello");
+                    // const StringUnit* str_unit = static_cast<const StringUnit*>(unit);
+                    // return llvm::ArrayType::get(llvm::Type::getInt8Ty(context_), str_unit->str().size());
+                }
+            }
+            return nullptr;
+        }
+
+        case ExpressionType::TypeClass::ARRAY: {
+            const ArrayVarType* array = static_cast<const ArrayVarType*>(var_type);
+            
+            if (array->elemNum() == 0) {
+                return llvm::ArrayType::get(llvm::Type::getInt32Ty(context_), 0);
+            }
+            return llvm::ArrayType::get(translateToLLVMType(array->elemType(), static_cast<const ArrayUnit*>(unit)->arrayElements()[0]), array->elemNum());
+        }
     }
 
+    return nullptr;
+}
+
+void IRBuilderPass::buildIRVarDecl(const VarDeclUnit* unit) {
+    const std::string name = unit->var()->name();
+
     llvm::AllocaInst* alloc_var =
-        builder_.CreateAlloca(llvm::Type::getInt32Ty(context_), nullptr, name);
-    named_values_.back()[name] = alloc_var;
+        builder_.CreateAlloca(translateToLLVMType(unit->expr()->exprType(), unit->expr()), nullptr, name);
+    
+    named_values_[unit->variable()] = alloc_var;
 
     emitVarAssign(alloc_var, unit->expr());
 }
 
 void IRBuilderPass::buildIRVarAssign(const VarAssignUnit* unit) {
     const std::string name = unit->var()->name();
-    llvm::AllocaInst* var = findVar(name);
+    const Variable* variable = unit->var()->variable();
+
+    llvm::AllocaInst* var = named_values_[variable];
     if (var == nullptr) {
         std::cerr << "IRBuilder: Var " << name << " is'n exist\n";
         return;
@@ -215,6 +270,10 @@ void IRBuilderPass::emitVarAssign(llvm::AllocaInst* var, const ExpressionUnit* u
 
 llvm::Value* IRBuilderPass::createLLVMInt(int value) {
     return llvm::ConstantInt::get(context_, llvm::APInt(32, value, true));
+}
+
+llvm::Value* IRBuilderPass::createLLVMFloat(float value) {
+    return llvm::ConstantFP::get(llvm::Type::getFloatTy(context_), value);
 }
 
 llvm::Value* IRBuilderPass::buildIRExpression(const ExpressionUnit* unit) {
@@ -246,18 +305,48 @@ llvm::Value* IRBuilderPass::buildIRBinaryOperator(const BinaryOperUnit* unit) {
     llvm::Value* left_value = buildIRExpression(unit->left());
     llvm::Value* right_value = buildIRExpression(unit->right());
 
-    switch (unit->getType())
-    {
-        case GrammarUnitType::ADD:
-            return builder_.CreateAdd(left_value, right_value, "addtmp");
-        case GrammarUnitType::SUB:
-            return builder_.CreateSub(left_value, right_value, "subtmp");
-        case GrammarUnitType::MUL:
-            return builder_.CreateMul(left_value, right_value, "multmp");
-        case GrammarUnitType::DIV:
-            return builder_.CreateSDiv(left_value, right_value, "divtmp");
-        default:
-            break;
+    const BasicExprType* basic = static_cast<const BasicExprType*>(unit->exprType());
+
+    if (basic->basicType() == BasicExprType::BasicType::INTEGER) {
+        switch (unit->getType())
+        {
+            case GrammarUnitType::ADD:
+                return builder_.CreateAdd(left_value, right_value, "addtmp");
+            case GrammarUnitType::SUB:
+                return builder_.CreateSub(left_value, right_value, "subtmp");
+            case GrammarUnitType::MUL:
+                return builder_.CreateMul(left_value, right_value, "multmp");
+            case GrammarUnitType::DIV:
+                return builder_.CreateSDiv(left_value, right_value, "divtmp");
+            default:
+                break;
+        }
+    }
+    else {
+        // resuilt is float
+        const BasicExprType* left_basic  = static_cast<const BasicExprType*>(unit->left()->exprType());
+        const BasicExprType* right_basic = static_cast<const BasicExprType*>(unit->right()->exprType());
+
+        if (left_basic->basicType() == BasicExprType::BasicType::INTEGER) {
+            left_value = builder_.CreateSIToFP(left_value, llvm::Type::getFloatTy(builder_.getContext()));
+        }
+        if (right_basic->basicType() == BasicExprType::BasicType::INTEGER) {
+            right_value = builder_.CreateSIToFP(right_value, llvm::Type::getFloatTy(builder_.getContext()));
+        }
+
+        switch (unit->getType())
+        {
+            case GrammarUnitType::ADD:
+                return builder_.CreateFAdd(left_value, right_value, "faddtmp");
+            case GrammarUnitType::SUB:
+                return builder_.CreateFSub(left_value, right_value, "fsubtmp");
+            case GrammarUnitType::MUL:
+                return builder_.CreateFMul(left_value, right_value, "fmultmp");
+            case GrammarUnitType::DIV:
+                return builder_.CreateFDiv(left_value, right_value, "fdivtmp");
+            default:
+                break;
+        }
     }
 
     std::cerr << "IRBuilderPass: unknown binary operator type\n";
@@ -287,6 +376,12 @@ llvm::Value* IRBuilderPass::buildIRObject(const ObjectUnit* unit) {
         return buildIRVar(reinterpret_cast<const VarUnit*>(unit));
     case GrammarUnitType::NUM:
         return buildIRNum(reinterpret_cast<const NumUnit*>(unit));
+    case GrammarUnitType::ARRAY:
+        return buildIRArray(reinterpret_cast<const ArrayUnit*>(unit));
+    case GrammarUnitType::FLOAT:
+        return buildIRFloat(reinterpret_cast<const FloatUnit*>(unit));
+    case GrammarUnitType::STRING:
+        return buildIRString(reinterpret_cast<const StringUnit*>(unit));
     default:
         break;
     }
@@ -300,7 +395,7 @@ llvm::Value* IRBuilderPass::buildIRNum(const NumUnit* unit) {
 }
 
 llvm::Value* IRBuilderPass::buildIRVar(const VarUnit* unit) {
-    llvm::AllocaInst* var = findVar(unit->name());
+    llvm::AllocaInst* var = named_values_[unit->variable()];
     if (var == nullptr) {
         std::cerr << "buildIRObject: Unknown variable\n";
         return nullptr;
@@ -309,17 +404,24 @@ llvm::Value* IRBuilderPass::buildIRVar(const VarUnit* unit) {
     return builder_.CreateLoad(var->getAllocatedType(), var, unit->name());
 }
 
-llvm::AllocaInst* IRBuilderPass::findVar(const std::string& name) {
-    // Go from top of the 'stack' to the end
-    auto begin_it = named_values_.rbegin();
-    auto end_it = named_values_.rend();
-
-    for (auto scope_it = begin_it; scope_it != end_it; ++scope_it) {
-        llvm::AllocaInst* var_in_cur_scope = (*scope_it)[name];
-        if (var_in_cur_scope != nullptr) {
-            return var_in_cur_scope;
-        }
-    }
-
+llvm::Value* IRBuilderPass::buildIRArray(const ArrayUnit* unit) {
     return nullptr;
 }
+
+llvm::Value* IRBuilderPass::buildIRFloat(const FloatUnit* unit) {
+    return createLLVMFloat(unit->num());
+}
+
+llvm::Value* IRBuilderPass::buildIRString(const StringUnit* unit) {
+    if (string_constants_[unit->str()] == nullptr) {
+        // Creating a global string constant
+        llvm::Constant* str = llvm::ConstantDataArray::getString(context_, unit->str());
+        string_constants_[unit->str()] = new llvm::GlobalVariable(module_, str->getType(), true, llvm::GlobalValue::PrivateLinkage, str, unit->str());
+    }
+
+    // Creating a ptr to string constant
+    return builder_.CreateInBoundsGEP(string_constants_[unit->str()]->getValueType(),
+                                      string_constants_[unit->str()],
+                                      {createLLVMInt(0), createLLVMInt(0)});
+}
+

@@ -9,6 +9,10 @@ enum class KeywordType {
     ELSE,
     PRINT,
     LOOP,
+    ARRAY,
+    INT,
+    FLOAT,
+    STRING,
     KEYWORD_NUM
 };
 
@@ -22,5 +26,9 @@ const Keyword kKeywords[] = {
     {"if",    KeywordType::IF},
     {"else",  KeywordType::ELSE},
     {"print", KeywordType::PRINT},
-    {"loop",  KeywordType::LOOP}
+    {"loop",  KeywordType::LOOP},
+    {"arr",   KeywordType::ARRAY},
+    {"int",   KeywordType::INT},
+    {"flt",   KeywordType::FLOAT},
+    {"str",   KeywordType::STRING}
 };

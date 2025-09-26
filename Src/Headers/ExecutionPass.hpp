@@ -8,6 +8,8 @@
 #include <variant>
 #include <vector>
 
+namespace execution_pass {
+
 class ExecutionPass {
 
   public:
@@ -30,3 +32,5 @@ class ExecutionPass {
   private:
     VariableList vars_;
 };
+
+} // end namespae execution_pass
