@@ -50,7 +50,9 @@ void GraphicDumpPass::createPngFromDot() {
 
     std::cout << "command = <" << command << ">\n";
 
-    system(command.c_str());
+    if (system(command.c_str()) != 0) {
+        std::cout << "Fail to run command " << command << "\n";
+    }
 }
 
 void GraphicDumpPass::dumpOperator() {
