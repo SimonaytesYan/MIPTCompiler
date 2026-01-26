@@ -18,7 +18,7 @@ class Variable {
         name_ = name;
     }
 
-    void setType(ExpressionType* type) {
+    void setType(const ExpressionType* type) {
         type_ = type->copy();
     }
 

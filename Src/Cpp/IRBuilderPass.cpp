@@ -234,6 +234,16 @@ llvm::Type* IRBuilderPass::translateToLLVMType(const ExpressionType* var_type, c
             }
             return llvm::ArrayType::get(translateToLLVMType(array->elemType(), static_cast<const ArrayUnit*>(unit)->arrayElements()[0]), array->elemNum());
         }
+
+        case ExpressionType::TypeClass::VOID: {
+            assert("VOID expression type does not implemented");
+            return nullptr;
+        }
+
+        case ExpressionType::TypeClass::STRUCT: {
+            assert("STRUCT expression type does not implemented");
+            return nullptr;
+        }
     }
 
     return nullptr;

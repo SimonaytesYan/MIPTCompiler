@@ -376,8 +376,12 @@ static void DumpType(const ExpressionType* type, std::ofstream& out) {
         DumpType(arr->elemType(), out);
         break;
     }
+    case ExpressionType::TypeClass::VOID: {
+        out << "VOID ";
+        break;
+    }
     case ExpressionType::TypeClass::STRUCT: {
-        std::cerr << "No implement\n";
+        std::cerr << "Not implement\n";
         break;
     }
     }

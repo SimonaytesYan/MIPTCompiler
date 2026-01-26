@@ -23,6 +23,9 @@ bool ExpressionType::isEqual(const ExpressionType* one, const ExpressionType* ot
         case TypeClass::STRUCT:
             return StructVarType::isEqual(static_cast<const StructVarType*>(one),
                                           static_cast<const StructVarType*>(other));
+        case TypeClass::VOID:
+            return VoidExprType::isEqual(static_cast<const VoidExprType*>(one),
+                                         static_cast<const VoidExprType*>(other));
     }
 
     return false;

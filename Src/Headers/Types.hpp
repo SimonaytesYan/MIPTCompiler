@@ -8,6 +8,7 @@
 class ExpressionType {
   public:
     enum class TypeClass {
+      VOID,
       BASIC,
       ARRAY,
       STRUCT
@@ -20,6 +21,18 @@ class ExpressionType {
     virtual TypeClass typeClass() const = 0;
 
     virtual ~ExpressionType() = default;
+};
+
+class VoidExprType final : public ExpressionType {
+  public:
+    static bool isEqual(const VoidExprType* one, const VoidExprType* other) {
+        return true;
+    }
+
+  public:
+    size_t size() const override { return 0; }
+    TypeClass typeClass() const override { return TypeClass::VOID; }
+    ExpressionType* copy() const override { return new VoidExprType(); };
 };
 
 class BasicExprType : public ExpressionType {

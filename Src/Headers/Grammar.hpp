@@ -3,6 +3,7 @@
 #include "Tokens.hpp"
 #include "Types.hpp"
 #include "Variable.hpp"
+#include "Function.hpp"
 
 #include <string>
 #include <vector>
@@ -14,10 +15,13 @@ class GrammarUnit;
     class IfUnit;
     class LoopUnit;
     class PrintUnit;
+    class FunDeclUnit;
     class VarDeclUnit;
     class VarAssignUnit;
 
   class ExpressionUnit;
+    class FunCallUnit;
+
     class ObjectUnit;
       class NumUnit;
       class FloatUnit;
@@ -59,6 +63,8 @@ enum class GrammarUnitType {
     IF,
     LOOP,
     PRINT,
+    FUN_CALL,
+    FUN_DECL
 };
 
 class GrammarUnit {
@@ -337,6 +343,41 @@ class StringUnit : public ObjectUnit  {
 
   private:
     std::string str_;
+};
+
+class FunDeclUnit : public StatementUnit {
+  public:
+    FunDeclUnit(ScopeUnit* body) :
+      StatementUnit(GrammarUnitType::FUN_DECL),
+      body_(body) { }
+    
+    void addArg(VarDeclUnit* var) {
+      args_.push_back(var);
+    }
+
+  private:
+    std::vector<VarDeclUnit*> args_;
+    ScopeUnit* body_;
+    Function func;
+};
+
+class FunCallUnit : public ExpressionUnit {
+  public:
+    FunCallUnit(std::string& name) :
+      ExpressionUnit(GrammarUnitType::FUN_CALL),
+      name_(name) { }
+
+    void addArg(VarUnit* var) {
+      args_.push_back(var);
+    }
+
+    const std::string& name() const {
+        return name_;
+    }
+
+  private:
+    std::vector<VarUnit*> args_;
+    std::string name_;
 };
 
 class VarDeclUnit : public StatementUnit {
