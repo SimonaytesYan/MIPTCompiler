@@ -13,9 +13,10 @@
 
 // ебашить умный вывод типов, как в случае с объявлением переменной
 
-// FunDeclUnit    ::= FunUnit '(' eps | {VarUnit,}*VarUnit ')' ScopeUnit
 // ScopeUnit      ::= '{' {StatementUnit}+ '}'
-// StatementUnit  ::= VarAssignUnit | VarDeclUnit | IFUnit | LoopUnit | PrintUnit | FunDeclUnit | 0
+// StatementUnit  ::= VarAssignUnit | VarDeclUnit | IFUnit | LoopUnit | PrintUnit | FunDeclUnit | RetUnit | 0
+// RetUnit        ::= 'ret' {eps | ExpressionUnit } ';'
+// FunDeclUnit    ::= FunUnit '(' {eps | {VarUnit,}*VarUnit} ')' ScopeUnit
 // PrintUnit      ::= 'print(' ExprUnit ');'
 // LoopUnit       ::= loop '(' ExprUnit ')' ScopeUnit
 // IFUnit         ::= 'if' '(' ExprUnit ')' ScopeUnit 'else' ScopeUnit
@@ -38,8 +39,9 @@
 // ArrayUnit      ::= [] | [ExprUnit{, ExprUnit}*]
 // StringUnit     ::= ".*" | '.*'
 
-// TODO: FunCallUnit
-// TODO: FunDeclUnit
+// TODO: implement FunCallUnit
+// TODO: implement FunDeclUnit
+// TODO: add return statement processing
 
 // using TokenIt = std::vector<Token>::const_iterator;
 
@@ -50,6 +52,7 @@ static StatementUnit* getPrint(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getLoop(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getVarDecl(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getVarAssign(TokenIt& cur_token, TokenIt end);
+static StatementUnit* getRet(TokenIt& cur_token, TokenIt end);
 static ExpressionUnit* getExpresion(TokenIt& cur_token, TokenIt end);
 static ExpressionUnit* getAddSub(TokenIt& cur_token, TokenIt end);
 static ExpressionUnit* getMulDiv(TokenIt& cur_token, TokenIt end);
@@ -150,6 +153,10 @@ static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end) {
 
     if (CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::PRINT)) {
         return getPrint(cur_token, end);
+    }
+
+    if (CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::RET)) {
+        return getRet(cur_token, end);
     }
 
     if (CheckTokenType<NameToken>(cur_token)) {
@@ -306,7 +313,7 @@ static StatementUnit* getVarAssign(TokenIt& cur_token, TokenIt end) {
     ++cur_token;
 
     ExpressionUnit* expression = getExpresion(cur_token, end);
-    COMPILER_ASSERT(variable != nullptr, "expression is null");
+    COMPILER_ASSERT(expression != nullptr, "expression is null");
 
     COMPILER_ASSERT((CheckTokenValue<SpecialSymbolToken,
                          SpecialSymbolType>(cur_token,
@@ -316,6 +323,29 @@ static StatementUnit* getVarAssign(TokenIt& cur_token, TokenIt end) {
     ++cur_token;
 
     return new VarAssignUnit(variable, expression);
+}
+
+static StatementUnit* getRet(TokenIt& cur_token, TokenIt end) {
+    LOG << "getRet: start func\n";
+
+    COMPILER_ASSERT(cur_token != end, "cur_token == end");
+
+    if (!CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::RET)) {
+        std::cerr << "getPrint: not start from print\n";
+        return nullptr;
+    }
+    ++cur_token;
+
+    ExpressionUnit* expression = getExpresion(cur_token, end);
+    COMPILER_ASSERT(expression != nullptr, "expression is null");
+    
+    COMPILER_ASSERT((CheckTokenValue<SpecialSymbolToken,
+                         SpecialSymbolType>(cur_token,
+                                           SpecialSymbolType::END_STATEMENT)),
+                    "there is no a ';' at the end of var assignment")
+    ++cur_token;
+
+    return new RetUnit(expression);
 }
 
 static ExpressionUnit* getExpresion(TokenIt& cur_token, TokenIt end) {

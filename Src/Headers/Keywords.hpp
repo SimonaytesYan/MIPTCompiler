@@ -14,6 +14,7 @@ enum class KeywordType {
     FLOAT,
     STRING,
     FUN_DECL,
+    RET,
     KEYWORD_NUM
 };
 
@@ -32,5 +33,6 @@ const Keyword kKeywords[] = {
     {"int",   KeywordType::INT},
     {"flt",   KeywordType::FLOAT},
     {"str",   KeywordType::STRING},
-    {"fun",   KeywordType::FUN_DECL}
+    {"fun",   KeywordType::FUN_DECL},
+    {"ret",   KeywordType::RET}
 };

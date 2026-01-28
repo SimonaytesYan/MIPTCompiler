@@ -18,6 +18,7 @@ class GrammarUnit;
     class FunDeclUnit;
     class VarDeclUnit;
     class VarAssignUnit;
+    class RetUnit;
 
   class ExpressionUnit;
 
@@ -64,7 +65,8 @@ enum class GrammarUnitType {
     LOOP,
     PRINT,
     FUN_CALL,
-    FUN_DECL
+    FUN_DECL,
+    RET
 };
 
 class GrammarUnit {
@@ -201,6 +203,24 @@ class VarAssignUnit : public StatementUnit {
 
   private:
     VarUnit* variable_;
+    ExpressionUnit* expression_;
+};
+
+class RetUnit : public StatementUnit {
+  public:
+    RetUnit(ExpressionUnit* expression) :
+      StatementUnit(GrammarUnitType::RET),
+      expression_(expression) { }
+
+    ExpressionUnit* expr() {
+      return expression_;
+    }
+
+    const ExpressionUnit* expr() const {
+      return expression_;
+    }
+
+  private:
     ExpressionUnit* expression_;
 };
 
