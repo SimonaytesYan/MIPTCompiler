@@ -2,6 +2,7 @@
 #include "TypeInference.hpp"
 #include "Utils.hpp"
 
+#include "assert.h"
 #include <iostream>
 
 static bool isBasicType(ExpressionUnit* unit) {
@@ -20,7 +21,7 @@ static bool isInteger(ExpressionUnit* unit) {
             BasicExprType::BasicType::INTEGER);
 }
 
-bool TypeSystem::isSuccessfull() {
+bool TypeSystem::isSuccessful() {
     return finished_successfully_;
 }
 
@@ -40,7 +41,7 @@ GrammarUnit* TypeSystem::inferTypes(GrammarUnit* root) {
     LOG << "Start type inferene\n";
     inferInScope(static_cast<ScopeUnit*>(root));
 
-    if (isSuccessfull())
+    if (isSuccessful())
         return root;
     return nullptr;
 }
@@ -75,8 +76,12 @@ void TypeSystem::inferInStatement(StatementUnit* unit) {
     case GrammarUnitType::VAR_ASSIGN:
         inferInVarAssign(static_cast<VarAssignUnit*>(unit));
         break;
-    
+    case GrammarUnitType::FUN_DECL:
+        inferInFunDecl(static_cast<FunDeclUnit*>(unit));
+        break;
+
     default:
+        assert("Unknown statement unit");
         break;
     }
 }
@@ -102,17 +107,24 @@ void TypeSystem::inferInLoop(LoopUnit* unit) {
     inferInScope(unit->body());
 }
 
+
+void TypeSystem::inferInFunDecl(FunDeclUnit* unit) {
+    LOG << __func__ << "\n";
+
+    // TODO implement
+}
+
 void TypeSystem::inferInVarDecl(VarDeclUnit* unit) {
     LOG << __func__ << "\n";
 
     inferInExpresion(unit->expr());
-    TYPE_INF_ASSERT(isSuccessfull(), "");
+    TYPE_INF_ASSERT(isSuccessful(), "");
 
     unit->updateNameTypeVariable();
     var_table_.insertVar(unit->variable());
 
     inferInVar(unit->var());
-    TYPE_INF_ASSERT(isSuccessfull(), "");
+    TYPE_INF_ASSERT(isSuccessful(), "");
 }
 
 void TypeSystem::inferInVarAssign(VarAssignUnit* unit) {
@@ -188,6 +200,9 @@ void TypeSystem::inferInObject(ObjectUnit* unit) {
     case GrammarUnitType::STRING:
         inferInString(static_cast<StringUnit*>(unit));
         break;
+    case GrammarUnitType::FUN_CALL:
+        inferInFunCall(static_cast<FunCallUnit*>(unit));
+        break;
     
     default:
         break;
@@ -231,6 +246,44 @@ void TypeSystem::inferInArray(ArrayUnit* unit) {
     unit->setExprType(new ArrayVarType(unit->arrayElements().size(), expr_type));
 }
 
+void TypeSystem::inferInFunCall(FunCallUnit* unit) {
+    LOG << __func__ << "\n";
+
+    Function* fun = fun_table_.findFun(unit->name());
+    TYPE_INF_ASSERT(fun != nullptr,
+                    "Function " << fun->name() << " wasn't declare")
+    
+    if (!fun_table_.isFunInstantiated(unit->name())) {
+        instantiateFunction(fun, unit);
+    }
+    unit->setFunction(fun);
+    unit->setExprType(fun->type()->getRetTypes()->copy());
+
+    const auto& correct_args_type = fun->type()->getArgTypes();
+
+    bool args_type_correct = true;
+    for (size_t arg_ind = 0; arg_ind < unit->args().size(); ++arg_ind) {
+        auto arg = unit->args()[arg_ind];
+        inferInExpresion(arg);
+
+        TYPE_INF_ASSERT(ExpressionType::isEqual(arg->exprType(), correct_args_type[arg_ind]), 
+                        std::string(std::string("argument of function '") + fun->name() + std::string("' type is incorrect")));
+    }
+}
+
+void TypeSystem::instantiateFunction(Function* fun, FunCallUnit* unit) {
+    std::vector<ExpressionType*> args_type;
+    for (size_t arg_ind = 0; arg_ind < unit->args().size(); ++arg_ind) {
+        auto arg = unit->args()[arg_ind];
+        inferInExpresion(arg);
+        args_type.push_back(arg->exprType()->copy());
+    }
+
+    fun->setArgsType(std::move(args_type));
+    fun_table_.funWasInstantiated(fun->name());
+
+}
+
 Variable* TypeSystem::VarTable::findVar(const std::string& name) {
     // Go from top of the 'stack' to the end
     auto begin_it = named_expr_types_.rbegin();
@@ -256,4 +309,21 @@ void TypeSystem::VarTable::endScope() {
 
 void TypeSystem::VarTable::insertVar(Variable* var) {
     named_expr_types_.back()[var->name()] = var;
+}
+
+Function* TypeSystem::FunTable::findFun(const std::string& name) {
+    return fun_types_[name];
+}
+
+void TypeSystem::FunTable::insertFun(Function* func) {
+    fun_types_[func->name()] = func;
+    is_fun_instantiated[func] = false;
+}
+
+bool TypeSystem::FunTable::isFunInstantiated(const std::string& name) {
+    return is_fun_instantiated[findFun(name)];
+}
+
+void TypeSystem::FunTable::funWasInstantiated(const std::string& name) {
+    is_fun_instantiated[findFun(name)] = true;
 }

@@ -17,13 +17,28 @@ class TypeSystem {
         std::vector<std::map<std::string, Variable*>> named_expr_types_;
     };
 
+    class FunTable {
+      public:
+        Function* findFun(const std::string& name);
+        void insertFun(Function* fun);
+
+        bool isFunInstantiated(const std::string& name);
+        void funWasInstantiated(const std::string& name);
+
+      private:
+        std::map<std::string, Function*> fun_types_;
+        std::map<Function*, bool> is_fun_instantiated;
+    };
+
   public:
     GrammarUnit* inferTypes(GrammarUnit* root);
-    bool isSuccessfull();
+    bool isSuccessful();
 
   private:
     void inferInScope(ScopeUnit* unit);
     void inferInStatement(StatementUnit* unit);
+    void inferInFunDecl(FunDeclUnit* unit);
+    void inferInFunCall(FunCallUnit* unit);
     void inferInIf(IfUnit* unit);
     void inferInPrint(PrintUnit* unit);
     void inferInLoop(LoopUnit* unit);
@@ -42,7 +57,10 @@ class TypeSystem {
     void inferInArray(ArrayUnit* unit);
     void inferInString(StringUnit* unit);
 
+    void instantiateFunction(Function* fun, FunCallUnit* unit);
+
   private:
     VarTable var_table_;
+    FunTable fun_table_;
     bool finished_successfully_ = true;
 };

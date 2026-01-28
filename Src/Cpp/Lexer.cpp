@@ -11,8 +11,11 @@
 #include <variant>
 #include <vector>
 
+// ебашить умный вывод типов, как в случае с объявлением переменной
+
+// FunDeclUnit    ::= FunUnit '(' eps | {VarUnit,}*VarUnit ')' ScopeUnit
 // ScopeUnit      ::= '{' {StatementUnit}+ '}'
-// StatementUnit  ::= VarAssignUnit | VarDeclUnit | IFUnit | LoopUnit | PrintUnit | 0
+// StatementUnit  ::= VarAssignUnit | VarDeclUnit | IFUnit | LoopUnit | PrintUnit | FunDeclUnit | 0
 // PrintUnit      ::= 'print(' ExprUnit ');'
 // LoopUnit       ::= loop '(' ExprUnit ')' ScopeUnit
 // IFUnit         ::= 'if' '(' ExprUnit ')' ScopeUnit 'else' ScopeUnit
@@ -27,7 +30,8 @@
 // DivExprUnit    ::= Brackets {'/' Brackets}* | Brackets
 // Brackets       ::= '('ExprUnit')' | UnaryMinus
 // UnaryMinus     ::= '-' Object | Object
-// Object         ::= VarUnit | NumUnit | ArrayUnit | FloatUnit | StringUnit
+// Object         ::= VarUnit | NumUnit | ArrayUnit | FloatUnit | StringUnit | FunCallUnit
+// FunCallUnit    ::= FunUnit '(' eps | {VarUnit,}*VarUnit ')'
 // VarUnit        ::= {'_', 'a-z', 'A-Z'}{'_', 'a-z', 'A-Z', '0-9'}*
 // NumUnit        ::= {'0-9'}+
 // FloatUnit      ::= {{'0-9'}+}'.'{{'0-9'}+}

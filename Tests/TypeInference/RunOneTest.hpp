@@ -23,7 +23,7 @@ void runOneTest(std::string test, GraphicDumpPass& pass) {
     GrammarUnit* new_roop = system.inferTypes(root);
     
     std::cout << "test " << test << "\n";
-    std::cout << "is successfull " << system.isSuccessfull() << "\n";
+    std::cout << "is successfull " << system.isSuccessful() << "\n";
     pass.graphicDump(root);
 
     recursiveUnitDelete(root);

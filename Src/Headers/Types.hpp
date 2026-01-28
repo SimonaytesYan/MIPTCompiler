@@ -5,13 +5,16 @@
 #include <cstddef>
 #include <vector>
 
+// TODO: go to unique ptr
+
 class ExpressionType {
   public:
     enum class TypeClass {
       VOID,
       BASIC,
       ARRAY,
-      STRUCT
+      STRUCT,
+      FUN
     };
 
     static bool isEqual(const ExpressionType* one, const ExpressionType* other);
@@ -150,4 +153,77 @@ class StructVarType : public ExpressionType {
 
   private:
     std::vector<ExpressionType*> fields_type_;
+};
+
+class FunctionType : public ExpressionType {
+  public:
+    static bool isEqual(const FunctionType* one, const FunctionType* other) {
+        if (!ExpressionType::isEqual(one->return_type_, other->return_type_)) {
+            return false;
+        }
+
+        for (size_t ind = 0; ind < one->args_type_.size(); ind++) {
+            if (!ExpressionType::isEqual(one->args_type_[ind],
+                                         other->args_type_[ind])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+  public:
+    FunctionType() { }
+
+    FunctionType(const std::vector<const ExpressionType*>& args_type, const ExpressionType* return_type)
+    { 
+        for (const ExpressionType* arg_type : args_type) {
+            args_type_.push_back(arg_type->copy());
+        }
+        return_type_ = return_type->copy();
+    }
+
+    FunctionType(const std::vector<ExpressionType*>& args_type, const ExpressionType* return_type)
+    { 
+        for (const ExpressionType* arg_type : args_type) {
+            args_type_.push_back(arg_type->copy());
+        }
+        return_type_ = return_type->copy();
+    }
+
+    size_t size() const override {
+        return 0;
+    }
+
+    const std::vector<ExpressionType*>& getArgTypes() const {
+      return args_type_;
+    }
+
+    const ExpressionType* getRetTypes() const {
+      return return_type_;
+    }
+
+    TypeClass typeClass() const override { return TypeClass::FUN; }
+
+    ExpressionType* copy() const override { 
+        return new FunctionType(args_type_, return_type_);
+    }
+
+    ~FunctionType() {
+        for (ExpressionType* arg_type : args_type_) {
+            delete arg_type;
+        }
+        delete return_type_;
+    }
+
+    void setRetType(const ExpressionType* ret_type) {
+      return_type_ = ret_type->copy();
+    }
+
+    void setArgsType(std::vector<ExpressionType*>&& args_type) {
+      args_type_ = std::move(args_type);
+    }
+
+  private:
+    std::vector<ExpressionType*> args_type_;
+    ExpressionType* return_type_;
 };

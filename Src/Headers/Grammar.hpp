@@ -20,9 +20,9 @@ class GrammarUnit;
     class VarAssignUnit;
 
   class ExpressionUnit;
-    class FunCallUnit;
 
     class ObjectUnit;
+      class FunCallUnit;
       class NumUnit;
       class FloatUnit;
       class VarUnit;
@@ -317,6 +317,38 @@ class VarUnit : public ObjectUnit {
     const Variable* variable_; // do not own variable
 };
 
+class FunCallUnit : public ObjectUnit {
+  public:
+    FunCallUnit(std::string& name) :
+      ObjectUnit(GrammarUnitType::FUN_CALL),
+      name_(name) { }
+
+    void addArg(VarUnit* var) {
+      args_.push_back(var);
+    }
+
+    const std::string& name() const {
+      return name_;
+    }
+
+    const std::vector<ExpressionUnit*>& args() const {
+      return args_;
+    }
+
+    void setFunction(const Function* function)  {
+        function_ = function;
+    }
+
+    const Function* function() const {
+      return function_;
+    }
+
+  private:
+    std::vector<ExpressionUnit*> args_;
+    std::string name_;
+    const Function* function_; // do not own variable
+};
+
 class ArrayUnit : public ObjectUnit {
   public:
     ArrayUnit(std::vector<ExpressionUnit*>&& array_elements) :
@@ -349,35 +381,17 @@ class FunDeclUnit : public StatementUnit {
   public:
     FunDeclUnit(ScopeUnit* body) :
       StatementUnit(GrammarUnitType::FUN_DECL),
-      body_(body) { }
-    
-    void addArg(VarDeclUnit* var) {
-      args_.push_back(var);
+      body_(body),
+      func_() { }
+
+    Function* operator->() {
+      return &func_;
     }
 
   private:
     std::vector<VarDeclUnit*> args_;
     ScopeUnit* body_;
-    Function func;
-};
-
-class FunCallUnit : public ExpressionUnit {
-  public:
-    FunCallUnit(std::string& name) :
-      ExpressionUnit(GrammarUnitType::FUN_CALL),
-      name_(name) { }
-
-    void addArg(VarUnit* var) {
-      args_.push_back(var);
-    }
-
-    const std::string& name() const {
-        return name_;
-    }
-
-  private:
-    std::vector<VarUnit*> args_;
-    std::string name_;
+    Function func_;
 };
 
 class VarDeclUnit : public StatementUnit {

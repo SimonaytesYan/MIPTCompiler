@@ -1,18 +1,18 @@
 #pragma once
 
-#define COMPILER_ASSERT(statement, messege) COMPILER_ASSERT_(statement, messege, __func__)
+#define COMPILER_ASSERT(statement, message) COMPILER_ASSERT_(statement, message, __func__)
 
-#define COMPILER_ASSERT_(statement, messege, func)      \
+#define COMPILER_ASSERT_(statement, message, func)      \
     if (!(statement)) {                                 \
-        std::cerr << func << ": " << messege << "\n";   \
+        std::cerr << func << ": " << message << "\n";   \
         return nullptr;                                 \
     }
 
-#define TYPE_INF_ASSERT(statement, messege) TYPE_INFERENCE_ASSERT_(statement, messege, __func__)
+#define TYPE_INF_ASSERT(statement, message) TYPE_INFERENCE_ASSERT_(statement, message, __func__)
 
-#define TYPE_INFERENCE_ASSERT_(statement, messege, func)    \
+#define TYPE_INFERENCE_ASSERT_(statement, message, func)    \
     if (!(statement)) {                                     \
-        std::cerr << func << ": " << messege << "\n";       \
+        std::cerr << func << ": " << message << "\n";       \
         finished_successfully_ = false;                     \
         return;                                             \
     }
