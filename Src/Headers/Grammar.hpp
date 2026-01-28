@@ -10,12 +10,13 @@
 
 class GrammarUnit;
 
+  class StartUnit;
+  class FunDeclUnit;
   class ScopeUnit;
   class StatementUnit;
     class IfUnit;
     class LoopUnit;
     class PrintUnit;
-    class FunDeclUnit;
     class VarDeclUnit;
     class VarAssignUnit;
     class RetUnit;
@@ -47,6 +48,7 @@ bool isGrammarUnitExpression(const GrammarUnit* unit);
 bool isGrammarUnitStatement(const GrammarUnit* unit);
 
 enum class GrammarUnitType {
+    START,
     VAR,
     NUM,
     FLOAT,
@@ -83,6 +85,49 @@ class GrammarUnit {
 
   private:
     GrammarUnitType type_;
+};
+
+class StartUnit : public GrammarUnit {
+  public:
+    StartUnit() :
+      GrammarUnit(GrammarUnitType::START) { }
+    
+    void addFuncDecl(FunDeclUnit* func_decl_unit) {
+      funcs_decl_.push_back(func_decl_unit);
+    }
+
+    void setMainBody(ScopeUnit* main_body) {
+      main_body_ = main_body;
+    }
+
+  private:
+    std::vector<FunDeclUnit*> funcs_decl_;
+    ScopeUnit* main_body_;
+};
+
+class FunDeclUnit : public GrammarUnit {
+  public:
+    FunDeclUnit(ScopeUnit* body) :
+      GrammarUnit(GrammarUnitType::FUN_DECL),
+      body_(body),
+      func_() { }
+
+    Function* operator->() {
+      return &func_;
+    }
+
+    Function& func() {
+      return func_;
+    }
+
+    ScopeUnit* body() {
+      return body_;
+    }
+
+  private:
+    std::vector<VarDeclUnit*> args_;
+    ScopeUnit* body_;
+    Function func_;
 };
 
 class ScopeUnit : public GrammarUnit {
@@ -395,23 +440,6 @@ class StringUnit : public ObjectUnit  {
 
   private:
     std::string str_;
-};
-
-class FunDeclUnit : public StatementUnit {
-  public:
-    FunDeclUnit(ScopeUnit* body) :
-      StatementUnit(GrammarUnitType::FUN_DECL),
-      body_(body),
-      func_() { }
-
-    Function* operator->() {
-      return &func_;
-    }
-
-  private:
-    std::vector<VarDeclUnit*> args_;
-    ScopeUnit* body_;
-    Function func_;
 };
 
 class VarDeclUnit : public StatementUnit {

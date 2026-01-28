@@ -2,8 +2,9 @@
 
 #include "Grammar.hpp"
 
-#include <vector>
 #include <map>
+#include <optional>
+#include <vector>
 
 class TypeSystem {
     class VarTable {
@@ -31,12 +32,14 @@ class TypeSystem {
     };
 
   public:
+    // TODO start from startUnit
     GrammarUnit* inferTypes(GrammarUnit* root);
     bool isSuccessful();
 
   private:
     void inferInScope(ScopeUnit* unit);
     void inferInStatement(StatementUnit* unit);
+    void inferInRet(RetUnit* unit);
     void inferInFunDecl(FunDeclUnit* unit);
     void inferInFunCall(FunCallUnit* unit);
     void inferInIf(IfUnit* unit);
@@ -46,7 +49,6 @@ class TypeSystem {
     void inferInVarAssign(VarAssignUnit* unit);
 
     void inferInExpresion(ExpressionUnit* unit);
-
     void inferInBinaryOp(BinaryOperUnit* unit);
     void inferInUnaryOp(UnaryOperUnit* unit);
 
@@ -63,4 +65,6 @@ class TypeSystem {
     VarTable var_table_;
     FunTable fun_table_;
     bool finished_successfully_ = true;
+
+    std::optional<Function*> function_in_process_;
 };

@@ -13,8 +13,9 @@
 
 // ебашить умный вывод типов, как в случае с объявлением переменной
 
+// Start          ::= {FunDeclUnit}* ScopeUnit 
 // ScopeUnit      ::= '{' {StatementUnit}+ '}'
-// StatementUnit  ::= VarAssignUnit | VarDeclUnit | IFUnit | LoopUnit | PrintUnit | FunDeclUnit | RetUnit | 0
+// StatementUnit  ::= VarAssignUnit | VarDeclUnit | IFUnit | LoopUnit | PrintUnit | RetUnit | 0
 // RetUnit        ::= 'ret' {eps | ExpressionUnit } ';'
 // FunDeclUnit    ::= FunUnit '(' {eps | {VarUnit,}*VarUnit} ')' ScopeUnit
 // PrintUnit      ::= 'print(' ExprUnit ');'
@@ -39,9 +40,9 @@
 // ArrayUnit      ::= [] | [ExprUnit{, ExprUnit}*]
 // StringUnit     ::= ".*" | '.*'
 
+// TODO: implement StartUnit
 // TODO: implement FunCallUnit
 // TODO: implement FunDeclUnit
-// TODO: add return statement processing
 
 // using TokenIt = std::vector<Token>::const_iterator;
 

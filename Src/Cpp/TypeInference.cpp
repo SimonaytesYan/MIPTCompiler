@@ -76,8 +76,8 @@ void TypeSystem::inferInStatement(StatementUnit* unit) {
     case GrammarUnitType::VAR_ASSIGN:
         inferInVarAssign(static_cast<VarAssignUnit*>(unit));
         break;
-    case GrammarUnitType::FUN_DECL:
-        inferInFunDecl(static_cast<FunDeclUnit*>(unit));
+    case GrammarUnitType::RET:
+        inferInRet(static_cast<RetUnit*>(unit));
         break;
 
     default:
@@ -92,6 +92,24 @@ void TypeSystem::inferInIf(IfUnit* unit) {
     inferInExpresion(unit->condition());
     inferInScope(unit->true_branch());
     inferInScope(unit->false_branch());
+}
+
+void TypeSystem::inferInRet(RetUnit* unit) {
+    LOG << __func__ << "\n";
+
+    inferInExpresion(unit->expr());
+
+    const auto cur_expr_type = unit->expr()->exprType();
+    if (function_in_process_.has_value()) {
+        const ExpressionType* ret_type = function_in_process_.value()->type()->getRetType();
+        if (ret_type == nullptr) {
+            function_in_process_.value()->setRetType(cur_expr_type);
+        }
+        else  {
+            TYPE_INF_ASSERT((ExpressionType::isEqual(cur_expr_type, ret_type)), 
+                            "Return type mismatch")
+        }
+    }
 }
 
 void TypeSystem::inferInPrint(PrintUnit* unit) {
@@ -111,7 +129,11 @@ void TypeSystem::inferInLoop(LoopUnit* unit) {
 void TypeSystem::inferInFunDecl(FunDeclUnit* unit) {
     LOG << __func__ << "\n";
 
-    // TODO implement
+    function_in_process_ = &unit->func();
+
+    inferInScope(unit->body());
+
+    function_in_process_.reset();
 }
 
 void TypeSystem::inferInVarDecl(VarDeclUnit* unit) {
@@ -257,7 +279,7 @@ void TypeSystem::inferInFunCall(FunCallUnit* unit) {
         instantiateFunction(fun, unit);
     }
     unit->setFunction(fun);
-    unit->setExprType(fun->type()->getRetTypes()->copy());
+    unit->setExprType(fun->type()->getRetType()->copy());
 
     const auto& correct_args_type = fun->type()->getArgTypes();
 

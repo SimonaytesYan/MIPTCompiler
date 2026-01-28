@@ -198,7 +198,7 @@ class FunctionType : public ExpressionType {
       return args_type_;
     }
 
-    const ExpressionType* getRetTypes() const {
+    const ExpressionType* getRetType() const {
       return return_type_;
     }
 
