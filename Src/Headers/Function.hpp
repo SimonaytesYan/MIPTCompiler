@@ -14,10 +14,8 @@ class Function {
         name_ = name;
     }
 
-    void setArgsNames(const std::vector<std::string>& args) { // Set in lexer analyzer
-        for (const auto& arg : args) {
-            args_name_.push_back(arg);
-        }
+    void addArgName(const std::string& new_arg) { // Set in lexer analyzer
+        args_name_.push_back(new_arg);
     }
 
     void setRetType(const ExpressionType* ret_type) {   // Set in type inference when function declaration was meet
@@ -34,6 +32,10 @@ class Function {
 
     const std::string& name() const {
         return name_;
+    }
+
+    const std::vector<std::string>& args_name() const {
+        return args_name_;
     }
 
     ~Function() {

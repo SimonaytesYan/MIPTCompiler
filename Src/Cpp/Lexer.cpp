@@ -34,18 +34,22 @@
 // UnaryMinus     ::= '-' Object | Object
 // Object         ::= VarUnit | NumUnit | ArrayUnit | FloatUnit | StringUnit | FunCallUnit
 // FunCallUnit    ::= FunUnit '(' eps | {VarUnit,}*VarUnit ')'
+// FunUnit        ::= {'_', 'a-z', 'A-Z'}{'_', 'a-z', 'A-Z', '0-9'}*
 // VarUnit        ::= {'_', 'a-z', 'A-Z'}{'_', 'a-z', 'A-Z', '0-9'}*
 // NumUnit        ::= {'0-9'}+
 // FloatUnit      ::= {{'0-9'}+}'.'{{'0-9'}+}
 // ArrayUnit      ::= [] | [ExprUnit{, ExprUnit}*]
 // StringUnit     ::= ".*" | '.*'
 
-// TODO: implement StartUnit
 // TODO: implement FunCallUnit
 // TODO: implement FunDeclUnit
 
+// TODO: create define for compiler errors
+
 // using TokenIt = std::vector<Token>::const_iterator;
 
+static StartUnit*     getStart(TokenIt& cur_token, TokenIt end);
+static FunDeclUnit*   getFunDecl(TokenIt& cur_token, TokenIt end);
 static ScopeUnit*     getScope(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getStatement(TokenIt& cur_token, TokenIt end);
 static StatementUnit* getIf(TokenIt& cur_token, TokenIt end);
@@ -60,11 +64,12 @@ static ExpressionUnit* getMulDiv(TokenIt& cur_token, TokenIt end);
 static ExpressionUnit* getBrackets(TokenIt& cur_token, TokenIt end);
 static ExpressionUnit* getUnaryMinus(TokenIt& cur_token, TokenIt end);
 static ExpressionUnit* getObject(TokenIt& cur_token, TokenIt end);
-static VarUnit* getVar(TokenIt& cur_token, TokenIt end);
-static NumUnit* getNum(TokenIt& cur_token, TokenIt end);
-static FloatUnit* getFloat(TokenIt& cur_token, TokenIt end);
-static ArrayUnit* getArray(TokenIt& cur_token, TokenIt end);
-static StringUnit* getString(TokenIt& cur_token, TokenIt end);
+static VarUnit*     getVar(TokenIt& cur_token, TokenIt end);
+static NumUnit*     getNum(TokenIt& cur_token, TokenIt end);
+static FloatUnit*   getFloat(TokenIt& cur_token, TokenIt end);
+static ArrayUnit*   getArray(TokenIt& cur_token, TokenIt end);
+static StringUnit*  getString(TokenIt& cur_token, TokenIt end);
+static FunCallUnit* getFunCall(TokenIt& cur_token, TokenIt end);
 
 template<class TokenType, class TokenValueType>
 static bool CheckTokenValue(const TokenIt token, TokenValueType necessary_value) {
@@ -84,7 +89,7 @@ void recursiveUnitDelete(GrammarUnit* unit);
 
 GrammarUnit* parse(const std::vector<Token>& tokens) {
     TokenIt cur_token = tokens.begin();
-    GrammarUnit* result = getScope(cur_token, tokens.end());
+    GrammarUnit* result = getStart(cur_token, tokens.end());
 
     if (cur_token != tokens.end()) {
         std::cerr << "Error during parsing\n";
@@ -92,6 +97,69 @@ GrammarUnit* parse(const std::vector<Token>& tokens) {
     }
 
     return result;
+}
+
+static StartUnit* getStart(TokenIt& cur_token, TokenIt end) {
+    LOG << "getStart: Start func\n";
+    if (cur_token == end) {
+        std::cerr << "getScope: cur_token == end\n";
+        return nullptr;
+    }
+
+    StartUnit* start = new StartUnit();
+
+    while(cur_token != end &&
+          CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::FUN_DECL)) {
+        FunDeclUnit* new_fun_decl_unit = getFunDecl(cur_token, end);
+        start->addFuncDecl(new_fun_decl_unit);
+    }
+
+    ScopeUnit* main_body_scope_unit = getScope(cur_token, end);
+    start->setMainBody(main_body_scope_unit);
+
+    return start;
+}
+
+static FunDeclUnit* getFunDecl(TokenIt& cur_token, TokenIt end) {
+    LOG << "getFunDecl: Start function\n";
+
+    if (!CheckTokenValue<KeywordToken, KeywordType>(cur_token, KeywordType::FUN_DECL)) {
+        std::cerr << "getFunDecl: not start from fun\n";
+        return nullptr;
+    }
+    FunDeclUnit* fun_decl = new FunDeclUnit();
+
+    // Process function name
+    COMPILER_ASSERT((std::holds_alternative<NameToken>(*cur_token)), "Is not NameToken");
+    fun_decl->setName(std::get<NameToken>(*cur_token).name());
+    ++cur_token;
+
+    // Process list of arguments
+    COMPILER_ASSERT((CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::LEFT_BRACKET)),
+                    "In declaration of function '" + fun_decl->func().name() + "' argument list do not start with '('\n");
+    ++cur_token;
+
+    while (cur_token != end) {
+        COMPILER_ASSERT((std::holds_alternative<NameToken>(*cur_token)), "Is not NameToken");
+        fun_decl->addArg(std::get<NameToken>(*cur_token).name());
+        cur_token++;
+
+        if (CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::RIGHT_BRACKET))
+            break;
+
+        COMPILER_ASSERT((CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::COMMA)),
+                         "In declaration of function '" + fun_decl->func().name() + "' argument do not split with ','\n");
+    }
+
+    COMPILER_ASSERT((CheckTokenValue<SpecialSymbolToken, SpecialSymbolType>(cur_token, SpecialSymbolType::RIGHT_BRACKET)),
+                     "In declaration of function '" + fun_decl->func().name() + "' argument list do not end with ')'\n");
+    ++cur_token;
+
+    // Process function body
+    ScopeUnit* body = getScope(cur_token, end);
+    fun_decl->setBody(body);
+
+    return fun_decl;
 }
 
 static ScopeUnit* getScope(TokenIt& cur_token, TokenIt end) {

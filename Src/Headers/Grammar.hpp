@@ -39,6 +39,7 @@ class GrammarUnit;
         class MulExprUnit;
         class DivExprUnit;
         class SubExprUnit;
+  class FunUnit;
 
 bool isGrammarUnitOperator(const GrammarUnit* unit);
 bool isGrammarUnitBinaryOperator(const GrammarUnit* unit);
@@ -107,13 +108,23 @@ class StartUnit : public GrammarUnit {
 
 class FunDeclUnit : public GrammarUnit {
   public:
-    FunDeclUnit(ScopeUnit* body) :
-      GrammarUnit(GrammarUnitType::FUN_DECL),
-      body_(body),
-      func_() { }
+    FunDeclUnit() :
+      GrammarUnit(GrammarUnitType::FUN_DECL) { }
 
     Function* operator->() {
       return &func_;
+    }
+
+    void setBody(ScopeUnit* body) {
+      body_ = body;
+    }
+
+    void setName(const std::string& name) {
+      func_.setName(name);
+    }
+
+    void addArg(const std::string& arg_name) {
+      func_.addArgName(arg_name);
     }
 
     Function& func() {
@@ -125,7 +136,6 @@ class FunDeclUnit : public GrammarUnit {
     }
 
   private:
-    std::vector<VarDeclUnit*> args_;
     ScopeUnit* body_;
     Function func_;
 };

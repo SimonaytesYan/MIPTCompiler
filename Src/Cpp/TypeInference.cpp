@@ -32,14 +32,14 @@ GrammarUnit* TypeSystem::inferTypes(GrammarUnit* root) {
         return nullptr;
     }
 
-    if (root->getType() != GrammarUnitType::SCOPE) {
-        std::cerr << "Root is not scope\n";
+    if (root->getType() != GrammarUnitType::START) {
+        std::cerr << "Root is not START unit\n";
         finished_successfully_ = false;
         return nullptr;
     }
 
-    LOG << "Start type inferene\n";
-    inferInScope(static_cast<ScopeUnit*>(root));
+    LOG << "Start type inference\n";
+    inferInStart(static_cast<StartUnit*>(root));
 
     if (isSuccessful())
         return root;
@@ -129,11 +129,7 @@ void TypeSystem::inferInLoop(LoopUnit* unit) {
 void TypeSystem::inferInFunDecl(FunDeclUnit* unit) {
     LOG << __func__ << "\n";
 
-    function_in_process_ = &unit->func();
-
-    inferInScope(unit->body());
-
-    function_in_process_.reset();
+    fun_table_.insertFun(&unit->func(), unit->body());
 }
 
 void TypeSystem::inferInVarDecl(VarDeclUnit* unit) {
@@ -294,6 +290,7 @@ void TypeSystem::inferInFunCall(FunCallUnit* unit) {
 }
 
 void TypeSystem::instantiateFunction(Function* fun, FunCallUnit* unit) {
+    // Infer args type
     std::vector<ExpressionType*> args_type;
     for (size_t arg_ind = 0; arg_ind < unit->args().size(); ++arg_ind) {
         auto arg = unit->args()[arg_ind];
@@ -302,8 +299,27 @@ void TypeSystem::instantiateFunction(Function* fun, FunCallUnit* unit) {
     }
 
     fun->setArgsType(std::move(args_type));
-    fun_table_.funWasInstantiated(fun->name());
 
+    // Infer type in function body 
+    std::vector<Variable> args;
+    auto args_name = fun->args_name();
+    auto args_type = fun->type()->getArgTypes();
+
+    assert(args_name.size() == args_type.size());
+
+    var_table_.startFunction();
+    for (size_t ind = 0; ind < args_name.size(); ind++) {
+        args.emplace_back(args_name[ind], args_type[ind]);
+        var_table_.insertVar(&args[ind]);
+    }
+    function_in_process_ = fun;
+
+    inferInScope(fun_table_.findFunBody(fun));
+
+    function_in_process_.reset();
+    var_table_.endFunction();
+
+    fun_table_.funWasInstantiated(fun->name());
 }
 
 Variable* TypeSystem::VarTable::findVar(const std::string& name) {
@@ -312,7 +328,10 @@ Variable* TypeSystem::VarTable::findVar(const std::string& name) {
     auto end_it = named_expr_types_.rend();
 
     for (auto scope_it = begin_it; scope_it != end_it; ++scope_it) {
-        Variable* var_in_cur_scope = (*scope_it)[name];
+        if (begin_it->second != scope_it->second) // Do not go out from scopes of function
+            break;
+
+        Variable* var_in_cur_scope = (*scope_it).first[name];
         if (var_in_cur_scope != nullptr) {
             return var_in_cur_scope;
         }
@@ -322,24 +341,40 @@ Variable* TypeSystem::VarTable::findVar(const std::string& name) {
 }
 
 void TypeSystem::VarTable::startScope() {
-    named_expr_types_.push_back(std::map<std::string, Variable*>());
+    if (named_expr_types_.size() == 0 || named_expr_types_.back().second == MAIN_SCOPE)
+        named_expr_types_.push_back(std::make_pair(ScopeType(), MAIN_SCOPE));
+    else
+        named_expr_types_.push_back(std::make_pair(ScopeType(), USER_FUNCTION_SCOPE));
 }
 
 void TypeSystem::VarTable::endScope() {
     named_expr_types_.pop_back();
 }
 
+void TypeSystem::VarTable::startFunction() {
+    named_expr_types_.push_back(std::make_pair(ScopeType(), USER_FUNCTION_SCOPE));
+}
+
+void TypeSystem::VarTable::endFunction() {
+    endScope();
+}
+
 void TypeSystem::VarTable::insertVar(Variable* var) {
-    named_expr_types_.back()[var->name()] = var;
+    named_expr_types_.back().first[var->name()] = var;
 }
 
 Function* TypeSystem::FunTable::findFun(const std::string& name) {
     return fun_types_[name];
 }
 
-void TypeSystem::FunTable::insertFun(Function* func) {
+void TypeSystem::FunTable::insertFun(Function* func, ScopeUnit* body) {
     fun_types_[func->name()] = func;
     is_fun_instantiated[func] = false;
+    fun_body_[func] = body;
+}
+
+ScopeUnit* TypeSystem::FunTable::findFunBody(Function* fun) {
+    return fun_body_[fun];
 }
 
 bool TypeSystem::FunTable::isFunInstantiated(const std::string& name) {
