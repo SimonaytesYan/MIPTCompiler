@@ -48,6 +48,7 @@ class TypeSystem {
     bool isSuccessful();
 
   private:
+    void inferInStart(StartUnit* unit);
     void inferInScope(ScopeUnit* unit);
     void inferInStatement(StatementUnit* unit);
     void inferInRet(RetUnit* unit);

@@ -18,7 +18,7 @@ class Function {
         args_name_.push_back(new_arg);
     }
 
-    void setRetType(const ExpressionType* ret_type) {   // Set in type inference when function declaration was meet
+    void setRetType(const ExpressionType* ret_type) {   // Set in type inference when first function call was meet
         type_->setRetType(ret_type);
     }
 

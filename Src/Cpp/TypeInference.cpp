@@ -46,6 +46,16 @@ GrammarUnit* TypeSystem::inferTypes(GrammarUnit* root) {
     return nullptr;
 }
 
+void TypeSystem::inferInStart(StartUnit* unit) {
+    LOG << __func__ << "\n";
+
+    for (auto fun_decl : unit->funcs_decl()){
+        inferInFunDecl(fun_decl);
+    }
+
+    inferInScope(unit->main_body());
+}
+
 void TypeSystem::inferInScope(ScopeUnit* unit) {
     LOG << __func__ << "\n";
 

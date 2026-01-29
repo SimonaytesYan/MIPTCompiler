@@ -101,6 +101,14 @@ class StartUnit : public GrammarUnit {
       main_body_ = main_body;
     }
 
+    ScopeUnit* main_body() {
+      return main_body_;
+    }
+
+    std::vector<FunDeclUnit*>& funcs_decl() {
+      return funcs_decl_;
+    }
+
   private:
     std::vector<FunDeclUnit*> funcs_decl_;
     ScopeUnit* main_body_;
